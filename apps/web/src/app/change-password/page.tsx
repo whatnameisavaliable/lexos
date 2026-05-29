@@ -15,7 +15,9 @@ export default function ChangePasswordPage() {
         <Card className="w-full max-w-[420px]">
           <CardHeader>
             <CardTitle>修改密码</CardTitle>
-            <CardDescription>完成改密后方可使用业务功能</CardDescription>
+            <CardDescription>
+              管理员创建或重置密码后须在此完成改密；个人中心也可主动修改密码。
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ChangePasswordForm />

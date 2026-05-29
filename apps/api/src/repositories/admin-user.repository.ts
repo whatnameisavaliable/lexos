@@ -145,7 +145,7 @@ export class AdminUserRepository {
         role: input.role,
         contact: input.contact ?? null,
         status: "enabled",
-        requires_password_change: false,
+        requires_password_change: true,
         mfa_enabled: false,
       })
       .select(ADMIN_USER_DETAIL_SELECT)
@@ -164,38 +164,49 @@ export class AdminUserRepository {
     id: string,
     patch: AdminProfileFieldsPatch,
   ): Promise<AdminProfileRecord> {
-    return this.updateProfileFieldsDirect(id, patch);
-  }
-
-  /**
-   * 设置账户状态（`service_role`；禁用流程由 Service 配合 `signOut(global)`）。
-   */
-  async setUserStatus(id: string, status: ProfileStatus): Promise<AdminProfileRecord> {
-    const { data, error } = await this.serviceClient
-      .from("profiles")
-      .update({ status })
-      .eq("id", id)
-      .select(ADMIN_USER_DETAIL_SELECT)
-      .single();
+    const { data, error } = await this.serviceClient.rpc("admin_update_profile", {
+      p_user_id: id,
+      p_display_name: patch.displayName ?? null,
+      p_role: patch.role ?? null,
+      p_contact: patch.contact === undefined ? null : patch.contact,
+      p_touch_display_name: patch.displayName !== undefined,
+      p_touch_role: patch.role !== undefined,
+      p_touch_contact: patch.contact !== undefined,
+    });
 
     if (error) {
-      throw new Error(`profiles.setUserStatus failed: ${error.message}`);
+      throw new Error(`admin_update_profile failed: ${error.message}`);
     }
     return mapAdminProfileRow(data as AdminProfileRowDb);
   }
 
   /**
-   * 置 `requires_password_change`（重置密码链路）。
+   * 设置账户状态（`admin_set_user_status` SECURITY DEFINER；禁用流程由 Service 配合 `signOut(global)`）。
+   */
+  async setUserStatus(id: string, status: ProfileStatus): Promise<AdminProfileRecord> {
+    const { data, error } = await this.serviceClient.rpc("admin_set_user_status", {
+      p_user_id: id,
+      p_status: status,
+    });
+
+    if (error) {
+      throw new Error(`admin_set_user_status failed: ${error.message}`);
+    }
+    return mapAdminProfileRow(data as AdminProfileRowDb);
+  }
+
+  /**
+   * 置 `requires_password_change`（`admin_mark_password_reset_required` RPC）。
    */
   async setRequiresPasswordChange(id: string, value: boolean): Promise<void> {
-    const { error } = await this.serviceClient
-      .from("profiles")
-      .update({ requires_password_change: value })
-      .eq("id", id);
+    const { error } = await this.serviceClient.rpc(
+      "admin_mark_password_reset_required",
+      { p_user_id: id, p_required: value },
+    );
 
     if (error) {
       throw new Error(
-        `profiles.requires_password_change update failed: ${error.message}`,
+        `admin_mark_password_reset_required failed: ${error.message}`,
       );
     }
   }
@@ -264,34 +275,6 @@ export class AdminUserRepository {
       throw new Error(`profiles.countEnabledAdmins failed: ${error.message}`);
     }
     return count ?? 0;
-  }
-
-  private async updateProfileFieldsDirect(
-    id: string,
-    patch: AdminProfileFieldsPatch,
-  ): Promise<AdminProfileRecord> {
-    const payload: Record<string, string | null> = {};
-    if (patch.displayName !== undefined) {
-      payload.display_name = patch.displayName;
-    }
-    if (patch.role !== undefined) {
-      payload.role = patch.role;
-    }
-    if (patch.contact !== undefined) {
-      payload.contact = patch.contact;
-    }
-
-    const { data, error } = await this.serviceClient
-      .from("profiles")
-      .update(payload)
-      .eq("id", id)
-      .select(ADMIN_USER_DETAIL_SELECT)
-      .single();
-
-    if (error) {
-      throw new Error(`profiles.updateProfileFields failed: ${error.message}`);
-    }
-    return mapAdminProfileRow(data as AdminProfileRowDb);
   }
 }
 

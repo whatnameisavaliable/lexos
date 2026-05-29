@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -123,6 +124,16 @@ export function ProfileForm() {
           <Button type="submit">保存</Button>
         </form>
       </Form>
+
+      <section className="mt-8 border-t border-border pt-6">
+        <h2 className="text-lg font-medium">安全</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          修改登录密码须验证当前密码。忘记密码请联系系统管理员重置。
+        </p>
+        <Button type="button" variant="outline" className="mt-4" asChild>
+          <Link href="/change-password">修改密码</Link>
+        </Button>
+      </section>
     </div>
   );
 }

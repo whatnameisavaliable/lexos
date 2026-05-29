@@ -620,10 +620,10 @@
 
 ### M4-D 领域逻辑（状态机 / 队列路由，单文件一项）
 
-- [ ] 新增 `apps/api/src/domain/task-state-machine.ts`：合法迁移表（`uploading→queued` 等）；非法迁移抛 `TASK_INVALID_STATE`
-- [ ] 新增 `apps/api/src/domain/asr-queue-tier.ts`：`resolveAsrQueueTier(durationSec)` → `express`|`batch`（阈值 `ASR_EXPRESS_MAX_DURATION_SEC`）
-- [ ] 新增 `apps/api/src/domain/outbox-payload.factory.ts`：`buildQueuedPayload(task)` → 首队列 `media.extract`（`is_mp4`）或 `media.preprocess`
-- [ ] 新增 `apps/api/src/domain/task-state-machine.test.ts`
+- [x] 新增 `apps/api/src/domain/task-state-machine.ts`：合法迁移表（`uploading→queued` 等）；非法迁移抛 `TASK_INVALID_STATE`
+- [x] 新增 `apps/api/src/domain/asr-queue-tier.ts`：`resolveAsrQueueTier(durationSec)` → `express`|`batch`（阈值 `ASR_EXPRESS_MAX_DURATION_SEC`）
+- [x] 新增 `apps/api/src/domain/outbox-payload.factory.ts`：`buildQueuedPayload(task)` → 首队列 `media.extract`（`is_mp4`）或 `media.preprocess`
+- [x] 新增 `apps/api/src/domain/task-state-machine.test.ts`
 
 ---
 

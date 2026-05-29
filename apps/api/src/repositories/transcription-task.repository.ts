@@ -85,6 +85,31 @@ export class TranscriptionTaskRepository {
   }
 
   /**
+   * 上传阶段更新计划中的 `source_storage_key`（仍为 `uploading`）。
+   */
+  async updateSourceStorageKey(
+    accessToken: string,
+    taskId: string,
+    sourceStorageKey: string,
+  ): Promise<TranscriptionTaskRecord> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("transcription_tasks")
+      .update({ source_storage_key: sourceStorageKey })
+      .eq("id", taskId)
+      .eq("status", "uploading")
+      .select(TRANSCRIPTION_TASK_SELECT)
+      .single();
+
+    if (error) {
+      throw new Error(
+        `transcription_tasks.updateSourceStorageKey failed: ${error.message}`,
+      );
+    }
+    return mapTranscriptionTaskRow(data as TranscriptionTaskRowDb);
+  }
+
+  /**
    * 按 ID 查询（律师仅本人；admin 可见全部，RLS 生效）。
    */
   async findById(

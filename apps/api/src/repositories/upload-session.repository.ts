@@ -103,6 +103,29 @@ export class UploadSessionRepository {
   }
 
   /**
+   * 查询任务下未完成的会话（幂等 `init` 回放用）。
+   */
+  async findOpenByTaskId(
+    accessToken: string,
+    taskId: string,
+  ): Promise<UploadSessionRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("upload_sessions")
+      .select(UPLOAD_SESSION_SELECT)
+      .eq("task_id", taskId)
+      .is("completed_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`upload_sessions.findOpenByTaskId failed: ${error.message}`);
+    }
+    return data ? mapUploadSessionRow(data as UploadSessionRowDb) : null;
+  }
+
+  /**
    * 在事务内标记会话完成（`uploads/complete` 与 Outbox 同事务）。
    */
   async markCompleted(

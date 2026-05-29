@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { logout } from "@/lib/auth-api";
+import { navItemsForRole } from "@/lib/menus";
+import type { UserRole } from "@lexos/shared";
 import { Button } from "@/components/ui/button";
 
 export interface AppShellProps {
@@ -14,16 +16,7 @@ export interface AppShellProps {
  * 业务壳布局（`ui_design.md` §3.1 CSS Grid）。
  */
 export function AppShell({ role, username, children }: AppShellProps) {
-  const nav =
-    role === "admin"
-      ? [
-          { href: "/admin", label: "管理首页" },
-          { href: "/profile", label: "个人中心" },
-        ]
-      : [
-          { href: "/lawyer", label: "律师工作台" },
-          { href: "/profile", label: "个人中心" },
-        ];
+  const nav = navItemsForRole(role as UserRole);
 
   return (
     <div className="app-shell">

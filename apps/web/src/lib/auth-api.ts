@@ -49,12 +49,51 @@ export async function getSession(): Promise<SessionResponseData> {
   return res.data;
 }
 
+/** 改密成功响应（含刷新后的 access token）。 */
+export interface ChangePasswordResponseData {
+  readonly ok: boolean;
+  readonly accessToken: string;
+  readonly expiresAt?: number;
+}
+
 /** `POST /api/auth/change-password` */
 export async function changePassword(
   body: AuthChangePasswordBody,
 ): Promise<void> {
-  await apiFetch<{ ok: boolean }>("/auth/change-password", {
+  const res = await apiFetch<ChangePasswordResponseData>(
+    "/auth/change-password",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
+  if (res.data.accessToken) {
+    setAccessToken(res.data.accessToken);
+  }
+}
+
+/** MFA 注册响应（目标态；首期 API 未挂载）。 */
+export interface MfaEnrollResponseData {
+  readonly factorId: string;
+  readonly qrCode: string;
+}
+
+/**
+ * `POST /api/auth/mfa/enroll`（首期未启用时占位，避免构建失败）。
+ */
+export async function mfaEnroll(): Promise<MfaEnrollResponseData> {
+  const res = await apiFetch<MfaEnrollResponseData>("/auth/mfa/enroll", {
     method: "POST",
-    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+/**
+ * `POST /api/auth/mfa/verify`（首期未启用时占位）。
+ */
+export async function mfaVerify(factorId: string, code: string): Promise<void> {
+  await apiFetch<{ ok: boolean }>("/auth/mfa/verify", {
+    method: "POST",
+    body: JSON.stringify({ factorId, code }),
   });
 }

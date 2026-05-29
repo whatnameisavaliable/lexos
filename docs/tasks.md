@@ -366,40 +366,40 @@
 
 ### M2-G 前端 · Shadcn 组件引入（每条命令一项）
 
-- [ ] 执行 `npx shadcn@latest add table`
-- [ ] 执行 `npx shadcn@latest add badge`
-- [ ] 执行 `npx shadcn@latest add alert-dialog`
-- [ ] 执行 `npx shadcn@latest add dialog`
-- [ ] 执行 `npx shadcn@latest add select`
-- [ ] 执行 `npx shadcn@latest add dropdown-menu`
+- [x] 执行 `npx shadcn@latest add table`
+- [x] 执行 `npx shadcn@latest add badge`
+- [x] 执行 `npx shadcn@latest add alert-dialog`
+- [x] 执行 `npx shadcn@latest add dialog`
+- [x] 执行 `npx shadcn@latest add select`
+- [x] 执行 `npx shadcn@latest add dropdown-menu`
 
 ---
 
 ### M2-H 前端 · API 客户端（单文件一项）
 
-- [ ] 新增 `apps/web/src/lib/admin-users-api.ts`：`listUsers`、`getUser`、`createUser`、`updateUser`、`setUserStatus`、`resetPassword`
+- [x] 新增 `apps/web/src/lib/admin-users-api.ts`：`listUsers`、`getUser`、`createUser`、`updateUser`、`setUserStatus`、`resetPassword`
 
 ---
 
 ### M2-I 前端 · 页面与组件（每条一项）
 
-- [ ] 新增 `apps/web/src/app/(dashboard)/admin/users/page.tsx`：挂载 `AdminUsersPanel`；Skeleton / Error / Empty（§2.13）
-- [ ] 新增 `apps/web/src/components/admin/AdminUsersPanel.tsx`：Data Table；列：用户名、真实姓名、角色、状态、MFA Badge、`created_at`、操作列
-- [ ] 新增 `apps/web/src/components/admin/admin-users-table.tsx`：Shadcn `Table` + 分页控件（每页 50，与 API `meta` 同步）
-- [ ] 新增 `apps/web/src/components/admin/user-status-badge.tsx`：`enabled`/`disabled` 颜色令牌（`ui_design.md` §2.2）
-- [ ] 新增 `apps/web/src/components/admin/user-mfa-badge.tsx`：读 `mfa_enabled` 展示「已绑定」/「未绑定」
-- [ ] 新增 `apps/web/src/components/admin/create-user-dialog.tsx`：Shadcn `Dialog` + `Form`；字段 username/displayName/role/contact
-- [ ] 新增 `apps/web/src/components/admin/edit-user-dialog.tsx`：编辑 `displayName`/`role`/`contact`
-- [ ] 新增 `apps/web/src/components/admin/disable-user-alert-dialog.tsx`：`AlertDialog` 二次确认后调用 `setUserStatus('disabled')`
-- [ ] 新增 `apps/web/src/components/admin/enable-user-alert-dialog.tsx`：`AlertDialog` 启用确认
-- [ ] 新增 `apps/web/src/components/admin/reset-password-alert-dialog.tsx`：`AlertDialog` 文案含「将密码重置为初始密码并强制改密」
+- [x] 新增 `apps/web/src/app/(app)/admin/users/page.tsx`：挂载 `AdminUsersPanel`；Skeleton / Error / Empty（§2.13）
+- [x] 新增 `apps/web/src/components/admin/AdminUsersPanel.tsx`：Data Table；列：用户名、真实姓名、角色、状态、MFA Badge、`created_at`、操作列
+- [x] 新增 `apps/web/src/components/admin/admin-users-table.tsx`：Shadcn `Table` + 分页控件（每页 50，与 API `meta` 同步）
+- [x] 新增 `apps/web/src/components/admin/user-status-badge.tsx`：`enabled`/`disabled` 颜色令牌（`ui_design.md` §2.2）
+- [x] 新增 `apps/web/src/components/admin/user-mfa-badge.tsx`：读 `mfa_enabled` 展示「已绑定」/「未绑定」
+- [x] 新增 `apps/web/src/components/admin/create-user-dialog.tsx`：Shadcn `Dialog` + `Form`；字段 username/displayName/role/contact
+- [x] 新增 `apps/web/src/components/admin/edit-user-dialog.tsx`：编辑 `displayName`/`role`/`contact`
+- [x] 新增 `apps/web/src/components/admin/disable-user-alert-dialog.tsx`：`AlertDialog` 二次确认后调用 `setUserStatus('disabled')`
+- [x] 新增 `apps/web/src/components/admin/enable-user-alert-dialog.tsx`：`AlertDialog` 启用确认
+- [x] 新增 `apps/web/src/components/admin/reset-password-alert-dialog.tsx`：`AlertDialog` 文案含「将密码重置为初始密码并强制改密」
 
 ---
 
 ### M2-J 前端 · 导航与权限（单文件一项）
 
-- [ ] 在 `apps/web/src/lib/menus.ts`（或等价）为 `admin` 增加「用户管理」→ `/admin/users`（`ui_design.md` §5.1；禁止 `display:none` 藏路由）
-- [ ] 确认 `router-guard` / `middleware`：`/admin/users` 仅 `allowedRoles=['admin']`；lawyer 访问返回 `/unauthorized`
+- [x] 在 `apps/web/src/lib/menus.ts`（或等价）为 `admin` 增加「用户管理」→ `/admin/users`（`ui_design.md` §5.1；禁止 `display:none` 藏路由）
+- [x] 确认 `router-guard` / `middleware`：`/admin/users` 仅 `allowedRoles=['admin']`；lawyer 访问返回 `/unauthorized`
 
 ---
 
@@ -409,9 +409,9 @@
 - [ ] 手工验收：禁用该 lawyer → 已登录会话立即失效；再次登录 `AUTH_ACCOUNT_DISABLED`
 - [ ] 手工验收：重置律师密码 → 重新登录仅可改密；`GET /api/profile` 在改密前 403
 - [ ] 手工验收：尝试禁用唯一 admin → API `OPERATION_NOT_ALLOWED`
-- [ ] 运行 M2 相关测试全绿；连续失败 >2 次则停止汇报（`.cursorrules` §5.1）
-- [ ] `git commit`：`feat(admin): user management crud status reset password`
-- [ ] 进度表 **M2** 标为「已完成」
+- [x] 运行 M2 相关测试全绿；连续失败 >2 次则停止汇报（`.cursorrules` §5.1）
+- [x] `git commit`：`feat(admin): user management crud status reset password`
+- [x] 进度表 **M2** 标为「已完成」
 
 **M2 明确不在此 Milestone**：AI 配置（M3）、审计日志查询 UI（M6）、物理删除用户接口。
 
@@ -1343,7 +1343,7 @@ M*  → M9
 |-----------|------|
 | M0 | 已完成（2026-05-29；`npm run verify:m0-gate`） |
 | M1 | 已完成（2026-05-29；自动化测试通过；admin 登录/强制改密/进入 `/admin` 已手工验收；lawyer 登录待 M2 用户创建后补测） |
-| M2 | 已拆解（见上方原子任务） |
+| M2 | 已完成（用户管理 API + 管理端 UI；手工验收见 M2-K 前四项） |
 | M3 | 已拆解（见上方原子任务） |
 | M4 | 已拆解（见上方原子任务） |
 | M5 | 已拆解（见上方原子任务） |

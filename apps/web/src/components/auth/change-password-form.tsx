@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import {
   authChangePasswordBodySchema,
   type AuthChangePasswordBody,
@@ -33,8 +33,10 @@ export function ChangePasswordForm() {
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<AuthChangePasswordBody>({
-    resolver: zodResolver(authChangePasswordBodySchema),
-    defaultValues: { currentPassword: "", newPassword: "" },
+    resolver: zodResolver(
+      authChangePasswordBodySchema,
+    ) as Resolver<AuthChangePasswordBody>,
+    defaultValues: { newPassword: "" },
   });
 
   useEffect(() => {
@@ -76,7 +78,13 @@ export function ChangePasswordForm() {
       ) : null}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, (fieldErrors) => {
+            const first = Object.values(fieldErrors)[0];
+            setError(first?.message ? String(first.message) : "请检查表单填写");
+          })}
+          className="flex flex-col gap-4"
+        >
           {!requiresChange ? (
             <FormField
               control={form.control}
@@ -101,6 +109,7 @@ export function ChangePasswordForm() {
                 <FormControl>
                   <Input type="password" autoComplete="new-password" {...field} />
                 </FormControl>
+                <p className="text-sm text-muted-foreground">至少 8 位字符</p>
                 <FormMessage />
               </FormItem>
             )}

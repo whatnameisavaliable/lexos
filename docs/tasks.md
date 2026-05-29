@@ -297,10 +297,10 @@
 ### M2-A 共享 DTO 与校验（`packages/shared`）
 
 - [x] 新增 `packages/shared/src/dto/admin-user-create.dto.ts`：`username`、`displayName`、`role`、`contact?`（zod；`username` 规范化规则与 PRD 一致）
-- [ ] 新增 `packages/shared/src/dto/admin-user-update.dto.ts`：`displayName?`、`role?`、`contact?`（禁止含 `status`/`username` 自改入口）
-- [ ] 新增 `packages/shared/src/dto/admin-user-status.dto.ts`：`status: 'enabled' | 'disabled'`
-- [ ] 新增 `packages/shared/src/dto/admin-user-list-query.dto.ts`：`limit`（默认 50，最大 50）、`cursor?` 或 `offset?`、`role?`、`status?`、`q?`（用户名/姓名模糊）
-- [ ] 新增 `packages/shared/src/types/admin-user-list-item.ts`：列表行字段（含 `mfaEnabled`、`createdAt`）
+- [x] 新增 `packages/shared/src/dto/admin-user-update.dto.ts`：`displayName?`、`role?`、`contact?`（禁止含 `status`/`username` 自改入口）
+- [x] 新增 `packages/shared/src/dto/admin-user-status.dto.ts`：`status: 'enabled' | 'disabled'`
+- [x] 新增 `packages/shared/src/dto/admin-user-list-query.dto.ts`：`limit`（默认 50，最大 50）、`cursor?` 或 `offset?`、`role?`、`status?`、`q?`（用户名/姓名模糊）
+- [x] 新增 `packages/shared/src/types/admin-user-list-item.ts`：列表行字段（含 `mfaEnabled`、`createdAt`）
 
 ---
 

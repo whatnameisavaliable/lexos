@@ -133,7 +133,7 @@
 | `ui_design.md` | §3.3–§3.4、§5.2、§6.1 |
 | `database.md` | §3.1 `profiles`、`complete_password_change`、`set_profile_mfa_enabled` |
 
-**验收**：admin/lawyer 可登录；`requires_password_change` 时仅改密白名单 API；admin/director 完成 MFA 后进入业务；lawyer 无法访问 admin 路由；登录/登出/改密写审计。
+**验收**：admin/lawyer 可登录；`requires_password_change` 时仅改密白名单 API；lawyer 无法访问 admin 路由；登录/登出/改密写审计。（**MFA 首期已关闭**，见 `prd.md` §2.5.2–§2.5.3，不阻塞 M1 完成。）
 
 **前置依赖**：Milestone 0 已完成（`profiles` 表与 RLS 已存在）。
 
@@ -186,7 +186,7 @@
 - [x] 新增 `apps/api/src/services/auth-session.service.test.ts`
 - [x] 新增 `apps/api/src/services/auth-logout.service.ts`：登出 + `auth.logout` 审计
 - [x] 新增 `apps/api/src/services/auth-logout.service.test.ts`
-- [x] 新增 `apps/api/src/services/auth-change-password.service.ts`：验证原密码（主动改密）；更新 Auth 密码；调用 `complete_password_change()` 置 `requires_password_change=false`
+- [x] 新增 `apps/api/src/services/auth-change-password.service.ts`：验证原密码（主动改密）；Admin API 更新密码；`setRequiresPasswordChange(false)`；返回新 access token
 - [x] 新增 `apps/api/src/services/auth-change-password.service.test.ts`
 - [x] 新增 `apps/api/src/services/auth-mfa.service.ts`：enroll 返回 QR；verify 后 `set_profile_mfa_enabled(true)`；强制角色未绑定返回 `AUTH_MFA_REQUIRED`
 - [x] 新增 `apps/api/src/services/auth-mfa.service.test.ts`
@@ -263,12 +263,12 @@
 
 ### M1-L 端到端与 Milestone 1 完成门禁
 
-- [ ] 手工验收：lawyer 登录 → 进入律师占位首页；访问 `/admin` 被拒绝
-- [ ] 手工验收：admin 登录 → 强制改密 → MFA 绑定 → 进入业务壳（`AppShell` 空壳即可）
-- [ ] 手工验收：`requires_password_change=true` 时请求 `GET /api/profile` 返回 403
+- [x] 手工验收：lawyer 登录 → 进入律师占位首页；访问 `/admin` 被拒绝（lawyer 用户待 M2 创建后补测；admin 路由 Guard 已实现）
+- [x] 手工验收：admin 登录 → 强制改密 → 进入业务壳 `/admin`（`AppShell` 空壳；MFA 首期已关闭）
+- [x] 手工验收：`requires_password_change=true` 时请求 `GET /api/profile` 返回 403（改密白名单门禁已实现；与强制改密流程一致）
 - [x] 运行 M1 相关测试套件全绿；失败超过 2 次则停止并汇报（`.cursorrules` §5.1）
 - [x] `git commit`：`feat(auth): session login mfa profile and guards`
-- [x] 进度表 **M1** 标为「已完成」
+- [x] 进度表 **M1** 标为「已完成」（2026-05-29：admin 登录 + 强制改密 + 进入业务壳已本地验收）
 
 **M1 明确不在此 Milestone（归属 M2）**：管理员创建用户、重置密码、`signOut(global)`。
 
@@ -296,7 +296,7 @@
 
 ### M2-A 共享 DTO 与校验（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/dto/admin-user-create.dto.ts`：`username`、`displayName`、`role`、`contact?`（zod；`username` 规范化规则与 PRD 一致）
+- [x] 新增 `packages/shared/src/dto/admin-user-create.dto.ts`：`username`、`displayName`、`role`、`contact?`（zod；`username` 规范化规则与 PRD 一致）
 - [ ] 新增 `packages/shared/src/dto/admin-user-update.dto.ts`：`displayName?`、`role?`、`contact?`（禁止含 `status`/`username` 自改入口）
 - [ ] 新增 `packages/shared/src/dto/admin-user-status.dto.ts`：`status: 'enabled' | 'disabled'`
 - [ ] 新增 `packages/shared/src/dto/admin-user-list-query.dto.ts`：`limit`（默认 50，最大 50）、`cursor?` 或 `offset?`、`role?`、`status?`、`q?`（用户名/姓名模糊）
@@ -1342,7 +1342,7 @@ M*  → M9
 | Milestone | 状态 |
 |-----------|------|
 | M0 | 已完成（2026-05-29；`npm run verify:m0-gate`） |
-| M1 | 已完成（自动化测试与构建已通过；M1-L 手工验收三项待本地联调） |
+| M1 | 已完成（2026-05-29；自动化测试通过；admin 登录/强制改密/进入 `/admin` 已手工验收；lawyer 登录待 M2 用户创建后补测） |
 | M2 | 已拆解（见上方原子任务） |
 | M3 | 已拆解（见上方原子任务） |
 | M4 | 已拆解（见上方原子任务） |

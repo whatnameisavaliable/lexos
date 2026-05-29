@@ -41,7 +41,7 @@
 
 > **命令模板**：`supabase migration new <snake_case_name>` → 在生成的 `supabase/migrations/<timestamp>_<name>.sql` 中写入 DDL → 本地验证 `npx supabase db push`（或 `migration up`）。
 
-- [ ] **B1 扩展** — `supabase migration new extensions_pg_trgm`  
+- [x] **B1 扩展** — `supabase migration new extensions_pg_trgm`  
   写入：`CREATE EXTENSION IF NOT EXISTS pg_trgm;`（`database.md` §7.3.1）
 
 - [ ] **B2 枚举类型** — `supabase migration new enums`  

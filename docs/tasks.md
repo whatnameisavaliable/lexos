@@ -50,37 +50,37 @@
 - [x] **B3 主表 profiles** — `supabase migration new table_profiles`  
   写入：`public.profiles` 全字段（含 `mfa_enabled`）、索引、`FK → auth.users(id) ON DELETE RESTRICT`；通用 `updated_at` 触发器（`BEFORE UPDATE` 置 `updated_at = now()`）
 
-- [ ] **B4 AI 配置表（无跨域 FK 依赖）** — `supabase migration new tables_ai_config`  
+- [x] **B4 AI 配置表（无跨域 FK 依赖）** — `supabase migration new tables_ai_config`  
   写入：`ai_model_credentials`（含 `UNIQUE (is_default_fallback) WHERE is_default_fallback = true`）、`ai_feature_model_mappings`、`ai_prompt_templates` 及各自索引
 
-- [ ] **B5 转写主表 transcription_tasks** — `supabase migration new table_transcription_tasks`  
+- [x] **B5 转写主表 transcription_tasks** — `supabase migration new table_transcription_tasks`  
   写入：`transcription_tasks` 全字段；**暂不添加** `archive_folder_id → drive_nodes` 外键（避免与 `drive_nodes` 循环依赖）；索引含 `stalled_idx`、`idempotency_key` 部分唯一
 
-- [ ] **B6 转写子表 segments + transcripts** — `supabase migration new tables_transcription_children`  
+- [x] **B6 转写子表 segments + transcripts** — `supabase migration new tables_transcription_children`  
   写入：`transcription_segments`（含 `local_path_hint`、`chunk_size_bytes`）、`transcription_transcripts`；`pg_trgm` GIN 索引：`polished_text`、`summary_text`（`database.md` §3.4）
 
-- [ ] **B7 云盘 drive_nodes + 闭环 FK** — `supabase migration new table_drive_nodes`  
+- [x] **B7 云盘 drive_nodes + 闭环 FK** — `supabase migration new table_drive_nodes`  
   写入：`drive_nodes` 全字段与索引；`CHECK`：`node_type = 'file'` 时 `parent_id IS NOT NULL`；`ALTER TABLE transcription_tasks ADD CONSTRAINT ... FOREIGN KEY (archive_folder_id) REFERENCES drive_nodes(id)`
 
-- [ ] **B8 流水线支撑表** — `supabase migration new tables_pipeline`  
+- [x] **B8 流水线支撑表** — `supabase migration new tables_pipeline`  
   写入：`upload_sessions`、`outbox_events`（含 `outbox_events_unpublished_idx`）、`pipeline_job_runs`（`UNIQUE (queue_name, bull_job_id, attempt)`）
 
-- [ ] **B9 审计与系统表** — `supabase migration new tables_audit_system`  
+- [x] **B9 审计与系统表** — `supabase migration new tables_audit_system`  
   写入：`audit_logs`（含 `prev_hash`、`row_hash`）、`ai_invocation_logs`、`system_settings`；`REVOKE UPDATE, DELETE ON audit_logs FROM PUBLIC, authenticated, service_role`
 
-- [ ] **B10 安全 DEFINER 函数（RLS 前置依赖）** — `supabase migration new functions_security`  
+- [x] **B10 安全 DEFINER 函数（RLS 前置依赖）** — `supabase migration new functions_security`  
   写入：`current_user_role()`、`is_admin()`、`is_enabled_user()` 及 `REVOKE`/`GRANT`（§4.1）；`transition_task_status()`（§4.11）；`append_audit_log()`（§4.12）；`complete_password_change()`（§7.4.2）；`set_profile_mfa_enabled()`（§7.4.3）；`profiles_guard_self_update()` 函数体（触发器在 B12 挂载）
 
-- [ ] **B11 业务约束触发器（可选同文件或拆分）** — `supabase migration new triggers_business_rules`  
+- [x] **B11 业务约束触发器（可选同文件或拆分）** — `supabase migration new triggers_business_rules`  
   写入：`transcription_tasks` 校验触发器：`size_bytes <= 1073741824`、`duration_sec <= 18000`（§7.1）；`handle_new_user` 或文档约定由 Admin API 同步 `profiles`（若用 Auth trigger 则在本迁移实现）
 
-- [ ] **B12 RLS 策略（全部业务表）** — `supabase migration new rls_policies`  
+- [x] **B12 RLS 策略（全部业务表）** — `supabase migration new rls_policies`  
   按 `database.md` §4.2–§4.10 写入：`profiles`、`transcription_tasks`、`transcription_segments`（拆分 SELECT/INSERT，禁止 `FOR ALL`）、`transcription_transcripts`、`drive_nodes`、`ai_*` 仅 `is_admin()`、`audit_logs` 仅 admin SELECT、`ai_invocation_logs` admin/lawyer 分策略、`upload_sessions`；`outbox_events` / `pipeline_job_runs` **不** 对 `authenticated` 授权
 
-- [ ] **B13 审计不可变 + profiles 防护触发器** — `supabase migration new triggers_immutable`  
+- [x] **B13 审计不可变 + profiles 防护触发器** — `supabase migration new triggers_immutable`  
   写入：`BEFORE UPDATE OR DELETE ON audit_logs` → `RAISE EXCEPTION`；`BEFORE UPDATE ON profiles` → `profiles_guard_self_update()`
 
-- [ ] **B14 Storage Buckets 与对象策略** — `supabase migration new storage_buckets_policies`  
+- [x] **B14 Storage Buckets 与对象策略** — `supabase migration new storage_buckets_policies`  
   写入：创建/声明 `media`、`exports` bucket；`storage.objects` 策略：路径首段 `= auth.uid()::text`（§5.3）；`exports` 同构；禁止 authenticated 越权 UPDATE 他人对象
 
 - [ ] **B15 推送校验** — 执行 `nsupabase db push`（已 `supabase link` 时）或 `npx supabase migration up`；确认无报错且 `npx supabase migration list` 显示 B1–B14 均已应用

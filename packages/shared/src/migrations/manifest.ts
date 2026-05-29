@@ -18,7 +18,10 @@ export const M0_B_MIGRATIONS: readonly MigrationManifestEntry[] = [
   },
   {
     name: "enums",
-    requiredSnippets: ["CREATE TYPE public.user_role AS ENUM", "CREATE TYPE public.audit_action AS ENUM"],
+    requiredSnippets: [
+      "CREATE TYPE public.user_role AS ENUM",
+      "CREATE TYPE public.audit_action AS ENUM",
+    ],
   },
   {
     name: "table_profiles",
@@ -27,6 +30,72 @@ export const M0_B_MIGRATIONS: readonly MigrationManifestEntry[] = [
       "REFERENCES auth.users",
       "profiles_set_updated_at",
     ],
+  },
+  {
+    name: "tables_ai_config",
+    requiredSnippets: [
+      "CREATE TABLE public.ai_model_credentials",
+      "ai_model_credentials_default_fallback_uidx",
+    ],
+  },
+  {
+    name: "table_transcription_tasks",
+    requiredSnippets: [
+      "CREATE TABLE public.transcription_tasks",
+      "transcription_tasks_stalled_idx",
+    ],
+  },
+  {
+    name: "tables_transcription_children",
+    requiredSnippets: [
+      "CREATE TABLE public.transcription_segments",
+      "gin_trgm_ops",
+    ],
+  },
+  {
+    name: "table_drive_nodes",
+    requiredSnippets: [
+      "drive_nodes_file_requires_parent",
+      "transcription_tasks_archive_folder_id_fkey",
+    ],
+  },
+  {
+    name: "tables_pipeline",
+    requiredSnippets: [
+      "CREATE TABLE public.outbox_events",
+      "outbox_events_unpublished_idx",
+    ],
+  },
+  {
+    name: "tables_audit_system",
+    requiredSnippets: [
+      "CREATE TABLE public.audit_logs",
+      "REVOKE UPDATE, DELETE ON public.audit_logs",
+    ],
+  },
+  {
+    name: "functions_security",
+    requiredSnippets: [
+      "transition_task_status",
+      "append_audit_log",
+      "complete_password_change",
+    ],
+  },
+  {
+    name: "triggers_business_rules",
+    requiredSnippets: ["transcription_tasks_validate_limits"],
+  },
+  {
+    name: "rls_policies",
+    requiredSnippets: ["profiles_select_self", "segments_select"],
+  },
+  {
+    name: "triggers_immutable",
+    requiredSnippets: ["audit_log_immutable", "profiles_guard_self_update"],
+  },
+  {
+    name: "storage_buckets_policies",
+    requiredSnippets: ["media_select_path_owner", "exports_select_path_owner"],
   },
 ];
 
@@ -75,4 +144,11 @@ export function assertMigrationsManifest(
   for (const entry of entries) {
     assertMigrationContent(entry, repoRoot);
   }
+}
+
+/**
+ * 返回 manifest 中迁移的逻辑名列表（用于与 `supabase migration list` 对照，B15）。
+ */
+export function listExpectedMigrationNames(): readonly string[] {
+  return M0_B_MIGRATIONS.map((e) => e.name);
 }

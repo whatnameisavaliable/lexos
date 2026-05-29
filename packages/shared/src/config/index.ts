@@ -14,3 +14,9 @@ export {
   probeSupabaseRest,
   type SupabaseConnectivityResult,
 } from "./supabase-connectivity.js";
+export {
+  assertSupabaseCliInstalled,
+  getSupabaseCliVersion,
+  resolveSupabaseCli,
+  type SupabaseCliResolution,
+} from "./supabase-cli.js";

@@ -13,6 +13,16 @@ const server = createServer((req, res) => {
   app.handleRequest(req, res);
 });
 
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(
+      `Port ${port} is already in use. Stop the existing API (e.g. npx kill-port ${port}) or change API_URL.`,
+    );
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(port, () => {
   console.log(
     `LexOS API listening on ${app.env.apiUrl} (NODE_ENV=${app.env.nodeEnv})`,

@@ -23,7 +23,11 @@ export function getDefaultPageLimitFromEnv(
   if (!raw) {
     return MAX_PAGE_LIMIT;
   }
-  return parseLimit({ requested: raw });
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return MAX_PAGE_LIMIT;
+  }
+  return clampLimit(parsed, MAX_PAGE_LIMIT);
 }
 
 /**

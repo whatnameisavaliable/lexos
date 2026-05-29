@@ -16,6 +16,10 @@ export const M0_B_MIGRATIONS: readonly MigrationManifestEntry[] = [
     name: "extensions_pg_trgm",
     requiredSnippets: ["CREATE EXTENSION IF NOT EXISTS pg_trgm"],
   },
+  {
+    name: "enums",
+    requiredSnippets: ["CREATE TYPE public.user_role AS ENUM", "CREATE TYPE public.audit_action AS ENUM"],
+  },
 ];
 
 /**

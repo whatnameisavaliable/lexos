@@ -44,7 +44,7 @@
 - [x] **B1 扩展** — `supabase migration new extensions_pg_trgm`  
   写入：`CREATE EXTENSION IF NOT EXISTS pg_trgm;`（`database.md` §7.3.1）
 
-- [ ] **B2 枚举类型** — `supabase migration new enums`  
+- [x] **B2 枚举类型** — `supabase migration new enums`  
   写入：`user_role`、`user_status`、`transcription_task_status`、`ai_provider_kind`、`ai_feature_key`、`drive_node_type`、`asr_queue_tier`、`audit_action`（`database.md` §1.2）
 
 - [ ] **B3 主表 profiles** — `supabase migration new table_profiles`  

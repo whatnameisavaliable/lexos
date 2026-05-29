@@ -100,7 +100,7 @@
 - [x] 初始化 `packages/shared`：`ErrorCode` 枚举（对齐 `architecture.md` §6.2）、`ApiSuccess`/`ApiError` 响应类型、分页 `limit` 默认 50
 - [x] 初始化 `apps/api` 最小入口：加载 `.env.development`；`GET /health` 检测 Postgres（`SUPABASE_DB_URL`）与 Redis（`REDIS_URL`，可失败仅警告）
 - [x] 添加数据库连通性 smoke 测试（可选：`psql` 或 vitest 单测查询 `SELECT 1`）
-- [ ] 添加 RLS smoke 脚本或测试用例：律师 JWT 无法读取他人 `transcription_tasks` 行（可用 Supabase 测试用户）
+- [x] 添加 RLS smoke 脚本或测试用例：律师 JWT 无法读取他人 `transcription_tasks` 行（可用 Supabase 测试用户）
 
 ---
 

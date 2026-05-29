@@ -677,15 +677,15 @@
 
 ### M4-J 前端 · 页面与组件（每条一项）
 
-- [ ] 新增 `apps/web/src/app/(dashboard)/transcription/page.tsx`：律师任务列表页；Skeleton/Error/Empty
-- [ ] 新增 `apps/web/src/app/(dashboard)/admin/transcription/page.tsx`：admin 全量列表（可复用表格组件）
-- [ ] 新增 `apps/web/src/components/transcription/transcription-tasks-table.tsx`：列：任务名、状态 Badge、时长、创建时间、操作
-- [ ] 新增 `apps/web/src/components/transcription/task-status-badge.tsx`：枚举色令牌（§6.3.2）
-- [ ] 新增 `apps/web/src/components/transcription/new-transcription-dialog.tsx`：选文件 + 元数据表单 → 触发 `use-tus-upload`
-- [ ] 新增 `apps/web/src/components/transcription/upload-progress-bar.tsx`：Shadcn `Progress` 绑定 TUS 进度
-- [ ] 新增 `apps/web/src/components/transcription/upload-leave-alert-dialog.tsx`：离开确认文案（§6.3.4.2）
-- [ ] 在 `AppShell` 或布局层挂载 `beforeunload` + 路由拦截（§6.3.4.1–6.3.4.4）
-- [ ] 在 `menus.ts` 为 `lawyer`/`admin` 增加「语音转写」菜单项
+- [x] 新增 `apps/web/src/app/(app)/transcription/page.tsx`：律师任务列表页；Skeleton/Error/Empty
+- [x] 新增 `apps/web/src/app/(app)/admin/transcription/page.tsx`：admin 全量列表（可复用表格组件）
+- [x] 新增 `apps/web/src/components/transcription/transcription-tasks-table.tsx`：列：任务名、状态 Badge、时长、创建时间、操作
+- [x] 新增 `apps/web/src/components/transcription/task-status-badge.tsx`：枚举色令牌（§6.3.2）
+- [x] 新增 `apps/web/src/components/transcription/new-transcription-dialog.tsx`：选文件 + 元数据表单 → 触发 `use-tus-upload`
+- [x] 新增 `apps/web/src/components/transcription/upload-progress-bar.tsx`：Shadcn `Progress` 绑定 TUS 进度
+- [x] 新增 `apps/web/src/components/transcription/upload-leave-alert-dialog.tsx`：离开确认文案（§6.3.4.2）
+- [x] 在 `(app)/layout` 挂载 `ActiveUploadProvider` + `beforeunload` + 路由拦截（§6.3.4.1–6.3.4.4）
+- [x] 在 `menus.ts` 为 `lawyer`/`admin` 增加「语音转写」菜单项
 
 ---
 

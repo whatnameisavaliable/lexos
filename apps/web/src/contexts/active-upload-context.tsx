@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -22,6 +23,10 @@ export interface ActiveUploadContextValue {
   readonly hasActiveUpload: boolean;
   /** 注册/更新进行中上传；M4-J 布局层挂载 Provider 后生效。 */
   registerUpload: (partial: Pick<ActiveUploadState, "taskId" | "fileName">) => void;
+  /** 由 `useTusUpload` 注册 TUS `abort` 回调（§6.3.4.3）。 */
+  registerAbortHandler: (handler: (() => void) | null) => void;
+  /** 用户确认离开页面时中止上传。 */
+  abortActiveUpload: () => void;
   /** 上传结束或用户取消后清除。 */
   clearUpload: () => void;
 }
@@ -34,6 +39,8 @@ const noopActiveUpload: ActiveUploadContextValue = {
   activeUpload: null,
   hasActiveUpload: false,
   registerUpload: () => undefined,
+  registerAbortHandler: () => undefined,
+  abortActiveUpload: () => undefined,
   clearUpload: () => undefined,
 };
 
@@ -48,6 +55,7 @@ export function ActiveUploadProvider({
   const [activeUpload, setActiveUpload] = useState<ActiveUploadState | null>(
     null,
   );
+  const abortHandlerRef = useRef<(() => void) | null>(null);
 
   const registerUpload = useCallback(
     (partial: Pick<ActiveUploadState, "taskId" | "fileName">) => {
@@ -60,7 +68,18 @@ export function ActiveUploadProvider({
     [],
   );
 
+  const registerAbortHandler = useCallback((handler: (() => void) | null) => {
+    abortHandlerRef.current = handler;
+  }, []);
+
   const clearUpload = useCallback(() => {
+    abortHandlerRef.current = null;
+    setActiveUpload(null);
+  }, []);
+
+  const abortActiveUpload = useCallback(() => {
+    abortHandlerRef.current?.();
+    abortHandlerRef.current = null;
     setActiveUpload(null);
   }, []);
 
@@ -69,9 +88,17 @@ export function ActiveUploadProvider({
       activeUpload,
       hasActiveUpload: activeUpload !== null,
       registerUpload,
+      registerAbortHandler,
+      abortActiveUpload,
       clearUpload,
     }),
-    [activeUpload, registerUpload, clearUpload],
+    [
+      activeUpload,
+      registerUpload,
+      registerAbortHandler,
+      abortActiveUpload,
+      clearUpload,
+    ],
   );
 
   return (

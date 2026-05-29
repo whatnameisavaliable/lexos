@@ -41,7 +41,8 @@ export function useTusUpload(
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const uploadRef = useRef<tus.Upload | null>(null);
-  const { registerUpload, clearUpload } = useActiveUpload();
+  const { registerUpload, registerAbortHandler, clearUpload } =
+    useActiveUpload();
   const onProgressRef = useRef(options.onProgress);
   const onSuccessRef = useRef(options.onSuccess);
   const onErrorRef = useRef(options.onError);
@@ -57,8 +58,17 @@ export function useTusUpload(
     uploadRef.current = null;
     setIsUploading(false);
     setProgress(0);
+    registerAbortHandler(null);
     clearUpload();
-  }, [clearUpload]);
+  }, [clearUpload, registerAbortHandler]);
+
+  useEffect(() => {
+    if (isUploading) {
+      registerAbortHandler(abort);
+    } else {
+      registerAbortHandler(null);
+    }
+  }, [isUploading, abort, registerAbortHandler]);
 
   const upload = useCallback(
     async (file: File, meta: TusUploadMeta): Promise<string | undefined> => {

@@ -47,7 +47,7 @@
 - [x] **B2 枚举类型** — `supabase migration new enums`  
   写入：`user_role`、`user_status`、`transcription_task_status`、`ai_provider_kind`、`ai_feature_key`、`drive_node_type`、`asr_queue_tier`、`audit_action`（`database.md` §1.2）
 
-- [ ] **B3 主表 profiles** — `supabase migration new table_profiles`  
+- [x] **B3 主表 profiles** — `supabase migration new table_profiles`  
   写入：`public.profiles` 全字段（含 `mfa_enabled`）、索引、`FK → auth.users(id) ON DELETE RESTRICT`；通用 `updated_at` 触发器（`BEFORE UPDATE` 置 `updated_at = now()`）
 
 - [ ] **B4 AI 配置表（无跨域 FK 依赖）** — `supabase migration new tables_ai_config`  

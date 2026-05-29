@@ -20,6 +20,14 @@ export const M0_B_MIGRATIONS: readonly MigrationManifestEntry[] = [
     name: "enums",
     requiredSnippets: ["CREATE TYPE public.user_role AS ENUM", "CREATE TYPE public.audit_action AS ENUM"],
   },
+  {
+    name: "table_profiles",
+    requiredSnippets: [
+      "CREATE TABLE public.profiles",
+      "REFERENCES auth.users",
+      "profiles_set_updated_at",
+    ],
+  },
 ];
 
 /**

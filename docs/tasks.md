@@ -219,45 +219,45 @@
 
 ### M1-H 前端 · Shadcn 组件引入（每条命令一项）
 
-- [ ] 执行 `npx shadcn@latest add card`（登录/改密页容器）
-- [ ] 执行 `npx shadcn@latest add input`
-- [ ] 执行 `npx shadcn@latest add label`
-- [ ] 执行 `npx shadcn@latest add button`
-- [ ] 执行 `npx shadcn@latest add form`
-- [ ] 执行 `npx shadcn@latest add alert`
-- [ ] 执行 `npx shadcn@latest add skeleton`
-- [ ] 执行 `npx shadcn@latest add sonner`（错误 Toast）
+- [x] 执行 `npx shadcn@latest add card`（登录/改密页容器）
+- [x] 执行 `npx shadcn@latest add input`
+- [x] 执行 `npx shadcn@latest add label`
+- [x] 执行 `npx shadcn@latest add button`
+- [x] 执行 `npx shadcn@latest add form`
+- [x] 执行 `npx shadcn@latest add alert`
+- [x] 执行 `npx shadcn@latest add skeleton`
+- [x] 执行 `npx shadcn@latest add sonner`（错误 Toast）
 
 ---
 
 ### M1-I 前端 · API 客户端（BFF 代理，禁止业务 Supabase 写表）
 
-- [ ] 新增 `apps/web/src/lib/api-client.ts`：`fetch` 封装、`credentials: include`、统一解析 `ApiSuccess`/`ApiError`
-- [ ] 新增 `apps/web/src/lib/auth-api.ts`：`login`、`logout`、`getSession`、`changePassword`、`mfaEnroll`、`mfaVerify`、`getMfaStatus`
-- [ ] 新增 `apps/web/src/lib/profile-api.ts`：`getProfile`、`updateProfile`
+- [x] 新增 `apps/web/src/lib/api-client.ts`：`fetch` 封装、`credentials: include`、统一解析 `ApiSuccess`/`ApiError`
+- [x] 新增 `apps/web/src/lib/auth-api.ts`：`login`、`logout`、`getSession`、`changePassword`、`mfaEnroll`、`mfaVerify`、`getMfaStatus`
+- [x] 新增 `apps/web/src/lib/profile-api.ts`：`getProfile`、`updateProfile`
 
 ---
 
 ### M1-J 前端 · 页面与单组件（每条一项）
 
-- [ ] 新增 `apps/web/src/app/login/page.tsx`：`auth-layout` Grid/Flex；`LoginForm` 组件；Loading/Error/Empty（§2.13）
-- [ ] 新增 `apps/web/src/components/auth/login-form.tsx`：用户名/密码；失败 3 次显示验证码占位 UI
-- [ ] 新增 `apps/web/src/app/change-password/page.tsx`：强制改密与主动改密共用
-- [ ] 新增 `apps/web/src/components/auth/change-password-form.tsx`：原密码（条件渲染）+ 新密码
-- [ ] 新增 `apps/web/src/app/mfa/setup/page.tsx`：展示 enroll QR（admin/director）
-- [ ] 新增 `apps/web/src/components/auth/mfa-verify-form.tsx`：6 位 TOTP 输入
-- [ ] 新增 `apps/web/src/app/(app)/profile/page.tsx`：只读展示 + 编辑 `display_name`/`contact`
-- [ ] 新增 `apps/web/src/components/profile/profile-form.tsx`
+- [x] 新增 `apps/web/src/app/login/page.tsx`：`auth-layout` Grid/Flex；`LoginForm` 组件；Loading/Error/Empty（§2.13）
+- [x] 新增 `apps/web/src/components/auth/login-form.tsx`：用户名/密码；失败 3 次显示验证码占位 UI
+- [x] 新增 `apps/web/src/app/change-password/page.tsx`：强制改密与主动改密共用
+- [x] 新增 `apps/web/src/components/auth/change-password-form.tsx`：原密码（条件渲染）+ 新密码
+- [x] 新增 `apps/web/src/app/mfa/setup/page.tsx`：展示 enroll QR（admin/director）
+- [x] 新增 `apps/web/src/components/auth/mfa-verify-form.tsx`：6 位 TOTP 输入
+- [x] 新增 `apps/web/src/app/(app)/profile/page.tsx`：只读展示 + 编辑 `display_name`/`contact`
+- [x] 新增 `apps/web/src/components/profile/profile-form.tsx`
 
 ---
 
 ### M1-K 前端 · Router Guard（单文件一项）
 
-- [ ] 新增 `apps/web/src/middleware.ts`（Next.js）或 `apps/web/src/lib/router-guard.ts`：未登录 → `/login`
-- [ ] Guard 规则 2：`requires_password_change` → `/change-password`（可调 `GET /api/auth/session`）
-- [ ] Guard 规则 3：`admin`/`director` 且 `mfa_enabled=false` → `/mfa/setup`
-- [ ] Guard 规则 4：`/admin/*` 路由 `allowedRoles=['admin']` 拒绝 lawyer（跳转 403 或首页）
-- [ ] 新增 `apps/web/src/app/unauthorized/page.tsx`：无权限占位（预留角色友好文案）
+- [x] 新增 `apps/web/src/middleware.ts`（Next.js）或 `apps/web/src/lib/router-guard.ts`：未登录 → `/login`
+- [x] Guard 规则 2：`requires_password_change` → `/change-password`（可调 `GET /api/auth/session`）
+- [x] Guard 规则 3：`admin`/`director` 且 `mfa_enabled=false` → `/mfa/setup`
+- [x] Guard 规则 4：`/admin/*` 路由 `allowedRoles=['admin']` 拒绝 lawyer（跳转 403 或首页）
+- [x] 新增 `apps/web/src/app/unauthorized/page.tsx`：无权限占位（预留角色友好文案）
 
 ---
 
@@ -266,9 +266,9 @@
 - [ ] 手工验收：lawyer 登录 → 进入律师占位首页；访问 `/admin` 被拒绝
 - [ ] 手工验收：admin 登录 → 强制改密 → MFA 绑定 → 进入业务壳（`AppShell` 空壳即可）
 - [ ] 手工验收：`requires_password_change=true` 时请求 `GET /api/profile` 返回 403
-- [ ] 运行 M1 相关测试套件全绿；失败超过 2 次则停止并汇报（`.cursorrules` §5.1）
-- [ ] `git commit`：`feat(auth): session login mfa profile and guards`
-- [ ] 进度表 **M1** 标为「已完成」
+- [x] 运行 M1 相关测试套件全绿；失败超过 2 次则停止并汇报（`.cursorrules` §5.1）
+- [x] `git commit`：`feat(auth): session login mfa profile and guards`
+- [x] 进度表 **M1** 标为「已完成」
 
 **M1 明确不在此 Milestone（归属 M2）**：管理员创建用户、重置密码、`signOut(global)`。
 
@@ -1342,7 +1342,7 @@ M*  → M9
 | Milestone | 状态 |
 |-----------|------|
 | M0 | 已完成（2026-05-29；`npm run verify:m0-gate`） |
-| M1 | 已拆解（见上方原子任务） |
+| M1 | 已完成（自动化测试与构建已通过；M1-L 手工验收三项待本地联调） |
 | M2 | 已拆解（见上方原子任务） |
 | M3 | 已拆解（见上方原子任务） |
 | M4 | 已拆解（见上方原子任务） |

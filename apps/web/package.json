@@ -3,9 +3,40 @@
   "version": "0.1.0",
   "private": true,
   "description": "LexOS U1 Web (Next.js + Shadcn UI)",
-  "type": "module",
   "scripts": {
-    "build": "echo \"M0 scaffold: implement in later milestones\"",
-    "test": "echo \"M0 scaffold: no tests yet\""
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@lexos/shared": "*",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
+    "next": "^15.3.3",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.4.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.76.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.3.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.8",
+    "@types/node": "^22.15.29",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "eslint": "^9.28.0",
+    "eslint-config-next": "^15.3.3",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.1"
   }
 }

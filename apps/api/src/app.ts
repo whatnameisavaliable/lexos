@@ -65,6 +65,7 @@ import { AiPromptCreateService } from "./services/ai-prompt-create.service.js";
 import { AiPromptGetService } from "./services/ai-prompt-get.service.js";
 import { AiPromptUpdateService } from "./services/ai-prompt-update.service.js";
 import { AiPromptPublishService } from "./services/ai-prompt-publish.service.js";
+import { AiPromptDeleteService } from "./services/ai-prompt-delete.service.js";
 import { AiInvocationLogListService } from "./services/ai-invocation-log-list.service.js";
 import { AiModelsListController } from "./controllers/ai-models-list.controller.js";
 import { AiModelsCreateController } from "./controllers/ai-models-create.controller.js";
@@ -79,7 +80,25 @@ import { AiPromptsCreateController } from "./controllers/ai-prompts-create.contr
 import { AiPromptsGetController } from "./controllers/ai-prompts-get.controller.js";
 import { AiPromptsPatchController } from "./controllers/ai-prompts-patch.controller.js";
 import { AiPromptsPublishController } from "./controllers/ai-prompts-publish.controller.js";
+import { AiPromptsDeleteController } from "./controllers/ai-prompts-delete.controller.js";
 import { AiInvocationLogsListController } from "./controllers/ai-invocation-logs-list.controller.js";
+import { SupabaseStorageAdapter } from "./adapters/storage/supabase-storage.adapter.js";
+import { TranscriptionTaskRepository } from "./repositories/transcription-task.repository.js";
+import { TranscriptionTaskWriteRepository } from "./repositories/transcription-task-write.repository.js";
+import { UploadSessionRepository } from "./repositories/upload-session.repository.js";
+import { OutboxRepository } from "./repositories/outbox.repository.js";
+import { TaskStateRepository } from "./repositories/task-state.repository.js";
+import { TranscriptionUploadInitService } from "./services/transcription-upload-init.service.js";
+import { TranscriptionUploadCompleteService } from "./services/transcription-upload-complete.service.js";
+import { TranscriptionTaskListService } from "./services/transcription-task-list.service.js";
+import { TranscriptionTaskGetService } from "./services/transcription-task-get.service.js";
+import { TranscriptionUploadsInitController } from "./controllers/transcription-uploads-init.controller.js";
+import { TranscriptionUploadsCompleteController } from "./controllers/transcription-uploads-complete.controller.js";
+import { TranscriptionTasksListController } from "./controllers/transcription-tasks-list.controller.js";
+import { TranscriptionTasksGetController } from "./controllers/transcription-tasks-get.controller.js";
+import { handleTranscriptionUploadsRoute } from "./routes/transcription-uploads.routes.js";
+import { handleTranscriptionTasksRoute } from "./routes/transcription-tasks.routes.js";
+import { loadStorageRuntimeEnvFromProcess } from "@lexos/shared/config";
 
 /** 已组装的 U2 HTTP 应用上下文。 */
 export interface LexosApiApp {
@@ -180,12 +199,45 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     aiPromptRepository,
     auditLogRepository,
   );
+  const aiPromptDeleteService = new AiPromptDeleteService(aiPromptRepository);
   const aiInvocationLogListService = new AiInvocationLogListService(
     aiInvocationLogRepository,
   );
 
+  const storageEnv = loadStorageRuntimeEnvFromProcess();
+  const storageAdapter = new SupabaseStorageAdapter(supabaseEnv, storageEnv);
+  const transcriptionTaskRepository = new TranscriptionTaskRepository(supabaseEnv);
+  const transcriptionTaskWriteRepository =
+    new TranscriptionTaskWriteRepository();
+  const uploadSessionRepository = new UploadSessionRepository(supabaseEnv);
+  const outboxRepository = new OutboxRepository();
+  const taskStateRepository = new TaskStateRepository();
+  const transcriptionUploadInitService = new TranscriptionUploadInitService(
+    transcriptionTaskRepository,
+    uploadSessionRepository,
+    storageAdapter,
+    auditLogRepository,
+  );
+  const transcriptionUploadCompleteService =
+    new TranscriptionUploadCompleteService(
+      supabaseEnv,
+      transcriptionTaskRepository,
+      transcriptionTaskWriteRepository,
+      uploadSessionRepository,
+      storageAdapter,
+      taskStateRepository,
+      outboxRepository,
+    );
+  const transcriptionTaskListService = new TranscriptionTaskListService(
+    transcriptionTaskRepository,
+  );
+  const transcriptionTaskGetService = new TranscriptionTaskGetService(
+    transcriptionTaskRepository,
+  );
+
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
   const requireAdmin = requireRoles("admin");
+  const requireTranscriptionAccess = requireRoles("admin", "lawyer");
 
   const loginController = new AuthLoginController(
     authLoginService,
@@ -287,8 +339,30 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     aiPromptPublishService,
     env.requestIdHeader,
   );
+  const aiPromptsDeleteController = new AiPromptsDeleteController(
+    aiPromptDeleteService,
+    env.requestIdHeader,
+  );
   const aiInvocationLogsListController = new AiInvocationLogsListController(
     aiInvocationLogListService,
+    env.requestIdHeader,
+  );
+  const transcriptionUploadsInitController =
+    new TranscriptionUploadsInitController(
+      transcriptionUploadInitService,
+      env.requestIdHeader,
+    );
+  const transcriptionUploadsCompleteController =
+    new TranscriptionUploadsCompleteController(
+      transcriptionUploadCompleteService,
+      env.requestIdHeader,
+    );
+  const transcriptionTasksListController = new TranscriptionTasksListController(
+    transcriptionTaskListService,
+    env.requestIdHeader,
+  );
+  const transcriptionTasksGetController = new TranscriptionTasksGetController(
+    transcriptionTaskGetService,
     env.requestIdHeader,
   );
 
@@ -318,6 +392,17 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   ) => {
     return protectedRoute(async (req, res) => {
       if (!requireAdmin(res)) {
+        return;
+      }
+      await handler(req, res);
+    });
+  };
+
+  const protectedTranscriptionRoute = (
+    handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
+  ) => {
+    return protectedRoute(async (req, res) => {
+      if (!requireTranscriptionAccess(res)) {
         return;
       }
       await handler(req, res);
@@ -404,6 +489,44 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
           return;
         }
 
+        if (path.startsWith("/api/transcription")) {
+          let handled = false;
+          await protectedTranscriptionRoute(async (txReq, txRes) => {
+            if (path.startsWith("/api/transcription/uploads")) {
+              handled = await handleTranscriptionUploadsRoute(
+                txReq,
+                txRes,
+                path,
+                {
+                  init: transcriptionUploadsInitController,
+                  complete: transcriptionUploadsCompleteController,
+                },
+              );
+            } else if (path.startsWith("/api/transcription/tasks")) {
+              handled = await handleTranscriptionTasksRoute(
+                txReq,
+                txRes,
+                path,
+                {
+                  list: transcriptionTasksListController,
+                  get: transcriptionTasksGetController,
+                },
+              );
+            }
+            if (!handled) {
+              txRes.statusCode = 404;
+              txRes.setHeader("content-type", "application/json; charset=utf-8");
+              txRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
         if (path.startsWith("/api/admin/ai")) {
           let handled = false;
           await protectedAdminRoute(async (adminReq, adminRes) => {
@@ -421,6 +544,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               promptsGet: aiPromptsGetController,
               promptsPatch: aiPromptsPatchController,
               promptsPublish: aiPromptsPublishController,
+              promptsDelete: aiPromptsDeleteController,
               invocationLogsList: aiInvocationLogsListController,
             });
             if (!handled) {

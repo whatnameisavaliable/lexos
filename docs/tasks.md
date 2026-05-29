@@ -629,22 +629,22 @@
 
 ### M4-E Service + 单元测试（每条 Service 一个 `.test.ts`）
 
-- [ ] 新增 `apps/api/src/services/transcription-upload-init.service.ts`：校验限额；创建 `transcription_tasks`（`uploading`）+ `upload_sessions`；`storage_key_prefix={uid}/{task_id}/`；返回 TUS 参数；`append_audit_log('task.create')`
-- [ ] 新增 `apps/api/src/services/transcription-upload-init.service.test.ts`：超 1GB → `RESOURCE_LIMIT_EXCEEDED`；重复 `idempotencyKey` → 幂等返回原会话
-- [ ] 新增 `apps/api/src/services/transcription-upload-complete.service.ts`：**单事务**：Storage 前缀校验（§7.5.1）→ 写 `source_storage_key` → `asr_queue_tier` → `transition_task_status(uploading,queued)` → `upload_sessions.completed_at` → `outbox_events`（**禁止** `queue.add`）
-- [ ] 新增 `apps/api/src/services/transcription-upload-complete.service.test.ts`：过期会话 → `UPLOAD_SESSION_INVALID`；未上传对象 → 400
-- [ ] 新增 `apps/api/src/services/transcription-task-list.service.ts` + 测试（分页 50）
-- [ ] 新增 `apps/api/src/services/transcription-task-get.service.ts` + 测试（含状态、错误码；律师越权 → `AUTH_FORBIDDEN`）
+- [x] 新增 `apps/api/src/services/transcription-upload-init.service.ts`：校验限额；创建 `transcription_tasks`（`uploading`）+ `upload_sessions`；`storage_key_prefix={uid}/{task_id}/`；返回 TUS 参数；`append_audit_log('task.create')`
+- [x] 新增 `apps/api/src/services/transcription-upload-init.service.test.ts`：超 1GB → `RESOURCE_LIMIT_EXCEEDED`；重复 `idempotencyKey` → 幂等返回原会话
+- [x] 新增 `apps/api/src/services/transcription-upload-complete.service.ts`：**单事务**：Storage 前缀校验（§7.5.1）→ 写 `source_storage_key` → `asr_queue_tier` → `transition_task_status(uploading,queued)` → `upload_sessions.completed_at` → `outbox_events`（**禁止** `queue.add`）
+- [x] 新增 `apps/api/src/services/transcription-upload-complete.service.test.ts`：过期会话 → `UPLOAD_SESSION_INVALID`；未上传对象 → 400
+- [x] 新增 `apps/api/src/services/transcription-task-list.service.ts` + 测试（分页 50）
+- [x] 新增 `apps/api/src/services/transcription-task-get.service.ts` + 测试（含状态、错误码；律师越权 → `AUTH_FORBIDDEN`）
 
 ---
 
 ### M4-F 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `POST /api/transcription/uploads/init` → `transcription-uploads.routes.ts` + `uploads-init.controller.ts` + `uploads-init.controller.test.ts`（`admin`|`lawyer`）
-- [ ] 注册 `POST /api/transcription/uploads/complete` → `uploads-complete.controller.ts` + `uploads-complete.controller.test.ts`
-- [ ] 注册 `GET /api/transcription/tasks` → `transcription-tasks-list.controller.ts` + `transcription-tasks-list.controller.test.ts`
-- [ ] 注册 `GET /api/transcription/tasks/:id` → `transcription-tasks-get.controller.ts` + `transcription-tasks-get.controller.test.ts`
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/transcription` 路由组；前置 `auth` + `password-change-gate` + 角色（律师+admin）
+- [x] 注册 `POST /api/transcription/uploads/init` → `transcription-uploads.routes.ts` + `uploads-init.controller.ts` + `uploads-init.controller.test.ts`（`admin`|`lawyer`）
+- [x] 注册 `POST /api/transcription/uploads/complete` → `uploads-complete.controller.ts` + `uploads-complete.controller.test.ts`
+- [x] 注册 `GET /api/transcription/tasks` → `transcription-tasks-list.controller.ts` + `transcription-tasks-list.controller.test.ts`
+- [x] 注册 `GET /api/transcription/tasks/:id` → `transcription-tasks-get.controller.ts` + `transcription-tasks-get.controller.test.ts`
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/transcription` 路由组；前置 `auth` + `password-change-gate` + 角色（律师+admin）
 
 ---
 

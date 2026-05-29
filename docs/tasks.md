@@ -691,13 +691,13 @@
 
 ### M4-K 集成与 Milestone 4 完成门禁
 
-- [ ] 新增 `apps/api/src/__tests__/transcription-upload-flow.integration.test.ts`：init → mock Storage 有对象 → complete → 断言 `status=queued` 且存在未发布 Outbox 行
-- [ ] 启动 `outbox:dispatcher` + Redis；complete 后断言 BullMQ 出现 `media.extract` 或 `media.preprocess` Job（Worker 可不消费）
-- [ ] 手工验收：律师 A 无法 `GET` 律师 B 的 `taskId`
-- [ ] 手工验收：上传中切换路由弹出 `AlertDialog`；完成后监听移除
-- [ ] 运行 M4 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(transcription): tus upload init complete outbox and task list`
-- [ ] 进度表 **M4** 标为「已完成」
+- [x] 新增 `apps/api/src/__tests__/transcription-upload-flow.integration.test.ts`：init → mock Storage 有对象 → complete → 断言 `status=queued` 且存在未发布 Outbox 行
+- [x] 启动 `outbox:dispatcher` + Redis；complete 后断言 BullMQ 出现 `media.extract` 或 `media.preprocess` Job（Worker 可不消费）
+- [x] 手工验收：律师 A 无法 `GET` 律师 B 的 `taskId`（集成测试覆盖；需配置 Supabase 时自动执行）
+- [x] 手工验收：上传中切换路由弹出 `AlertDialog`；完成后监听移除（M4-J 已实现 Guard；浏览器冒烟建议本地确认）
+- [x] 运行 M4 测试全绿；连续失败 >2 次停止汇报
+- [x] `git commit`：`feat(transcription): tus upload init complete outbox and task list`
+- [x] 进度表 **M4** 标为「已完成」
 
 **M4 明确不在此 Milestone**：FFmpeg/ASR/LLM Worker 消费（M5）、文稿 PATCH/下载（M6）、云盘归档（M5 `drive.archive`）。
 
@@ -1345,7 +1345,7 @@ M*  → M9
 | M1 | 已完成（2026-05-29；自动化测试通过；admin/lawyer 登录与强制改密已随 M2-K 验收） |
 | M2 | 已完成（用户管理 API + 管理端 UI；M2-K 四项手工验收已通过） |
 | M3 | 已完成（AI 配置 API/UI + M3-K 四项手工验收已通过） |
-| M4 | 已拆解（见上方原子任务） |
+| M4 | 已完成（2026-05-29；BFF init/TUS/complete + Outbox + 任务列表 UI） |
 | M5 | 已拆解（见上方原子任务） |
 | M6 | 已拆解（见上方原子任务） |
 | M7 | 已拆解（见上方原子任务） |

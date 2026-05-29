@@ -58,10 +58,10 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-# If enabled, seeds the database after migrations during a db reset.
+# LexOS M0-C: load after `supabase db reset` (local only) or `supabase db push` + `supabase seed`.
+# Auth user: `npm run seed:admin` (Admin API, reads AUTH_INITIAL_PASSWORD).
+# SQL: idempotent `profiles` sync in ./seed.sql
 enabled = true
-# Specifies an ordered list of seed files to load during db reset.
-# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
 sql_paths = ["./seed.sql"]
 
 [db.network_restrictions]

@@ -41,6 +41,13 @@ export function loadAuthSeedEnvFromProcess(): AuthSeedEnvConfig {
 export function loadAuthSeedEnv(
   repoRoot: string = resolveRepoRoot(),
 ): AuthSeedEnvConfig {
+  const presetInitialPassword = process.env.AUTH_INITIAL_PASSWORD;
   loadEnvFiles(repoRoot, [".env", ".env.development"]);
+  if (
+    presetInitialPassword?.trim() &&
+    !process.env.AUTH_INITIAL_PASSWORD?.trim()
+  ) {
+    process.env.AUTH_INITIAL_PASSWORD = presetInitialPassword;
+  }
   return loadAuthSeedEnvFromProcess();
 }

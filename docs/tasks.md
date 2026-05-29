@@ -142,7 +142,7 @@
 ### M1-A 共享类型与适配器基础（`packages/shared`）
 
 - [x] 新增 `packages/shared/src/errors/auth-error-codes.ts`：`AUTH_UNAUTHORIZED`、`AUTH_FORBIDDEN`、`AUTH_ACCOUNT_DISABLED`、`AUTH_PASSWORD_CHANGE_REQUIRED`、`AUTH_INVALID_CREDENTIALS`、`AUTH_CAPTCHA_REQUIRED`、`AUTH_MFA_REQUIRED`
-- [ ] 新增 `packages/shared/src/types/auth-context.ts`：`userId`、`role`、`username`、`requiresPasswordChange`、`sessionId?`
+- [x] 新增 `packages/shared/src/types/auth-context.ts`：`userId`、`role`、`username`、`requiresPasswordChange`、`sessionId?`
 - [ ] 新增 `packages/shared/src/dto/auth-login.dto.ts`：`username`、`password`、`captchaToken?`、`totpCode?`（zod schema）
 - [ ] 新增 `packages/shared/src/dto/auth-change-password.dto.ts`：`currentPassword?`、`newPassword`（强制改密场景可无 `currentPassword` 的规则在 Service 层分支）
 - [ ] 新增 `packages/shared/src/dto/profile-update.dto.ts`：`displayName?`、`contact?`

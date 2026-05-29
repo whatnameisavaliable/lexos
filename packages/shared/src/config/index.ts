@@ -23,6 +23,12 @@ export {
   type AuthSeedEnvConfig,
 } from "./auth-env.js";
 export {
+  loadAuthRuntimeEnvFromProcess,
+  parseMfaRequiredRoles,
+  type AuthRuntimeEnvConfig,
+  type CaptchaProvider,
+} from "./auth-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

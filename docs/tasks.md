@@ -151,13 +151,13 @@
 
 ### M1-B Auth 适配器（`apps/api` · Adapter 层）
 
-- [ ] 新增 `apps/api/src/adapters/auth/supabase-auth.adapter.ts`：`resolveVirtualEmail(username)` → `{username}@llexos.internal`（读 `AUTH_VIRTUAL_EMAIL_DOMAIN`）
-- [ ] 实现 `signInWithPassword(virtualEmail, password)` 封装 Supabase Auth
-- [ ] 实现 `signOut(accessToken?)` / `signOutGlobal(userId)`（Admin 重置属 M2，本模块仅封装方法）
-- [ ] 实现 `updateUserPassword(userId, newPassword)`（Auth Admin 或用户 session 改密）
-- [ ] 实现 `enrollMfa` / `verifyMfa` / `getMfaAuthenticatorAssuranceLevel`（Supabase TOTP API 封装）
-- [ ] 新增 `apps/api/src/adapters/auth/captcha.adapter.ts` 接口 + `none-captcha.adapter.ts`（`CAPTCHA_PROVIDER=none` 空实现）
-- [ ] 新增 `apps/api/src/adapters/auth/turnstile-captcha.adapter.ts` 或 `geetest-captcha.adapter.ts`（按 env 二选一，**实施前须用户授权新依赖时仅实现接口桩**）
+- [x] 新增 `apps/api/src/adapters/auth/supabase-auth.adapter.ts`：`resolveVirtualEmail(username)` → `{username}@llexos.internal`（读 `AUTH_VIRTUAL_EMAIL_DOMAIN`）
+- [x] 实现 `signInWithPassword(virtualEmail, password)` 封装 Supabase Auth
+- [x] 实现 `signOut(accessToken?)` / `signOutGlobal(userId)`（Admin 重置属 M2，本模块仅封装方法）
+- [x] 实现 `updateUserPassword(userId, newPassword)`（Auth Admin 或用户 session 改密）
+- [x] 实现 `enrollMfa` / `verifyMfa` / `getMfaAuthenticatorAssuranceLevel`（Supabase TOTP API 封装）
+- [x] 新增 `apps/api/src/adapters/auth/captcha.adapter.ts` 接口 + `none-captcha.adapter.ts`（`CAPTCHA_PROVIDER=none` 空实现）
+- [x] 新增 `apps/api/src/adapters/auth/turnstile-captcha.adapter.ts` 或 `geetest-captcha.adapter.ts`（按 env 二选一，**实施前须用户授权新依赖时仅实现接口桩**）
 
 ---
 

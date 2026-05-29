@@ -90,14 +90,14 @@
 ### M0-C Seed 与 Auth 内置账户
 
 - [x] 编写 `supabase/seed.sql`：通过 Supabase Auth Admin 流程说明或 SQL 注释 + 文档化脚本；创建内置 `admin` 用户及对应 `profiles`（`role=admin`，`requires_password_change=true` 首次登录策略，与 PRD §1.4 A3 一致）
-- [ ] 配置 `supabase/config.toml` 的 `[db.seed]`（若使用 CLI seed）并执行 `npx supabase db reset`（**仅开发库**）或 `npx supabase seed` 验证 seed 可重复执行策略
-- [ ] 验证：远端/本地库存在可登录的 `admin` profile 行，且 `username` 唯一
+- [x] 配置 `supabase/config.toml` 的 `[db.seed]`（若使用 CLI seed）并执行 `npx supabase db reset`（**仅开发库**）或 `npx supabase seed` 验证 seed 可重复执行策略
+- [x] 验证：远端/本地库存在可登录的 `admin` profile 行，且 `username` 唯一
 
 ---
 
 ### M0-D 应用基建最小集（M0 验收所需）
 
-- [ ] 初始化 `packages/shared`：`ErrorCode` 枚举（对齐 `architecture.md` §6.2）、`ApiSuccess`/`ApiError` 响应类型、分页 `limit` 默认 50
+- [x] 初始化 `packages/shared`：`ErrorCode` 枚举（对齐 `architecture.md` §6.2）、`ApiSuccess`/`ApiError` 响应类型、分页 `limit` 默认 50
 - [ ] 初始化 `apps/api` 最小入口：加载 `.env.development`；`GET /health` 检测 Postgres（`SUPABASE_DB_URL`）与 Redis（`REDIS_URL`，可失败仅警告）
 - [ ] 添加数据库连通性 smoke 测试（可选：`psql` 或 vitest 单测查询 `SELECT 1`）
 - [ ] 添加 RLS smoke 脚本或测试用例：律师 JWT 无法读取他人 `transcription_tasks` 行（可用 Supabase 测试用户）

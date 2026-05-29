@@ -10,6 +10,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@lexos/shared": path.resolve(__dirname, "packages/shared/src"),
+      "@lexos/shared/api": path.resolve(__dirname, "packages/shared/src/api"),
+      "@lexos/shared/config": path.resolve(
+        __dirname,
+        "packages/shared/src/config",
+      ),
     },
   },
 });

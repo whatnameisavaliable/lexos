@@ -5,7 +5,21 @@
   "description": "LexOS U2 HTTP API (Route → Controller → Service → Repository)",
   "type": "module",
   "scripts": {
-    "build": "echo \"M0 scaffold: implement in M0-D\"",
-    "test": "echo \"M0 scaffold: no tests yet\""
+    "build": "tsc -p tsconfig.json",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lexos/shared": "*",
+    "pg": "^8.16.0",
+    "redis": "^5.5.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/pg": "^8.15.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.1"
   }
 }

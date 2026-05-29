@@ -10,6 +10,12 @@ export {
   type SupabaseEnvConfig,
 } from "./env.js";
 export {
+  loadAppRuntimeEnv,
+  loadAppRuntimeEnvFromProcess,
+  parseApiListenPort,
+  type AppRuntimeEnvConfig,
+} from "./app-env.js";
+export {
   BUILTIN_ADMIN_USERNAME,
   loadAuthSeedEnv,
   loadAuthSeedEnvFromProcess,

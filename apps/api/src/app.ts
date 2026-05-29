@@ -1,11 +1,13 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+  loadAiRuntimeEnvFromProcess,
   loadAppRuntimeEnv,
   loadAuthRuntimeEnvFromProcess,
   loadAuthSeedEnvFromProcess,
   loadSupabaseEnvFromProcess,
   type AppRuntimeEnvConfig,
 } from "@lexos/shared/config";
+import { AiAdapterFactory } from "./adapters/ai/ai-adapter.factory.js";
 import { SupabaseAuthAdapter } from "./adapters/auth/supabase-auth.adapter.js";
 import { AuthChangePasswordController } from "./controllers/auth-change-password.controller.js";
 import { AuthLoginController } from "./controllers/auth-login.controller.js";
@@ -45,6 +47,39 @@ import { AdminUsersPatchController } from "./controllers/admin-users-patch.contr
 import { AdminUsersStatusController } from "./controllers/admin-users-status.controller.js";
 import { AdminUsersResetPasswordController } from "./controllers/admin-users-reset-password.controller.js";
 import { handleAdminUsersRoute } from "./routes/admin-users.routes.js";
+import { handleAdminAiRoute } from "./routes/admin-ai.routes.js";
+import { AiModelRepository } from "./repositories/ai-model.repository.js";
+import { AiFeatureMappingRepository } from "./repositories/ai-feature-mapping.repository.js";
+import { AiPromptRepository } from "./repositories/ai-prompt.repository.js";
+import { AiInvocationLogRepository } from "./repositories/ai-invocation-log.repository.js";
+import { AiModelListService } from "./services/ai-model-list.service.js";
+import { AiModelCreateService } from "./services/ai-model-create.service.js";
+import { AiModelUpdateService } from "./services/ai-model-update.service.js";
+import { AiModelDeleteService } from "./services/ai-model-delete.service.js";
+import { AiModelGetService } from "./services/ai-model-get.service.js";
+import { AiModelHealthcheckService } from "./services/ai-model-healthcheck.service.js";
+import { AiFeatureMappingListService } from "./services/ai-feature-mapping-list.service.js";
+import { AiFeatureMappingUpsertService } from "./services/ai-feature-mapping-upsert.service.js";
+import { AiPromptListService } from "./services/ai-prompt-list.service.js";
+import { AiPromptCreateService } from "./services/ai-prompt-create.service.js";
+import { AiPromptGetService } from "./services/ai-prompt-get.service.js";
+import { AiPromptUpdateService } from "./services/ai-prompt-update.service.js";
+import { AiPromptPublishService } from "./services/ai-prompt-publish.service.js";
+import { AiInvocationLogListService } from "./services/ai-invocation-log-list.service.js";
+import { AiModelsListController } from "./controllers/ai-models-list.controller.js";
+import { AiModelsCreateController } from "./controllers/ai-models-create.controller.js";
+import { AiModelsGetController } from "./controllers/ai-models-get.controller.js";
+import { AiModelsPatchController } from "./controllers/ai-models-patch.controller.js";
+import { AiModelsDeleteController } from "./controllers/ai-models-delete.controller.js";
+import { AiModelsTestController } from "./controllers/ai-models-test.controller.js";
+import { AiMappingsListController } from "./controllers/ai-mappings-list.controller.js";
+import { AiMappingsUpsertController } from "./controllers/ai-mappings-upsert.controller.js";
+import { AiPromptsListController } from "./controllers/ai-prompts-list.controller.js";
+import { AiPromptsCreateController } from "./controllers/ai-prompts-create.controller.js";
+import { AiPromptsGetController } from "./controllers/ai-prompts-get.controller.js";
+import { AiPromptsPatchController } from "./controllers/ai-prompts-patch.controller.js";
+import { AiPromptsPublishController } from "./controllers/ai-prompts-publish.controller.js";
+import { AiInvocationLogsListController } from "./controllers/ai-invocation-logs-list.controller.js";
 
 /** 已组装的 U2 HTTP 应用上下文。 */
 export interface LexosApiApp {
@@ -59,6 +94,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const supabaseEnv = loadSupabaseEnvFromProcess();
   const authEnv = loadAuthRuntimeEnvFromProcess();
   const authSeedEnv = loadAuthSeedEnvFromProcess();
+  const aiEnv = loadAiRuntimeEnvFromProcess();
 
   const authAdapter = new SupabaseAuthAdapter(supabaseEnv, authEnv);
   const profileRepository = new ProfileRepository(supabaseEnv);
@@ -100,6 +136,52 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     authAdapter,
     adminUserRepository,
     authSeedEnv.authInitialPassword,
+  );
+
+  const aiModelRepository = AiModelRepository.fromSupabaseEnv(supabaseEnv);
+  const aiFeatureMappingRepository =
+    AiFeatureMappingRepository.fromSupabaseEnv(supabaseEnv);
+  const aiPromptRepository = AiPromptRepository.fromSupabaseEnv(supabaseEnv);
+  const aiInvocationLogRepository =
+    AiInvocationLogRepository.fromSupabaseEnv(supabaseEnv);
+  const aiAdapterFactory = new AiAdapterFactory();
+
+  const aiModelListService = new AiModelListService(aiModelRepository, aiEnv);
+  const aiModelCreateService = new AiModelCreateService(
+    aiModelRepository,
+    auditLogRepository,
+    aiEnv,
+  );
+  const aiModelUpdateService = new AiModelUpdateService(
+    aiModelRepository,
+    auditLogRepository,
+    aiEnv,
+  );
+  const aiModelDeleteService = new AiModelDeleteService(aiModelRepository);
+  const aiModelGetService = new AiModelGetService(aiModelRepository, aiEnv);
+  const aiModelHealthcheckService = new AiModelHealthcheckService(
+    aiModelRepository,
+    aiAdapterFactory,
+    aiEnv.aiTestTimeoutMs,
+    aiEnv,
+  );
+  const aiFeatureMappingListService = new AiFeatureMappingListService(
+    aiFeatureMappingRepository,
+  );
+  const aiFeatureMappingUpsertService = new AiFeatureMappingUpsertService(
+    aiFeatureMappingRepository,
+    auditLogRepository,
+  );
+  const aiPromptListService = new AiPromptListService(aiPromptRepository);
+  const aiPromptCreateService = new AiPromptCreateService(aiPromptRepository);
+  const aiPromptGetService = new AiPromptGetService(aiPromptRepository);
+  const aiPromptUpdateService = new AiPromptUpdateService(aiPromptRepository);
+  const aiPromptPublishService = new AiPromptPublishService(
+    aiPromptRepository,
+    auditLogRepository,
+  );
+  const aiInvocationLogListService = new AiInvocationLogListService(
+    aiInvocationLogRepository,
   );
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
@@ -151,6 +233,62 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const adminUsersResetPasswordController = new AdminUsersResetPasswordController(
     adminUserResetPasswordService,
+    env.requestIdHeader,
+  );
+  const aiModelsListController = new AiModelsListController(
+    aiModelListService,
+    env.requestIdHeader,
+  );
+  const aiModelsCreateController = new AiModelsCreateController(
+    aiModelCreateService,
+    env.requestIdHeader,
+  );
+  const aiModelsGetController = new AiModelsGetController(
+    aiModelGetService,
+    env.requestIdHeader,
+  );
+  const aiModelsPatchController = new AiModelsPatchController(
+    aiModelUpdateService,
+    env.requestIdHeader,
+  );
+  const aiModelsDeleteController = new AiModelsDeleteController(
+    aiModelDeleteService,
+    env.requestIdHeader,
+  );
+  const aiModelsTestController = new AiModelsTestController(
+    aiModelHealthcheckService,
+    env.requestIdHeader,
+  );
+  const aiMappingsListController = new AiMappingsListController(
+    aiFeatureMappingListService,
+    env.requestIdHeader,
+  );
+  const aiMappingsUpsertController = new AiMappingsUpsertController(
+    aiFeatureMappingUpsertService,
+    env.requestIdHeader,
+  );
+  const aiPromptsListController = new AiPromptsListController(
+    aiPromptListService,
+    env.requestIdHeader,
+  );
+  const aiPromptsCreateController = new AiPromptsCreateController(
+    aiPromptCreateService,
+    env.requestIdHeader,
+  );
+  const aiPromptsGetController = new AiPromptsGetController(
+    aiPromptGetService,
+    env.requestIdHeader,
+  );
+  const aiPromptsPatchController = new AiPromptsPatchController(
+    aiPromptUpdateService,
+    env.requestIdHeader,
+  );
+  const aiPromptsPublishController = new AiPromptsPublishController(
+    aiPromptPublishService,
+    env.requestIdHeader,
+  );
+  const aiInvocationLogsListController = new AiInvocationLogsListController(
+    aiInvocationLogListService,
     env.requestIdHeader,
   );
 
@@ -251,6 +389,39 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               patch: adminUsersPatchController,
               status: adminUsersStatusController,
               resetPassword: adminUsersResetPasswordController,
+            });
+            if (!handled) {
+              adminRes.statusCode = 404;
+              adminRes.setHeader("content-type", "application/json; charset=utf-8");
+              adminRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/admin/ai")) {
+          let handled = false;
+          await protectedAdminRoute(async (adminReq, adminRes) => {
+            handled = await handleAdminAiRoute(adminReq, adminRes, path, {
+              modelsList: aiModelsListController,
+              modelsCreate: aiModelsCreateController,
+              modelsGet: aiModelsGetController,
+              modelsPatch: aiModelsPatchController,
+              modelsDelete: aiModelsDeleteController,
+              modelsTest: aiModelsTestController,
+              mappingsList: aiMappingsListController,
+              mappingsUpsert: aiMappingsUpsertController,
+              promptsList: aiPromptsListController,
+              promptsCreate: aiPromptsCreateController,
+              promptsGet: aiPromptsGetController,
+              promptsPatch: aiPromptsPatchController,
+              promptsPublish: aiPromptsPublishController,
+              invocationLogsList: aiInvocationLogsListController,
             });
             if (!handled) {
               adminRes.statusCode = 404;

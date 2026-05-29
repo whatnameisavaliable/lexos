@@ -12,6 +12,17 @@ export * from "./dto/admin-user-update.dto.js";
 export * from "./dto/admin-user-status.dto.js";
 export * from "./dto/admin-user-list-query.dto.js";
 export * from "./types/admin-user-list-item.js";
+export * from "./enums/ai-feature-key.js";
+export * from "./enums/ai-provider-kind.js";
+export * from "./types/ai-model-public.js";
+export * from "./dto/ai-model-create.dto.js";
+export * from "./dto/ai-model-update.dto.js";
+export * from "./dto/ai-model-list-query.dto.js";
+export * from "./dto/ai-feature-mapping-upsert.dto.js";
+export * from "./dto/ai-prompt-create.dto.js";
+export * from "./dto/ai-prompt-update.dto.js";
+export * from "./dto/ai-invocation-logs-query.dto.js";
+export * from "./lib/mask-api-key.js";
 export * from "./db/index.js";
 export {
   M0_B_MIGRATIONS,

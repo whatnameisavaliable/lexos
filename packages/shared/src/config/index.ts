@@ -29,6 +29,10 @@ export {
   type CaptchaProvider,
 } from "./auth-runtime-env.js";
 export {
+  loadAiRuntimeEnvFromProcess,
+  type AiRuntimeEnvConfig,
+} from "./ai-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

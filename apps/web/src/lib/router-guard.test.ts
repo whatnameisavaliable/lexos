@@ -24,4 +24,26 @@ describe("resolveGuardRedirect", () => {
       "/unauthorized",
     );
   });
+
+  it("redirects lawyer from /admin/ai to unauthorized", () => {
+    expect(resolveGuardRedirect("/admin/ai", lawyerSession)).toBe(
+      "/unauthorized",
+    );
+  });
+
+  it("allows voluntary change-password while logged in", () => {
+    expect(resolveGuardRedirect("/change-password", lawyerSession)).toBeNull();
+    expect(resolveGuardRedirect("/change-password", adminSession)).toBeNull();
+  });
+
+  it("redirects logged-in user away from login only", () => {
+    expect(resolveGuardRedirect("/login", lawyerSession)).toBe("/lawyer");
+    expect(resolveGuardRedirect("/login", adminSession)).toBe("/admin");
+  });
+
+  it("forces change-password when flag is set", () => {
+    const forced = { ...lawyerSession, requiresPasswordChange: true };
+    expect(resolveGuardRedirect("/lawyer", forced)).toBe("/change-password");
+    expect(resolveGuardRedirect("/change-password", forced)).toBeNull();
+  });
 });

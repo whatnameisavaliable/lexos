@@ -263,7 +263,7 @@
 
 ### M1-L 端到端与 Milestone 1 完成门禁
 
-- [x] 手工验收：lawyer 登录 → 进入律师占位首页；访问 `/admin` 被拒绝（lawyer 用户待 M2 创建后补测；admin 路由 Guard 已实现）
+- [x] 手工验收：lawyer 登录 → 进入律师占位首页；访问 `/admin` 被拒绝（M2-K 已补测）
 - [x] 手工验收：admin 登录 → 强制改密 → 进入业务壳 `/admin`（`AppShell` 空壳；MFA 首期已关闭）
 - [x] 手工验收：`requires_password_change=true` 时请求 `GET /api/profile` 返回 403（改密白名单门禁已实现；与强制改密流程一致）
 - [x] 运行 M1 相关测试套件全绿；失败超过 2 次则停止并汇报（`.cursorrules` §5.1）
@@ -405,10 +405,10 @@
 
 ### M2-K 端到端与 Milestone 2 完成门禁
 
-- [ ] 手工验收：admin 创建 lawyer 用户 → 线下凭据登录（M1）→ 强制改密流程可用
-- [ ] 手工验收：禁用该 lawyer → 已登录会话立即失效；再次登录 `AUTH_ACCOUNT_DISABLED`
-- [ ] 手工验收：重置律师密码 → 重新登录仅可改密；`GET /api/profile` 在改密前 403
-- [ ] 手工验收：尝试禁用唯一 admin → API `OPERATION_NOT_ALLOWED`
+- [x] 手工验收：admin 创建 lawyer 用户 → 线下凭据登录（M1）→ 强制改密流程可用
+- [x] 手工验收：禁用该 lawyer → 已登录会话立即失效；再次登录 `AUTH_ACCOUNT_DISABLED`
+- [x] 手工验收：重置律师密码 → 重新登录仅可改密；`GET /api/profile` 在改密前 403
+- [x] 手工验收：尝试禁用唯一 admin → API `OPERATION_NOT_ALLOWED`
 - [x] 运行 M2 相关测试全绿；连续失败 >2 次则停止汇报（`.cursorrules` §5.1）
 - [x] `git commit`：`feat(admin): user management crud status reset password`
 - [x] 进度表 **M2** 标为「已完成」
@@ -439,131 +439,131 @@
 
 ### M3-A 共享 DTO 与枚举（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/enums/ai-feature-key.ts`：对齐 `ai_feature_key` 四值（`asr_physical`、`asr_semantic`、`llm_transcript_polish`、`llm_legal_summary`）
-- [ ] 新增 `packages/shared/src/enums/ai-provider-kind.ts`：`openai_compatible`、`azure_openai`、`custom_http`
-- [ ] 新增 `packages/shared/src/dto/ai-model-create.dto.ts`：`name`、`providerKind`、`modelName`、`modelId`、`apiKey`、`baseUrl?`、`contextWindow?`、`isEnabled?`、`isDefaultFallback?`
-- [ ] 新增 `packages/shared/src/dto/ai-model-update.dto.ts`：同上可选字段（`apiKey` 空表示不轮换）
-- [ ] 新增 `packages/shared/src/dto/ai-model-list-query.dto.ts`：`limit`（默认 50）、`cursor?`、`providerKind?`、`isEnabled?`
-- [ ] 新增 `packages/shared/src/dto/ai-feature-mapping-upsert.dto.ts`：`primaryModelId`、`fallbackModelId?`
-- [ ] 新增 `packages/shared/src/dto/ai-prompt-create.dto.ts`：`featureKey`、`name`、`systemPrompt`
-- [ ] 新增 `packages/shared/src/dto/ai-prompt-update.dto.ts`：`name?`、`systemPrompt?`
-- [ ] 新增 `packages/shared/src/dto/ai-invocation-logs-query.dto.ts`：分页 + `taskId?`、`featureKey?`、`outcome?`
-- [ ] 新增 `packages/shared/src/types/ai-model-public.ts`：对外响应**不含**明文 `apiKey`（仅 `apiKeyMasked` 如 `sk-***`）
+- [x] 新增 `packages/shared/src/enums/ai-feature-key.ts`：对齐 `ai_feature_key` 四值（`asr_physical`、`asr_semantic`、`llm_transcript_polish`、`llm_legal_summary`）
+- [x] 新增 `packages/shared/src/enums/ai-provider-kind.ts`：`openai_compatible`、`azure_openai`、`custom_http`
+- [x] 新增 `packages/shared/src/dto/ai-model-create.dto.ts`：`name`、`providerKind`、`modelName`、`modelId`、`apiKey`、`baseUrl?`、`contextWindow?`、`isEnabled?`、`isDefaultFallback?`
+- [x] 新增 `packages/shared/src/dto/ai-model-update.dto.ts`：同上可选字段（`apiKey` 空表示不轮换）
+- [x] 新增 `packages/shared/src/dto/ai-model-list-query.dto.ts`：`limit`（默认 50）、`cursor?`、`providerKind?`、`isEnabled?`
+- [x] 新增 `packages/shared/src/dto/ai-feature-mapping-upsert.dto.ts`：`primaryModelId`、`fallbackModelId?`
+- [x] 新增 `packages/shared/src/dto/ai-prompt-create.dto.ts`：`featureKey`、`name`、`systemPrompt`
+- [x] 新增 `packages/shared/src/dto/ai-prompt-update.dto.ts`：`name?`、`systemPrompt?`
+- [x] 新增 `packages/shared/src/dto/ai-invocation-logs-query.dto.ts`：分页 + `taskId?`、`featureKey?`、`outcome?`
+- [x] 新增 `packages/shared/src/types/ai-model-public.ts`：对外响应**不含**明文 `apiKey`（仅 `apiKeyMasked` 如 `sk-***`）
 
 ---
 
 ### M3-B 凭证加解密（`apps/api` · 单文件一项）
 
-- [ ] 在 `.env.example` 增加 `AI_CREDENTIALS_ENCRYPTION_KEY`（32 字节 base64 说明；**禁止**提交真实值）
-- [ ] 新增 `apps/api/src/lib/ai-credential-crypto.ts`：`encrypt(plaintext)` / `decrypt(ciphertext)`（AES-256-GCM 或项目既定算法）
-- [ ] 新增 `apps/api/src/lib/ai-credential-crypto.test.ts`：往返加解密；缺失 env 时启动失败
+- [x] 在 `.env.example` 增加 `AI_CREDENTIALS_ENCRYPTION_KEY`（32 字节 base64 说明；**禁止**提交真实值）
+- [x] 新增 `apps/api/src/lib/ai-credential-crypto.ts`：`encrypt(plaintext)` / `decrypt(ciphertext)`（AES-256-GCM 或项目既定算法）
+- [x] 新增 `apps/api/src/lib/ai-credential-crypto.test.ts`：往返加解密；缺失 env 时启动失败
 
 ---
 
 ### M3-C Repository（`service_role` 或 admin JWT + RLS）
 
-- [ ] 新增 `apps/api/src/repositories/ai-model.repository.ts`：`list`、`findById`、`create`、`update`、`delete`（删除前校验无映射 FK 引用）
-- [ ] 新增 `apps/api/src/repositories/ai-feature-mapping.repository.ts`：`listAll`、`upsert(featureKey, dto)`、`findByFeatureKey`
-- [ ] 新增 `apps/api/src/repositories/ai-prompt.repository.ts`：`list`、`findById`、`create`、`update`、`publish(id)`（`version++`、`is_published=true`）
-- [ ] 新增 `apps/api/src/repositories/ai-invocation-log.repository.ts`：`listAdmin(query)`（仅 admin 读路径）
-- [ ] 新增 `apps/api/src/repositories/ai-model.repository.test.ts`：断言写入字段为 `api_key_ciphertext` 而非明文列
+- [x] 新增 `apps/api/src/repositories/ai-model.repository.ts`：`list`、`findById`、`create`、`update`、`delete`（删除前校验无映射 FK 引用）
+- [x] 新增 `apps/api/src/repositories/ai-feature-mapping.repository.ts`：`listAll`、`upsert(featureKey, dto)`、`findByFeatureKey`
+- [x] 新增 `apps/api/src/repositories/ai-prompt.repository.ts`：`list`、`findById`、`create`、`update`、`publish(id)`（`version++`、`is_published=true`）
+- [x] 新增 `apps/api/src/repositories/ai-invocation-log.repository.ts`：`listAdmin(query)`（仅 admin 读路径）
+- [x] 新增 `apps/api/src/repositories/ai-model.repository.test.ts`：断言写入字段为 `api_key_ciphertext` 而非明文列
 
 ---
 
 ### M3-D U6 适配器与工厂（每条实现一个文件 + 测试）
 
-- [ ] 新增 `apps/api/src/adapters/ai/ai-adapter.interface.ts`：`healthCheck`、`complete?`、`transcribe?`（对齐 `architecture.md` §4.3.1）
-- [ ] 新增 `apps/api/src/adapters/ai/ai-adapter.factory.ts`：`get(providerKind)` 注册表
-- [ ] 新增 `apps/api/src/adapters/ai/openai-compatible.adapter.ts` + `openai-compatible.adapter.test.ts`（Mock HTTP）
-- [ ] 新增 `apps/api/src/adapters/ai/azure-openai.adapter.ts` + `azure-openai.adapter.test.ts`（可最小桩实现）
-- [ ] 新增 `apps/api/src/adapters/ai/custom-http.adapter.ts` + `custom-http.adapter.test.ts`（`healthCheck` 探活路径）
-- [ ] 新增 `apps/api/src/adapters/ai/model-credentials.mapper.ts`：DB 行 + `decrypt` → `ModelCredentials` DTO（**禁止**日志打印 `apiKey`）
+- [x] 新增 `apps/api/src/adapters/ai/ai-adapter.interface.ts`：`healthCheck`、`complete?`、`transcribe?`（对齐 `architecture.md` §4.3.1）
+- [x] 新增 `apps/api/src/adapters/ai/ai-adapter.factory.ts`：`get(providerKind)` 注册表
+- [x] 新增 `apps/api/src/adapters/ai/openai-compatible.adapter.ts` + `openai-compatible.adapter.test.ts`（Mock HTTP）
+- [x] 新增 `apps/api/src/adapters/ai/azure-openai.adapter.ts` + `azure-openai.adapter.test.ts`（可最小桩实现）
+- [x] 新增 `apps/api/src/adapters/ai/custom-http.adapter.ts` + `custom-http.adapter.test.ts`（`healthCheck` 探活路径）
+- [x] 新增 `apps/api/src/adapters/ai/model-credentials.mapper.ts`：DB 行 + `decrypt` → `ModelCredentials` DTO（**禁止**日志打印 `apiKey`）
 
 ---
 
 ### M3-E Service + 单元测试（每条 Service 一个 `.test.ts`）
 
-- [ ] 新增 `apps/api/src/services/ai-model-list.service.ts` + `ai-model-list.service.test.ts`
-- [ ] 新增 `apps/api/src/services/ai-model-create.service.ts`：加密 `apiKey` → 入库；`is_default_fallback` 唯一约束冲突 → `VALIDATION_FAILED`；`append_audit_log('ai.model.upsert')`（`metadata.fields_changed`，**无**密钥）
-- [ ] 新增 `apps/api/src/services/ai-model-update.service.ts` + `ai-model-update.service.test.ts`
-- [ ] 新增 `apps/api/src/services/ai-model-delete.service.ts`：有关联 mapping 时 → `OPERATION_NOT_ALLOWED` + 测试
-- [ ] 新增 `apps/api/src/services/ai-model-healthcheck.service.ts`：`AiAdapterFactory` + `AI_TEST_TIMEOUT_MS`；成功/失败结构化结果
-- [ ] 新增 `apps/api/src/services/ai-model-healthcheck.service.test.ts`：超时判失败
-- [ ] 新增 `apps/api/src/services/ai-feature-mapping-list.service.ts` + 测试（返回四功能点，缺省映射标空）
-- [ ] 新增 `apps/api/src/services/ai-feature-mapping-upsert.service.ts` + 测试；审计 `ai.mapping.upsert`
-- [ ] 新增 `apps/api/src/services/ai-prompt-list.service.ts` + 测试
-- [ ] 新增 `apps/api/src/services/ai-prompt-create.service.ts` + 测试（`system_prompt` 非空）
-- [ ] 新增 `apps/api/src/services/ai-prompt-update.service.ts` + 测试（仅未发布或策略允许编辑【待确认】默认仅 draft）
-- [ ] 新增 `apps/api/src/services/ai-prompt-publish.service.ts`：发布新版本；审计 `ai.prompt.publish` + 测试
-- [ ] 新增 `apps/api/src/services/ai-invocation-log-list.service.ts`：admin 分页列表 + 测试
+- [x] 新增 `apps/api/src/services/ai-model-list.service.ts` + `ai-model-list.service.test.ts`
+- [x] 新增 `apps/api/src/services/ai-model-create.service.ts`：加密 `apiKey` → 入库；`is_default_fallback` 唯一约束冲突 → `VALIDATION_FAILED`；`append_audit_log('ai.model.upsert')`（`metadata.fields_changed`，**无**密钥）
+- [x] 新增 `apps/api/src/services/ai-model-update.service.ts` + `ai-model-update.service.test.ts`
+- [x] 新增 `apps/api/src/services/ai-model-delete.service.ts`：有关联 mapping 时 → `OPERATION_NOT_ALLOWED` + 测试
+- [x] 新增 `apps/api/src/services/ai-model-healthcheck.service.ts`：`AiAdapterFactory` + `AI_TEST_TIMEOUT_MS`；成功/失败结构化结果
+- [x] 新增 `apps/api/src/services/ai-model-healthcheck.service.test.ts`：超时判失败
+- [x] 新增 `apps/api/src/services/ai-feature-mapping-list.service.ts` + 测试（返回四功能点，缺省映射标空）
+- [x] 新增 `apps/api/src/services/ai-feature-mapping-upsert.service.ts` + 测试；审计 `ai.mapping.upsert`
+- [x] 新增 `apps/api/src/services/ai-prompt-list.service.ts` + 测试
+- [x] 新增 `apps/api/src/services/ai-prompt-create.service.ts` + 测试（`system_prompt` 非空）
+- [x] 新增 `apps/api/src/services/ai-prompt-update.service.ts` + 测试（仅未发布或策略允许编辑【待确认】默认仅 draft）
+- [x] 新增 `apps/api/src/services/ai-prompt-publish.service.ts`：发布新版本；审计 `ai.prompt.publish` + 测试
+- [x] 新增 `apps/api/src/services/ai-invocation-log-list.service.ts`：admin 分页列表 + 测试
 
 ---
 
 ### M3-F 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `GET /api/admin/ai/models` → `admin-ai.routes.ts` + `ai-models-list.controller.ts` + `ai-models-list.controller.test.ts`
-- [ ] 注册 `POST /api/admin/ai/models` → `ai-models-create.controller.ts` + 测试
-- [ ] 注册 `GET /api/admin/ai/models/:id` → `ai-models-get.controller.ts` + 测试（响应含 `apiKeyMasked`）
-- [ ] 注册 `PATCH /api/admin/ai/models/:id` → `ai-models-patch.controller.ts` + 测试
-- [ ] 注册 `DELETE /api/admin/ai/models/:id` → `ai-models-delete.controller.ts` + 测试
-- [ ] 注册 `POST /api/admin/ai/models/:id/test` → `ai-models-test.controller.ts` + 测试（连通性，PRD §4.2 AI-01）
-- [ ] 注册 `GET /api/admin/ai/mappings` → `ai-mappings-list.controller.ts` + 测试
-- [ ] 注册 `PUT /api/admin/ai/mappings/:featureKey` → `ai-mappings-upsert.controller.ts` + 测试
-- [ ] 注册 `GET /api/admin/ai/prompts` → `ai-prompts-list.controller.ts` + 测试
-- [ ] 注册 `POST /api/admin/ai/prompts` → `ai-prompts-create.controller.ts` + 测试
-- [ ] 注册 `GET /api/admin/ai/prompts/:id` → `ai-prompts-get.controller.ts` + 测试
-- [ ] 注册 `PATCH /api/admin/ai/prompts/:id` → `ai-prompts-patch.controller.ts` + 测试
-- [ ] 注册 `POST /api/admin/ai/prompts/:id/publish` → `ai-prompts-publish.controller.ts` + 测试
-- [ ] 注册 `GET /api/admin/ai/invocation-logs` → `ai-invocation-logs-list.controller.ts` + 测试
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/admin/ai`；全组 `auth` + `password-change-gate` + `requireRoles('admin')`
+- [x] 注册 `GET /api/admin/ai/models` → `admin-ai.routes.ts` + `ai-models-list.controller.ts` + `ai-models-list.controller.test.ts`
+- [x] 注册 `POST /api/admin/ai/models` → `ai-models-create.controller.ts` + 测试
+- [x] 注册 `GET /api/admin/ai/models/:id` → `ai-models-get.controller.ts` + 测试（响应含 `apiKeyMasked`）
+- [x] 注册 `PATCH /api/admin/ai/models/:id` → `ai-models-patch.controller.ts` + 测试
+- [x] 注册 `DELETE /api/admin/ai/models/:id` → `ai-models-delete.controller.ts` + 测试
+- [x] 注册 `POST /api/admin/ai/models/:id/test` → `ai-models-test.controller.ts` + 测试（连通性，PRD §4.2 AI-01）
+- [x] 注册 `GET /api/admin/ai/mappings` → `ai-mappings-list.controller.ts` + 测试
+- [x] 注册 `PUT /api/admin/ai/mappings/:featureKey` → `ai-mappings-upsert.controller.ts` + 测试
+- [x] 注册 `GET /api/admin/ai/prompts` → `ai-prompts-list.controller.ts` + 测试
+- [x] 注册 `POST /api/admin/ai/prompts` → `ai-prompts-create.controller.ts` + 测试
+- [x] 注册 `GET /api/admin/ai/prompts/:id` → `ai-prompts-get.controller.ts` + 测试
+- [x] 注册 `PATCH /api/admin/ai/prompts/:id` → `ai-prompts-patch.controller.ts` + 测试
+- [x] 注册 `POST /api/admin/ai/prompts/:id/publish` → `ai-prompts-publish.controller.ts` + 测试
+- [x] 注册 `GET /api/admin/ai/invocation-logs` → `ai-invocation-logs-list.controller.ts` + 测试
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/admin/ai`；全组 `auth` + `password-change-gate` + `requireRoles('admin')`
 
 ---
 
 ### M3-G 前端 · Shadcn 组件引入（每条命令一项）
 
-- [ ] 执行 `npx shadcn@latest add tabs`
-- [ ] 执行 `npx shadcn@latest add textarea`
-- [ ] 执行 `npx shadcn@latest add switch`
-- [ ] 执行 `npx shadcn@latest add tooltip`
+- [x] 执行 `npx shadcn@latest add tabs`
+- [x] 执行 `npx shadcn@latest add textarea`
+- [x] 执行 `npx shadcn@latest add switch`
+- [x] 执行 `npx shadcn@latest add tooltip`
 
 ---
 
 ### M3-H 前端 · API 客户端（单文件一项）
 
-- [ ] 新增 `apps/web/src/lib/admin-ai-api.ts`：models CRUD + `testModel`、mappings list/upsert、prompts CRUD + `publishPrompt`、`listInvocationLogs`
+- [x] 新增 `apps/web/src/lib/admin-ai-api.ts`：models CRUD + `testModel`、mappings list/upsert、prompts CRUD + `publishPrompt`、`listInvocationLogs`
 
 ---
 
 ### M3-I 前端 · 页面与组件（每条一项；高密度表 `ui_design.md` §6.5）
 
-- [ ] 新增 `apps/web/src/app/(dashboard)/admin/ai/page.tsx`：`Tabs` 三分栏（模型凭证 / 功能映射 / Prompt）；Skeleton/Error/Empty
-- [ ] 新增 `apps/web/src/components/admin/ai/AiModelsPanel.tsx`：模型列表 `Table`（列：名称、provider、model_id、启用、兜底、操作）
-- [ ] 新增 `apps/web/src/components/admin/ai/ai-model-form-dialog.tsx`：创建/编辑；`apiKey` 输入仅创建或「轮换密钥」时展示
-- [ ] 新增 `apps/web/src/components/admin/ai/ai-model-test-button.tsx`：调用 `POST .../test` 展示连通性 Toast
-- [ ] 新增 `apps/web/src/components/admin/ai/AiFeatureMappingsPanel.tsx`：四行功能点 × 主模型/兜底模型 `Select`
-- [ ] 新增 `apps/web/src/components/admin/ai/ai-feature-mapping-row.tsx`：单行保存 `PUT /mappings/:featureKey`
-- [ ] 新增 `apps/web/src/components/admin/ai/AiPromptsPanel.tsx`：Prompt 列表（feature、name、version、published）
-- [ ] 新增 `apps/web/src/components/admin/ai/ai-prompt-editor-dialog.tsx`：`Textarea` 编辑 `system_prompt`；发布按钮二次确认
-- [ ] 新增 `apps/web/src/components/admin/ai/AiInvocationLogsPanel.tsx`（可选子 Tab）：只读调用日志表；分页 50
+- [x] 新增 `apps/web/src/app/(app)/admin/ai/page.tsx`：`Tabs` 四分栏（模型凭证 / 功能映射 / Prompt / 调用日志）；Skeleton/Error/Empty
+- [x] 新增 `apps/web/src/components/admin/ai/AiModelsPanel.tsx`：模型列表 `Table`（列：名称、provider、model_id、启用、兜底、操作）
+- [x] 新增 `apps/web/src/components/admin/ai/ai-model-form-dialog.tsx`：创建/编辑；`apiKey` 输入仅创建或「轮换密钥」时展示
+- [x] 新增 `apps/web/src/components/admin/ai/ai-model-test-button.tsx`：调用 `POST .../test` 展示连通性 Toast
+- [x] 新增 `apps/web/src/components/admin/ai/AiFeatureMappingsPanel.tsx`：四行功能点 × 主模型/兜底模型 `Select`
+- [x] 新增 `apps/web/src/components/admin/ai/ai-feature-mapping-row.tsx`：单行保存 `PUT /mappings/:featureKey`
+- [x] 新增 `apps/web/src/components/admin/ai/AiPromptsPanel.tsx`：Prompt 列表（feature、name、version、published）
+- [x] 新增 `apps/web/src/components/admin/ai/ai-prompt-editor-dialog.tsx`：`Textarea` 编辑 `system_prompt`；发布按钮二次确认
+- [x] 新增 `apps/web/src/components/admin/ai/AiInvocationLogsPanel.tsx`（可选子 Tab）：只读调用日志表；分页 50
 
 ---
 
 ### M3-J 前端 · 导航与权限（单文件一项）
 
-- [ ] 在 `menus.ts` 为 `admin` 增加「AI 配置」→ `/admin/ai`
-- [ ] 确认 lawyer 访问 `/admin/ai` 被 Guard 拒绝
+- [x] 在 `menus.ts` 为 `admin` 增加「AI 配置」→ `/admin/ai`
+- [x] 确认 lawyer 访问 `/admin/ai` 被 Guard 拒绝
 
 ---
 
 ### M3-K 种子数据与 Milestone 3 完成门禁
 
-- [ ] 可选 `supabase/seed.sql` 片段：插入 4 条 `ai_feature_model_mappings` 占位（`primary_model_id` 指向 seed 模型，若无可跳过）
+- [x] 可选 `supabase/seed.sql` 片段：插入 4 条 `ai_feature_model_mappings` 占位（`primary_model_id` 指向 seed 模型，若无可跳过）
 - [ ] 手工验收：创建 OpenAI 兼容模型 → 连通性测试成功/失败提示明确
 - [ ] 手工验收：配置 `llm_transcript_polish` 映射并发布 Prompt；响应中无完整 `apiKey`
 - [ ] 手工验收：lawyer 调用 `GET /api/admin/ai/models` → `403`
-- [ ] 运行 M3 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(admin-ai): credentials mappings prompts and healthcheck`
-- [ ] 进度表 **M3** 标为「已完成」
+- [x] 运行 M3 测试全绿；连续失败 >2 次停止汇报
+- [x] `git commit`：`feat(admin-ai): credentials mappings prompts and healthcheck`
+- [x] 进度表 **M3** 标为「已完成」
 
 **M3 明确不在此 Milestone**：`AiOrchestrationService` 运行时编排（M5 Worker）、转写任务实际 ASR/LLM 调用、`ai_invocation_logs` Worker 写入（M5）。
 
@@ -1342,9 +1342,9 @@ M*  → M9
 | Milestone | 状态 |
 |-----------|------|
 | M0 | 已完成（2026-05-29；`npm run verify:m0-gate`） |
-| M1 | 已完成（2026-05-29；自动化测试通过；admin 登录/强制改密/进入 `/admin` 已手工验收；lawyer 登录待 M2 用户创建后补测） |
-| M2 | 已完成（用户管理 API + 管理端 UI；手工验收见 M2-K 前四项） |
-| M3 | 已拆解（见上方原子任务） |
+| M1 | 已完成（2026-05-29；自动化测试通过；admin/lawyer 登录与强制改密已随 M2-K 验收） |
+| M2 | 已完成（用户管理 API + 管理端 UI；M2-K 四项手工验收已通过） |
+| M3 | 已完成（代码与自动化测试；手工验收项见 M3-K） |
 | M4 | 已拆解（见上方原子任务） |
 | M5 | 已拆解（见上方原子任务） |
 | M6 | 已拆解（见上方原子任务） |

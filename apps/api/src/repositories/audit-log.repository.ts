@@ -11,7 +11,10 @@ export type AuditAction =
   | "user.create"
   | "user.update"
   | "user.disable"
-  | "user.enable";
+  | "user.enable"
+  | "ai.model.upsert"
+  | "ai.mapping.upsert"
+  | "ai.prompt.publish";
 
 /** `append_audit_log` 入参。 */
 export interface AppendAuditLogInput {

@@ -10,6 +10,7 @@ export interface AppNavItem {
 /** 首期业务导航（禁止仅用 CSS 隐藏无权限路由）。 */
 export const APP_NAV_ITEMS: readonly AppNavItem[] = [
   { href: "/admin/users", label: "用户管理", allowedRoles: ["admin"] },
+  { href: "/admin/ai", label: "AI 配置", allowedRoles: ["admin"] },
   { href: "/admin", label: "管理首页", allowedRoles: ["admin"] },
   { href: "/lawyer", label: "律师工作台", allowedRoles: ["lawyer", "admin"] },
   { href: "/profile", label: "个人中心", allowedRoles: ["admin", "lawyer", "director", "client", "channel"] },

@@ -180,40 +180,40 @@
 
 ### M1-E Service + 单元测试（每条 Service 对应测试文件）
 
-- [ ] 新增 `apps/api/src/services/auth-login.service.ts`：虚拟邮箱登录；失败计数占位对接验证码策略；成功写 `audit_logs`（`auth.login_success`，`metadata.attempted_username` 仅 failure）
-- [ ] 新增 `apps/api/src/services/auth-login.service.test.ts`：Mock Adapter；断言错误码 `AUTH_INVALID_CREDENTIALS`、`AUTH_ACCOUNT_DISABLED`
-- [ ] 新增 `apps/api/src/services/auth-session.service.ts`：组装 session + profile 摘要（含 `requires_password_change`、`mfa_enabled`、`role`）
-- [ ] 新增 `apps/api/src/services/auth-session.service.test.ts`
-- [ ] 新增 `apps/api/src/services/auth-logout.service.ts`：登出 + `auth.logout` 审计
-- [ ] 新增 `apps/api/src/services/auth-logout.service.test.ts`
-- [ ] 新增 `apps/api/src/services/auth-change-password.service.ts`：验证原密码（主动改密）；更新 Auth 密码；调用 `complete_password_change()` 置 `requires_password_change=false`
-- [ ] 新增 `apps/api/src/services/auth-change-password.service.test.ts`
-- [ ] 新增 `apps/api/src/services/auth-mfa.service.ts`：enroll 返回 QR；verify 后 `set_profile_mfa_enabled(true)`；强制角色未绑定返回 `AUTH_MFA_REQUIRED`
-- [ ] 新增 `apps/api/src/services/auth-mfa.service.test.ts`
-- [ ] 新增 `apps/api/src/services/profile.service.ts`：GET/PATCH 本人资料（禁止改 `role/status/username/mfa_enabled`）
-- [ ] 新增 `apps/api/src/services/profile.service.test.ts`
+- [x] 新增 `apps/api/src/services/auth-login.service.ts`：虚拟邮箱登录；失败计数占位对接验证码策略；成功写 `audit_logs`（`auth.login_success`，`metadata.attempted_username` 仅 failure）
+- [x] 新增 `apps/api/src/services/auth-login.service.test.ts`：Mock Adapter；断言错误码 `AUTH_INVALID_CREDENTIALS`、`AUTH_ACCOUNT_DISABLED`
+- [x] 新增 `apps/api/src/services/auth-session.service.ts`：组装 session + profile 摘要（含 `requires_password_change`、`mfa_enabled`、`role`）
+- [x] 新增 `apps/api/src/services/auth-session.service.test.ts`
+- [x] 新增 `apps/api/src/services/auth-logout.service.ts`：登出 + `auth.logout` 审计
+- [x] 新增 `apps/api/src/services/auth-logout.service.test.ts`
+- [x] 新增 `apps/api/src/services/auth-change-password.service.ts`：验证原密码（主动改密）；更新 Auth 密码；调用 `complete_password_change()` 置 `requires_password_change=false`
+- [x] 新增 `apps/api/src/services/auth-change-password.service.test.ts`
+- [x] 新增 `apps/api/src/services/auth-mfa.service.ts`：enroll 返回 QR；verify 后 `set_profile_mfa_enabled(true)`；强制角色未绑定返回 `AUTH_MFA_REQUIRED`
+- [x] 新增 `apps/api/src/services/auth-mfa.service.test.ts`
+- [x] 新增 `apps/api/src/services/profile.service.ts`：GET/PATCH 本人资料（禁止改 `role/status/username/mfa_enabled`）
+- [x] 新增 `apps/api/src/services/profile.service.test.ts`
 
 ---
 
 ### M1-F 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册路由 `POST /api/auth/login` → `auth.routes.ts` + `auth-login.controller.ts` + `auth-login.controller.test.ts`
-- [ ] 注册路由 `POST /api/auth/logout` → `auth-logout.controller.ts` + `auth-logout.controller.test.ts`
-- [ ] 注册路由 `GET /api/auth/session` → `auth-session.controller.ts` + `auth-session.controller.test.ts`（需 `auth.middleware`）
-- [ ] 注册路由 `POST /api/auth/change-password` → `auth-change-password.controller.ts` + `auth-change-password.controller.test.ts`
-- [ ] 注册路由 `POST /api/auth/mfa/enroll` → `auth-mfa-enroll.controller.ts` + 测试（仅 `admin`/`director`）
-- [ ] 注册路由 `POST /api/auth/mfa/verify` → `auth-mfa-verify.controller.ts` + 测试
-- [ ] 注册路由 `GET /api/auth/mfa/status` → `auth-mfa-status.controller.ts` + 测试
-- [ ] 注册路由 `GET /api/profile` → `profile.routes.ts` + `profile-get.controller.ts` + 测试
-- [ ] 注册路由 `PATCH /api/profile` → `profile-patch.controller.ts` + 测试
-- [ ] 在 `apps/api/src/app.ts` 挂载 auth/profile 路由组；公开路由仅 `login`；其余走 `auth` + `password-change-gate` 链
+- [x] 注册路由 `POST /api/auth/login` → `auth.routes.ts` + `auth-login.controller.ts` + `auth-login.controller.test.ts`
+- [x] 注册路由 `POST /api/auth/logout` → `auth-logout.controller.ts` + `auth-logout.controller.test.ts`
+- [x] 注册路由 `GET /api/auth/session` → `auth-session.controller.ts` + `auth-session.controller.test.ts`（需 `auth.middleware`）
+- [x] 注册路由 `POST /api/auth/change-password` → `auth-change-password.controller.ts` + `auth-change-password.controller.test.ts`
+- [x] 注册路由 `POST /api/auth/mfa/enroll` → `auth-mfa-enroll.controller.ts` + 测试（仅 `admin`/`director`）
+- [x] 注册路由 `POST /api/auth/mfa/verify` → `auth-mfa-verify.controller.ts` + 测试
+- [x] 注册路由 `GET /api/auth/mfa/status` → `auth-mfa-status.controller.ts` + 测试
+- [x] 注册路由 `GET /api/profile` → `profile.routes.ts` + `profile-get.controller.ts` + 测试
+- [x] 注册路由 `PATCH /api/profile` → `profile-patch.controller.ts` + 测试
+- [x] 在 `apps/api/src/app.ts` 挂载 auth/profile 路由组；公开路由仅 `login`；其余走 `auth` + `password-change-gate` 链
 
 ---
 
 ### M1-G 数据库函数调用迁移（若 M0 未包含）
 
-- [ ] 确认 M0 迁移已含 `complete_password_change()`、`set_profile_mfa_enabled()`；若缺失：`npx supabase migration new functions_auth_profile` 并 `db push`
-- [ ] 新增集成测试 `apps/api/src/__tests__/auth-password-change.db.test.ts`：调用 RPC 后 `requires_password_change` 为 `false`
+- [x] 确认 M0 迁移已含 `complete_password_change()`、`set_profile_mfa_enabled()`；若缺失：`npx supabase migration new functions_auth_profile` 并 `db push`
+- [x] 新增集成测试 `apps/api/src/__tests__/auth-password-change.db.test.ts`：调用 RPC 后 `requires_password_change` 为 `false`
 
 ---
 

@@ -41,6 +41,10 @@ export {
   type AsrRuntimeEnvConfig,
 } from "./asr-runtime-env.js";
 export {
+  loadOutboxRuntimeEnvFromProcess,
+  type OutboxRuntimeEnvConfig,
+} from "./outbox-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

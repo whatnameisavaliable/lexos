@@ -650,19 +650,19 @@
 
 ### M4-G Outbox Dispatcher 进程（U2 侧；**唯一**允许 `queue.add` 的位置）
 
-- [ ] 初始化 `workers/outbox-dispatcher/` 入口：`index.ts` 加载 `.env`、连接 `OUTBOX_DB_URL` 与 `REDIS_URL`
-- [ ] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.ts`：轮询 `published_at IS NULL`（`OUTBOX_POLL_INTERVAL_MS`）
-- [ ] 新增 `workers/outbox-dispatcher/src/bullmq-publisher.ts`：按 `payload.queueName` 调用 `queue.add`；成功更新 `published_at`
-- [ ] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.test.ts`：Mock BullMQ；失败递增 `publish_attempts`；超 `OUTBOX_MAX_ATTEMPTS` 写审计【待确认】告警钩子
-- [ ] 在 `package.json` 增加脚本：`outbox:dispatcher`（文档化与 API 同机启动方式）
+- [x] 初始化 `workers/outbox-dispatcher/` 入口：`index.ts` 加载 `.env`、连接 `OUTBOX_DB_URL` 与 `REDIS_URL`
+- [x] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.ts`：轮询 `published_at IS NULL`（`OUTBOX_POLL_INTERVAL_MS`）
+- [x] 新增 `workers/outbox-dispatcher/src/bullmq-publisher.ts`：按 `payload.queueName` 调用 `queue.add`；成功更新 `published_at`
+- [x] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.test.ts`：Mock BullMQ；失败递增 `publish_attempts`；超 `OUTBOX_MAX_ATTEMPTS` 写审计【待确认】告警钩子
+- [x] 在 `package.json` 增加脚本：`outbox:dispatcher`（文档化与 API 同机启动方式）
 
 ---
 
 ### M4-H 前端 · 依赖与 Shadcn（单条一项）
 
-- [ ] **经用户授权后**安装 TUS 客户端依赖（如 `tus-js-client`）；禁止未授权 `npm install`
-- [ ] 执行 `npx shadcn@latest add progress`
-- [ ] 执行 `npx shadcn@latest add alert-dialog`（若 M1/M2 未引入则执行，已存在则跳过）
+- [x] **经用户授权后**安装 TUS 客户端依赖（如 `tus-js-client`）；禁止未授权 `npm install`
+- [x] 执行 `npx shadcn@latest add progress`
+- [x] 执行 `npx shadcn@latest add alert-dialog`（若 M1/M2 未引入则执行，已存在则跳过）
 
 ---
 

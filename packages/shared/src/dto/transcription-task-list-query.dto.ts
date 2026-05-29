@@ -6,7 +6,7 @@ import {
 } from "../enums/transcription-task-status.js";
 
 const statusFilterSchema = z.enum(
-  TRANSCRIPTION_TASK_STATUS_VALUES as [
+  [...TRANSCRIPTION_TASK_STATUS_VALUES] as [
     TranscriptionTaskStatus,
     ...TranscriptionTaskStatus[],
   ],

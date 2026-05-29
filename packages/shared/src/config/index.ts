@@ -20,3 +20,9 @@ export {
   resolveSupabaseCli,
   type SupabaseCliResolution,
 } from "./supabase-cli.js";
+export {
+  SUPABASE_PROJECT_REF_ENV,
+  assertLinkedProjectMatchesEnv,
+  parseProjectRefFromSupabaseUrl,
+  readLinkedProjectRef,
+} from "./supabase-project.js";

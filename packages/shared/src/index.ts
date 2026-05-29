@@ -3,6 +3,8 @@ export * from "./api/index.js";
 export * from "./errors/auth-error-codes.js";
 export * from "./types/user-role.js";
 export * from "./types/auth-context.js";
+export * from "./validation/username.js";
+export * from "./dto/auth-login.dto.js";
 export * from "./db/index.js";
 export {
   M0_B_MIGRATIONS,

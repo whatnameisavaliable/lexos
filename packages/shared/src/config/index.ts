@@ -36,3 +36,9 @@ export {
   assertEnvFilesGitignored,
   parseGitignoreLines,
 } from "./gitignore-env.js";
+export {
+  MONOREPO_WORKSPACE_PACKAGES,
+  assertMonorepoLayout,
+  getMonorepoPackagePath,
+  type MonorepoWorkspacePackage,
+} from "./monorepo-layout.js";

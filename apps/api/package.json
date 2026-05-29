@@ -1,0 +1,11 @@
+{
+  "name": "@lexos/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LexOS U2 HTTP API (Route → Controller → Service → Repository)",
+  "type": "module",
+  "scripts": {
+    "build": "echo \"M0 scaffold: implement in M0-D\"",
+    "test": "echo \"M0 scaffold: no tests yet\""
+  }
+}

@@ -37,6 +37,10 @@ export {
   type StorageRuntimeEnvConfig,
 } from "./storage-runtime-env.js";
 export {
+  loadAsrRuntimeEnvFromProcess,
+  type AsrRuntimeEnvConfig,
+} from "./asr-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

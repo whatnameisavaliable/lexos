@@ -610,11 +610,11 @@
 
 ### M4-C Repository（单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/transcription-task.repository.ts`：`createUploading`、`findById`、`listForUser`（律师 JWT）、`listAll`（admin JWT 或 RLS）
-- [ ] 新增 `apps/api/src/repositories/upload-session.repository.ts`：`create`、`findByIdForOwner`、`markCompleted`
-- [ ] 新增 `apps/api/src/repositories/outbox.repository.ts`：`insertInTransaction(client, row)`（仅 Outbox 写入封装）
-- [ ] 新增 `apps/api/src/repositories/task-state.repository.ts`：封装 `transition_task_status` RPC（`service_role`）
-- [ ] 新增 `apps/api/src/repositories/transcription-task.repository.test.ts`：律师不可读他人 `task_id`
+- [x] 新增 `apps/api/src/repositories/transcription-task.repository.ts`：`createUploading`、`findById`、`listForUser`（律师 JWT）、`listAll`（admin JWT 或 RLS）
+- [x] 新增 `apps/api/src/repositories/upload-session.repository.ts`：`create`、`findByIdForOwner`、`markCompleted`
+- [x] 新增 `apps/api/src/repositories/outbox.repository.ts`：`insertInTransaction(client, row)`（仅 Outbox 写入封装）
+- [x] 新增 `apps/api/src/repositories/task-state.repository.ts`：封装 `transition_task_status` RPC（`service_role`）
+- [x] 新增 `apps/api/src/repositories/transcription-task.repository.test.ts`：律师不可读他人 `task_id`
 
 ---
 

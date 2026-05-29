@@ -49,14 +49,7 @@ export function ChangePasswordForm() {
     try {
       await changePassword(values);
       const session = await getSession();
-      const target = session.role === "admin" ? "/admin" : "/lawyer";
-      router.replace(
-        session.role === "admin" || session.role === "director"
-          ? !session.mfaEnabled
-            ? "/mfa/setup"
-            : target
-          : target,
-      );
+      router.replace(session.role === "admin" ? "/admin" : "/lawyer");
       router.refresh();
     } catch (err) {
       setError(toApiClientError(err).message);

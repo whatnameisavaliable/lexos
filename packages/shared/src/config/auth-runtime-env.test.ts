@@ -45,10 +45,10 @@ describe("loadAuthRuntimeEnvFromProcess", () => {
     process.env.AUTH_VIRTUAL_EMAIL_DOMAIN = "llexos.internal";
     process.env.CAPTCHA_PROVIDER = "none";
     delete process.env.CAPTCHA_SECRET_KEY;
-    process.env.MFA_REQUIRED_ROLES = "admin,director";
+    process.env.MFA_REQUIRED_ROLES = "";
 
     const cfg = loadAuthRuntimeEnvFromProcess();
     expect(cfg.captchaProvider).toBe("none");
-    expect(cfg.mfaRequiredRoles).toEqual(["admin", "director"]);
+    expect(cfg.mfaRequiredRoles).toEqual([]);
   });
 });

@@ -22,22 +22,6 @@ export interface SessionResponseData {
   readonly status: string;
 }
 
-/** MFA 注册响应。 */
-export interface MfaEnrollResponseData {
-  readonly factorId: string;
-  readonly qrCode: string;
-  readonly secret: string;
-  readonly uri: string;
-}
-
-/** MFA 状态响应。 */
-export interface MfaStatusResponseData {
-  readonly mfaEnabled: boolean;
-  readonly required: boolean;
-  readonly currentLevel: string | null;
-  readonly nextLevel: string | null;
-}
-
 /** `POST /api/auth/login` */
 export async function login(body: AuthLoginBody): Promise<LoginResponseData> {
   const res = await apiFetch<LoginResponseData>("/auth/login", {
@@ -73,28 +57,4 @@ export async function changePassword(
     method: "POST",
     body: JSON.stringify(body),
   });
-}
-
-/** `POST /api/auth/mfa/enroll` */
-export async function mfaEnroll(): Promise<MfaEnrollResponseData> {
-  const res = await apiFetch<MfaEnrollResponseData>("/auth/mfa/enroll", {
-    method: "POST",
-  });
-  return res.data;
-}
-
-/** `POST /api/auth/mfa/verify` */
-export async function mfaVerify(factorId: string, code: string): Promise<void> {
-  await apiFetch<{ ok: boolean }>("/auth/mfa/verify", {
-    method: "POST",
-    body: JSON.stringify({ factorId, code }),
-  });
-}
-
-/** `GET /api/auth/mfa/status` */
-export async function getMfaStatus(): Promise<MfaStatusResponseData> {
-  const res = await apiFetch<MfaStatusResponseData>("/auth/mfa/status", {
-    method: "GET",
-  });
-  return res.data;
 }

@@ -34,7 +34,7 @@ export function parseMfaRequiredRoles(raw: string): readonly UserRole[] {
  * 从 `process.env` 加载 Auth 运行时配置。
  */
 export function loadAuthRuntimeEnvFromProcess(): AuthRuntimeEnvConfig {
-  const provider = requireEnv("CAPTCHA_PROVIDER").toLowerCase();
+  const provider = (process.env.CAPTCHA_PROVIDER?.trim() || "none").toLowerCase();
   if (provider !== "none" && provider !== "turnstile" && provider !== "geetest") {
     throw new Error(
       `CAPTCHA_PROVIDER must be none, turnstile, or geetest; got: ${provider}`,
@@ -48,12 +48,12 @@ export function loadAuthRuntimeEnvFromProcess(): AuthRuntimeEnvConfig {
     );
   }
 
+  const mfaRaw = process.env.MFA_REQUIRED_ROLES?.trim() ?? "";
+
   return {
     authVirtualEmailDomain: requireEnv("AUTH_VIRTUAL_EMAIL_DOMAIN"),
     captchaProvider: provider,
     captchaSecretKey,
-    mfaRequiredRoles: parseMfaRequiredRoles(
-      requireEnv("MFA_REQUIRED_ROLES"),
-    ),
+    mfaRequiredRoles: mfaRaw ? parseMfaRequiredRoles(mfaRaw) : [],
   };
 }

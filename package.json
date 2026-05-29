@@ -15,6 +15,7 @@
     "seed:admin": "npx tsx packages/shared/src/seed/run-builtin-admin-cli.ts",
     "seed:sql": "npx tsx packages/shared/src/db/run-sql-file-cli.ts supabase/seed.sql",
     "db:push": "npx tsx packages/shared/src/db/apply-migrations-cli.ts",
+    "db:fix-audit": "npx tsx packages/shared/src/db/run-sql-file-cli.ts supabase/migrations/20260530120000_fix_append_audit_log_digest.sql",
     "db:ensure-pgcrypto": "npx tsx packages/shared/src/db/run-sql-file-cli.ts supabase/scripts/ensure-pgcrypto.sql",
     "build:shared": "npm run build -w @lexos/shared",
     "dev:api": "npm run build:shared && npm run dev -w @lexos/api",

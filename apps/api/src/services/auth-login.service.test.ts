@@ -11,21 +11,11 @@ describe("AuthLoginService", () => {
   };
   const profileRepository = { findById: vi.fn() };
   const auditLogRepository = { append: vi.fn() };
-  const captchaAdapter = { verify: vi.fn() };
-
-  const authEnv = {
-    authVirtualEmailDomain: "llexos.internal",
-    captchaProvider: "none" as const,
-    captchaSecretKey: undefined,
-    mfaRequiredRoles: ["admin", "director"] as const,
-  };
 
   const service = new AuthLoginService(
     authAdapter as never,
     profileRepository as never,
     auditLogRepository as never,
-    captchaAdapter as never,
-    authEnv,
   );
 
   it("returns tokens on successful login", async () => {
@@ -72,13 +62,6 @@ describe("AuthLoginService", () => {
     ).rejects.toMatchObject({
       code: AuthErrorCode.AUTH_INVALID_CREDENTIALS,
     } satisfies Partial<AppHttpError>);
-
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "auth.login_failure",
-        metadata: { attempted_username: "x" },
-      }),
-    );
   });
 
   it("rejects disabled account with AUTH_ACCOUNT_DISABLED", async () => {

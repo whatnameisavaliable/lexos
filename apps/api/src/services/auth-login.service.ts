@@ -1,17 +1,12 @@
 import { AuthErrorCode, type AuthLoginBody } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
-import type { AuthRuntimeEnvConfig } from "@lexos/shared/config";
 import {
   AuthAdapterError,
   type SupabaseAuthAdapter,
 } from "../adapters/auth/supabase-auth.adapter.js";
-import type { CaptchaAdapter } from "../adapters/auth/captcha.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
 import type { ProfileRepository } from "../repositories/profile.repository.js";
-
-/** 应用层连续失败阈值（PRD §2.5.3）。 */
-export const LOGIN_FAILURE_CAPTCHA_THRESHOLD = 3;
 
 export interface AuthLoginRequestMeta {
   readonly ip?: string;
@@ -26,17 +21,13 @@ export interface AuthLoginResult {
 }
 
 /**
- * 登录服务：虚拟邮箱认证、验证码策略占位、审计（PRD §3.2）。
+ * 登录服务：虚拟邮箱认证 + 审计（首期不含验证码 / MFA）。
  */
 export class AuthLoginService {
-  private readonly failureCounts = new Map<string, number>();
-
   constructor(
     private readonly authAdapter: SupabaseAuthAdapter,
     private readonly profileRepository: ProfileRepository,
     private readonly auditLogRepository: AuditLogRepository,
-    private readonly captchaAdapter: CaptchaAdapter,
-    private readonly authEnv: AuthRuntimeEnvConfig,
   ) {}
 
   /**
@@ -47,26 +38,6 @@ export class AuthLoginService {
     meta: AuthLoginRequestMeta = {},
   ): Promise<AuthLoginResult> {
     const username = body.username;
-    const failures = this.failureCounts.get(username) ?? 0;
-
-    if (failures >= LOGIN_FAILURE_CAPTCHA_THRESHOLD) {
-      if (!body.captchaToken) {
-        throw new AppHttpError(
-          AuthErrorCode.AUTH_CAPTCHA_REQUIRED,
-          "Captcha verification required",
-        );
-      }
-      const captcha = await this.captchaAdapter.verify(
-        body.captchaToken,
-        meta.ip,
-      );
-      if (!captcha.success) {
-        throw new AppHttpError(
-          AuthErrorCode.AUTH_CAPTCHA_REQUIRED,
-          "Captcha verification failed",
-        );
-      }
-    }
 
     try {
       const session = await this.authAdapter.signInWithPassword(
@@ -87,19 +58,6 @@ export class AuthLoginService {
         );
       }
 
-      if (
-        this.authEnv.mfaRequiredRoles.includes(profile.role) &&
-        profile.mfaEnabled &&
-        !body.totpCode
-      ) {
-        throw new AppHttpError(
-          AuthErrorCode.AUTH_MFA_REQUIRED,
-          "TOTP code required",
-        );
-      }
-
-      this.failureCounts.delete(username);
-
       await this.auditLogRepository.append({
         actorId: session.userId,
         action: "auth.login_success",
@@ -119,14 +77,9 @@ export class AuthLoginService {
       if (err instanceof AppHttpError) {
         throw err;
       }
-      this.recordFailure(username);
-      await this.auditLoginFailure(username, meta);
+      await this.auditLoginFailure(username, meta).catch(() => undefined);
       this.mapLoginError(err);
     }
-  }
-
-  private recordFailure(username: string): void {
-    this.failureCounts.set(username, (this.failureCounts.get(username) ?? 0) + 1);
   }
 
   private async auditLoginFailure(

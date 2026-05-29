@@ -5,14 +5,10 @@ import {
   loadSupabaseEnvFromProcess,
   type AppRuntimeEnvConfig,
 } from "@lexos/shared/config";
-import { createCaptchaAdapter } from "./adapters/auth/create-captcha-adapter.js";
 import { SupabaseAuthAdapter } from "./adapters/auth/supabase-auth.adapter.js";
 import { AuthChangePasswordController } from "./controllers/auth-change-password.controller.js";
 import { AuthLoginController } from "./controllers/auth-login.controller.js";
 import { AuthLogoutController } from "./controllers/auth-logout.controller.js";
-import { AuthMfaEnrollController } from "./controllers/auth-mfa-enroll.controller.js";
-import { AuthMfaStatusController } from "./controllers/auth-mfa-status.controller.js";
-import { AuthMfaVerifyController } from "./controllers/auth-mfa-verify.controller.js";
 import { AuthSessionController } from "./controllers/auth-session.controller.js";
 import { ProfileGetController } from "./controllers/profile-get.controller.js";
 import { ProfilePatchController } from "./controllers/profile-patch.controller.js";
@@ -20,7 +16,6 @@ import { AuthMiddleware } from "./middleware/auth.middleware.js";
 import { withErrorHandler } from "./middleware/error-handler.middleware.js";
 import { enforcePasswordChangeGate } from "./middleware/password-change-gate.middleware.js";
 import { withRequestId } from "./middleware/request-id.middleware.js";
-import { requireRoles } from "./middleware/role-gate.factory.js";
 import { AuditLogRepository } from "./repositories/audit-log.repository.js";
 import { ProfileAdminRepository } from "./repositories/profile-admin.repository.js";
 import { ProfileRepository } from "./repositories/profile.repository.js";
@@ -28,7 +23,6 @@ import { handleHealthRoute } from "./routes/health.routes.js";
 import { AuthChangePasswordService } from "./services/auth-change-password.service.js";
 import { AuthLoginService } from "./services/auth-login.service.js";
 import { AuthLogoutService } from "./services/auth-logout.service.js";
-import { AuthMfaService } from "./services/auth-mfa.service.js";
 import { AuthSessionService } from "./services/auth-session.service.js";
 import { ProfileService } from "./services/profile.service.js";
 import { HealthController } from "./controllers/health.controller.js";
@@ -43,14 +37,13 @@ export interface LexosApiApp {
 }
 
 /**
- * 组装 M1 认证与个人中心路由（`tasks.md` M1-F）。
+ * 组装 M1 认证与个人中心路由（首期不含验证码 / MFA 路由）。
  */
 export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const supabaseEnv = loadSupabaseEnvFromProcess();
   const authEnv = loadAuthRuntimeEnvFromProcess();
 
   const authAdapter = new SupabaseAuthAdapter(supabaseEnv, authEnv);
-  const captchaAdapter = createCaptchaAdapter(authEnv);
   const profileRepository = new ProfileRepository(supabaseEnv);
   const profileAdminRepository = new ProfileAdminRepository(supabaseEnv);
   const auditLogRepository = new AuditLogRepository(supabaseEnv);
@@ -59,8 +52,6 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     authAdapter,
     profileRepository,
     auditLogRepository,
-    captchaAdapter,
-    authEnv,
   );
   const authLogoutService = new AuthLogoutService(authAdapter, auditLogRepository);
   const authSessionService = new AuthSessionService();
@@ -69,15 +60,9 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     profileAdminRepository,
     auditLogRepository,
   );
-  const authMfaService = new AuthMfaService(
-    authAdapter,
-    profileAdminRepository,
-    authEnv,
-  );
   const profileService = new ProfileService(profileRepository);
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
-  const mfaRoleGate = requireRoles("admin", "director");
 
   const loginController = new AuthLoginController(
     authLoginService,
@@ -93,18 +78,6 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const changePasswordController = new AuthChangePasswordController(
     authChangePasswordService,
-    env.requestIdHeader,
-  );
-  const mfaEnrollController = new AuthMfaEnrollController(
-    authMfaService,
-    env.requestIdHeader,
-  );
-  const mfaVerifyController = new AuthMfaVerifyController(
-    authMfaService,
-    env.requestIdHeader,
-  );
-  const mfaStatusController = new AuthMfaStatusController(
-    authMfaService,
     env.requestIdHeader,
   );
   const profileGetController = new ProfileGetController(
@@ -125,16 +98,10 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
 
   const protectedRoute = (
     handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
-    options?: {
-      skipPasswordGate?: boolean;
-      roleGate?: (res: ServerResponse) => boolean;
-    },
+    options?: { skipPasswordGate?: boolean },
   ) => {
     return async (req: IncomingMessage, res: ServerResponse) => {
       await authMiddleware.requireAuth(req, res, async () => {
-        if (options?.roleGate && !options.roleGate(res)) {
-          return;
-        }
         if (!options?.skipPasswordGate && !enforcePasswordChangeGate(res)) {
           return;
         }
@@ -174,28 +141,6 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
         (req, res) => changePasswordController.handle(req, res),
         { skipPasswordGate: true },
       ),
-    },
-    {
-      method: "POST",
-      path: "/api/auth/mfa/enroll",
-      handler: protectedRoute((req, res) => mfaEnrollController.handle(req, res), {
-        roleGate: mfaRoleGate,
-      }),
-    },
-    {
-      method: "POST",
-      path: "/api/auth/mfa/verify",
-      handler: protectedRoute((req, res) => mfaVerifyController.handle(req, res), {
-        roleGate: mfaRoleGate,
-      }),
-    },
-    {
-      method: "GET",
-      path: "/api/auth/mfa/status",
-      handler: protectedRoute((req, res) => mfaStatusController.handle(req, res), {
-        roleGate: mfaRoleGate,
-        skipPasswordGate: true,
-      }),
     },
     {
       method: "GET",

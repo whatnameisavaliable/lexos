@@ -28,7 +28,6 @@ export function ProfileForm() {
   const [readonly, setReadonly] = useState<{
     username: string;
     role: string;
-    mfaEnabled: boolean;
   } | null>(null);
 
   const form = useForm<ProfileUpdateBody>({
@@ -42,7 +41,6 @@ export function ProfileForm() {
         setReadonly({
           username: p.username,
           role: p.role,
-          mfaEnabled: p.mfaEnabled,
         });
         form.reset({
           displayName: p.displayName,
@@ -86,8 +84,6 @@ export function ProfileForm() {
         <dd>{readonly.username}</dd>
         <dt className="text-muted-foreground">角色</dt>
         <dd>{readonly.role}</dd>
-        <dt className="text-muted-foreground">MFA</dt>
-        <dd>{readonly.mfaEnabled ? "已绑定" : "未绑定"}</dd>
       </dl>
 
       {error ? (

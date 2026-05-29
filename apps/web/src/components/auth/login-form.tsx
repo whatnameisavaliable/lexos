@@ -20,14 +20,11 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const LOGIN_CAPTCHA_THRESHOLD = 3;
-
 /**
- * 登录表单（`ui_design.md` §6.1）。
+ * 登录表单（`ui_design.md` §6.1；首期无验证码）。
  */
 export function LoginForm() {
   const router = useRouter();
-  const [failureCount, setFailureCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,8 +32,6 @@ export function LoginForm() {
     resolver: zodResolver(authLoginBodySchema),
     defaultValues: { username: "", password: "" },
   });
-
-  const showCaptcha = failureCount >= LOGIN_CAPTCHA_THRESHOLD;
 
   async function onSubmit(values: AuthLoginBody) {
     setLoading(true);
@@ -46,11 +41,6 @@ export function LoginForm() {
       const session = await getSession();
       if (session.requiresPasswordChange) {
         router.replace("/change-password");
-      } else if (
-        (session.role === "admin" || session.role === "director") &&
-        !session.mfaEnabled
-      ) {
-        router.replace("/mfa/setup");
       } else if (session.role === "admin") {
         router.replace("/admin");
       } else {
@@ -58,7 +48,6 @@ export function LoginForm() {
       }
       router.refresh();
     } catch (err) {
-      setFailureCount((c) => c + 1);
       const apiErr = toApiClientError(err);
       setError(apiErr.message);
     } finally {
@@ -81,14 +70,6 @@ export function LoginForm() {
       {error ? (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      {showCaptcha ? (
-        <Alert className="mb-4">
-          <AlertDescription>
-            验证码占位（连续失败 {failureCount} 次，接入 Turnstile/Geetest 后启用）
-          </AlertDescription>
         </Alert>
       ) : null}
 
@@ -120,21 +101,6 @@ export function LoginForm() {
               </FormItem>
             )}
           />
-          {showCaptcha ? (
-            <FormField
-              control={form.control}
-              name="captchaToken"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>验证码</FormLabel>
-                  <FormControl>
-                    <Input placeholder="captcha-token-placeholder" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ) : null}
           <Button type="submit" className="w-full">
             登录
           </Button>

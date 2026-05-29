@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isAuthFlow = pathname === "/change-password" || pathname === "/mfa/setup";
+  const isAuthFlow = pathname === "/change-password";
 
   if (!token && !isAuthFlow) {
     return NextResponse.redirect(new URL("/login", request.url));

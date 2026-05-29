@@ -10,6 +10,13 @@ export {
   type SupabaseEnvConfig,
 } from "./env.js";
 export {
+  BUILTIN_ADMIN_USERNAME,
+  loadAuthSeedEnv,
+  loadAuthSeedEnvFromProcess,
+  resolveVirtualEmail,
+  type AuthSeedEnvConfig,
+} from "./auth-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

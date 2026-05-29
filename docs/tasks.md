@@ -89,7 +89,7 @@
 
 ### M0-C Seed 与 Auth 内置账户
 
-- [ ] 编写 `supabase/seed.sql`：通过 Supabase Auth Admin 流程说明或 SQL 注释 + 文档化脚本；创建内置 `admin` 用户及对应 `profiles`（`role=admin`，`requires_password_change=true` 首次登录策略，与 PRD §1.4 A3 一致）
+- [x] 编写 `supabase/seed.sql`：通过 Supabase Auth Admin 流程说明或 SQL 注释 + 文档化脚本；创建内置 `admin` 用户及对应 `profiles`（`role=admin`，`requires_password_change=true` 首次登录策略，与 PRD §1.4 A3 一致）
 - [ ] 配置 `supabase/config.toml` 的 `[db.seed]`（若使用 CLI seed）并执行 `npx supabase db reset`（**仅开发库**）或 `npx supabase seed` 验证 seed 可重复执行策略
 - [ ] 验证：远端/本地库存在可登录的 `admin` profile 行，且 `username` 唯一
 

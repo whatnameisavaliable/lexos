@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify:supabase": "vitest run packages/shared/src/config/supabase-connectivity.test.ts",
-    "verify:supabase-cli": "vitest run packages/shared/src/config/supabase-cli.test.ts"
+    "verify:supabase-cli": "vitest run packages/shared/src/config/supabase-cli.test.ts",
+    "seed:admin": "node --experimental-strip-types packages/shared/src/seed/run-builtin-admin-cli.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

@@ -668,10 +668,10 @@
 
 ### M4-I 前端 · API 与上传 Hook（单文件一项）
 
-- [ ] 新增 `apps/web/src/lib/transcription-api.ts`：`initUpload`、`completeUpload`、`listTasks`、`getTask`
-- [ ] 新增 `apps/web/src/hooks/use-tus-upload.ts`：仅使用 `init` 返回的 `storageKeyPrefix`/`tusEndpoint`；进度回调；完成后调 `completeUpload`
-- [ ] 新增 `apps/web/src/hooks/use-task-polling.ts`：间隔 ≥2s 轮询 `getTask`（`ui_design.md` §6.3.5）
-- [ ] 新增 `apps/web/src/contexts/active-upload-context.tsx`：标记进行中上传供路由 Guard（§6.3.4.2）
+- [x] 新增 `apps/web/src/lib/transcription-api.ts`：`initUpload`、`completeUpload`、`listTasks`、`getTask`
+- [x] 新增 `apps/web/src/hooks/use-tus-upload.ts`：仅使用 `init` 返回的 `storageKeyPrefix`/`tusEndpoint`；进度回调；完成后调 `completeUpload`
+- [x] 新增 `apps/web/src/hooks/use-task-polling.ts`：间隔 ≥2s 轮询 `getTask`（`ui_design.md` §6.3.5）
+- [x] 新增 `apps/web/src/contexts/active-upload-context.tsx`：标记进行中上传供路由 Guard（§6.3.4.2）
 
 ---
 

@@ -83,7 +83,7 @@
 - [x] **B14 Storage Buckets 与对象策略** — `supabase migration new storage_buckets_policies`  
   写入：创建/声明 `media`、`exports` bucket；`storage.objects` 策略：路径首段 `= auth.uid()::text`（§5.3）；`exports` 同构；禁止 authenticated 越权 UPDATE 他人对象
 
-- [ ] **B15 推送校验** — 执行 `nsupabase db push`（已 `supabase link` 时）或 `npx supabase migration up`；确认无报错且 `npx supabase migration list` 显示 B1–B14 均已应用
+- [x] **B15 推送校验** — 执行 `nsupabase db push`（已 `supabase link` 时）或 `npx supabase migration up`；确认无报错且 `npx supabase migration list` 显示 B1–B14 均已应用
 
 ---
 

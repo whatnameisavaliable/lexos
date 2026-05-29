@@ -2,25 +2,11 @@ import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { loadSupabaseEnv, resolveRepoRoot } from "../config/env.js";
 import { resolveSupabaseCli } from "../config/supabase-cli.js";
-import { listExpectedMigrationNames, M0_B_MIGRATIONS } from "./manifest.js";
-
-/**
- * 解析 `supabase migration list` 输出中已应用于 Remote 的迁移后缀名。
- */
-export function parseAppliedRemoteMigrationNames(cliOutput: string): string[] {
-  const names: string[] = [];
-  for (const line of cliOutput.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("Local") || trimmed.startsWith("---")) {
-      continue;
-    }
-    const match = /\d{14}_([a-z0-9_]+)\.sql/.exec(trimmed);
-    if (match?.[1]) {
-      names.push(match[1]);
-    }
-  }
-  return names;
-}
+import {
+  listLocalMigrationTimestamps,
+  parseSyncedMigrationTimestamps,
+} from "./migration-cli-parse.js";
+import { listExpectedMigrationNames } from "./manifest.js";
 
 describe("M0-B migration push (integration)", () => {
   it.skipIf(!process.env.RUN_DB_PUSH_TESTS)(
@@ -51,13 +37,11 @@ describe("M0-B migration push (integration)", () => {
         },
       );
 
-      const applied = parseAppliedRemoteMigrationNames(listOutput);
-      for (const expected of listExpectedMigrationNames()) {
-        expect(applied, `missing remote migration: ${expected}`).toContain(
-          expected,
-        );
-      }
-      expect(applied.length).toBeGreaterThanOrEqual(M0_B_MIGRATIONS.length);
+      const synced = parseSyncedMigrationTimestamps(listOutput);
+      const localTimestamps = listLocalMigrationTimestamps(repoRoot);
+
+      expect(synced).toEqual(localTimestamps);
+      expect(listExpectedMigrationNames().length).toBe(14);
     },
     300_000,
   );

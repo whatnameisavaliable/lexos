@@ -5,11 +5,28 @@ export * from "./api/index.js";
 export * from "./dto/auth-login.dto.js";
 export * from "./dto/auth-change-password.dto.js";
 export * from "./dto/profile-update.dto.js";
-export * from "./dto/admin-user-create.dto.js";
-export * from "./dto/admin-user-update.dto.js";
-export * from "./dto/admin-user-status.dto.js";
-export * from "./dto/admin-user-list-query.dto.js";
-export * from "./types/admin-user-list-item.js";
+export {
+  adminUserCreateBodySchema,
+  parseAdminUserCreateBody,
+  type AdminUserCreateBody,
+} from "./dto/admin-user-create.dto.js";
+export {
+  adminUserUpdateBodySchema,
+  parseAdminUserUpdateBody,
+  type AdminUserUpdateBody,
+} from "./dto/admin-user-update.dto.js";
+export {
+  adminUserStatusBodySchema,
+  parseAdminUserStatusBody,
+  type AdminUserStatusBody,
+  type ProfileStatus,
+} from "./dto/admin-user-status.dto.js";
+export {
+  adminUserListQuerySchema,
+  parseAdminUserListQuery,
+  type AdminUserListQuery,
+} from "./dto/admin-user-list-query.dto.js";
+export type { AdminUserListItem } from "./types/admin-user-list-item.js";
 export * from "./types/user-role.js";
 export * from "./types/auth-context.js";
 export * from "./errors/auth-error-codes.js";

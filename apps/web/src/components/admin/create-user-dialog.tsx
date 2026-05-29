@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type Resolver } from "react-hook-form";
-import {
-  adminUserCreateBodySchema,
-  type AdminUserCreateBody,
-} from "@lexos/shared";
+import { useForm } from "react-hook-form";
+import { ZodError } from "zod";
+import { parseAdminUserCreateBody, type AdminUserCreateBody } from "@lexos/shared";
+import { applyZodErrors } from "@/lib/validation/apply-zod-errors";
 import { createUser } from "@/lib/admin-users-api";
 import { toApiClientError } from "@/lib/api-client";
 import { ASSIGNABLE_ROLES, ROLE_LABELS } from "@/components/admin/role-labels";
@@ -47,9 +45,6 @@ export function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<AdminUserCreateBody>({
-    resolver: zodResolver(
-      adminUserCreateBodySchema,
-    ) as Resolver<AdminUserCreateBody>,
     defaultValues: {
       username: "",
       displayName: "",
@@ -58,14 +53,26 @@ export function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
     },
   });
 
-  async function onSubmit(values: AdminUserCreateBody) {
+  async function onSubmit(raw: AdminUserCreateBody) {
     setSubmitting(true);
     setError(null);
+    let body: AdminUserCreateBody;
     try {
-      await createUser({
-        ...values,
-        contact: values.contact?.trim() ? values.contact.trim() : undefined,
+      body = parseAdminUserCreateBody({
+        ...raw,
+        contact: raw.contact?.trim() ? raw.contact.trim() : undefined,
       });
+    } catch (err) {
+      setSubmitting(false);
+      if (err instanceof ZodError) {
+        applyZodErrors(err, form.setError);
+        return;
+      }
+      setError(toApiClientError(err).message);
+      return;
+    }
+    try {
+      await createUser(body);
       setOpen(false);
       form.reset();
       onCreated();

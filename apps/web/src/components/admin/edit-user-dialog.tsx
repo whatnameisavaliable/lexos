@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type Resolver } from "react-hook-form";
-import {
-  adminUserUpdateBodySchema,
-  type AdminUserUpdateBody,
-} from "@lexos/shared";
+import { useForm } from "react-hook-form";
+import { ZodError } from "zod";
+import { parseAdminUserUpdateBody, type AdminUserUpdateBody } from "@lexos/shared";
+import { applyZodErrors } from "@/lib/validation/apply-zod-errors";
 import type { AdminUserListItem } from "@lexos/shared";
 import { updateUser } from "@/lib/admin-users-api";
 import { toApiClientError } from "@/lib/api-client";
@@ -54,9 +52,6 @@ export function EditUserDialog({
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<AdminUserUpdateBody>({
-    resolver: zodResolver(
-      adminUserUpdateBodySchema,
-    ) as Resolver<AdminUserUpdateBody>,
     defaultValues: { displayName: "", role: "lawyer", contact: "" },
   });
 
@@ -71,18 +66,30 @@ export function EditUserDialog({
     }
   }, [user, open, form]);
 
-  async function onSubmit(values: AdminUserUpdateBody) {
+  async function onSubmit(raw: AdminUserUpdateBody) {
     if (!user) {
       return;
     }
     setSubmitting(true);
     setError(null);
+    let body: AdminUserUpdateBody;
     try {
-      await updateUser(user.id, {
-        displayName: values.displayName,
-        role: values.role,
-        contact: values.contact === "" ? null : values.contact,
+      body = parseAdminUserUpdateBody({
+        displayName: raw.displayName,
+        role: raw.role,
+        contact: raw.contact === "" ? null : raw.contact,
       });
+    } catch (err) {
+      setSubmitting(false);
+      if (err instanceof ZodError) {
+        applyZodErrors(err, form.setError);
+        return;
+      }
+      setError(toApiClientError(err).message);
+      return;
+    }
+    try {
+      await updateUser(user.id, body);
       onOpenChange(false);
       onUpdated();
     } catch (err) {

@@ -108,7 +108,7 @@
 
 - [x] 全部 M0-A～M0-D 复选框已完成
 - [x] `npx supabase migration list` 与仓库 `supabase/migrations/*.sql` 文件一一对应，无手工改库漂移
-- [ ] 执行 `git commit`（约定式提交，如 `feat(db): add supabase migrations and m0 scaffold`）
+- [x] 执行 `git commit`（约定式提交，如 `feat(db): add supabase migrations and m0 scaffold`）
 - [ ] 在下方进度表将 **M0** 标为「已完成」后，方可启动 Milestone 1
 
 **M0 明确延后（不阻塞 M1 启动）**：

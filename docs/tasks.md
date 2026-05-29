@@ -306,61 +306,61 @@
 
 ### M2-B `AdminRepository`（`service_role`，单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/admin-user.repository.ts`：封装 `service_role` Supabase 客户端（**禁止**在 HTTP 默认链路替代用户 JWT）
-- [ ] 实现 `listUsers(query)`：分页 50；排序 `created_at DESC`；返回 `meta.nextCursor` 或 `meta.total`
-- [ ] 实现 `findUserById(id)`：含 `profiles` 全字段（供编辑表单）
-- [ ] 实现 `findUserByUsername(username)`：创建前唯一性预检
-- [ ] 实现 `insertProfileAfterAuth(...)`：事务内写入 `profiles`（若不用 `handle_new_user` 触发器则显式插入）
-- [ ] 实现 `updateProfileFields(id, dto)`：仅 `display_name`/`role`/`contact`（经 `profiles_write_admin` 或 SECURITY DEFINER RPC）
-- [ ] 实现 `setUserStatus(id, status)`：更新 `profiles.status`
-- [ ] 实现 `setRequiresPasswordChange(id, true)`：重置密码链路用
-- [ ] 实现 `countEnabledAdmins()`：禁用末位 admin 防护
-- [ ] 新增 `apps/api/src/repositories/admin-user.repository.test.ts`：Mock Supabase；断言不暴露 `service_role` 到返回值
+- [x] 新增 `apps/api/src/repositories/admin-user.repository.ts`：封装 `service_role` Supabase 客户端（**禁止**在 HTTP 默认链路替代用户 JWT）
+- [x] 实现 `listUsers(query)`：分页 50；排序 `created_at DESC`；返回 `meta.nextCursor` 或 `meta.total`
+- [x] 实现 `findUserById(id)`：含 `profiles` 全字段（供编辑表单）
+- [x] 实现 `findUserByUsername(username)`：创建前唯一性预检
+- [x] 实现 `insertProfileAfterAuth(...)`：事务内写入 `profiles`（若不用 `handle_new_user` 触发器则显式插入）
+- [x] 实现 `updateProfileFields(id, dto)`：仅 `display_name`/`role`/`contact`（经 `profiles_write_admin` 或 SECURITY DEFINER RPC）
+- [x] 实现 `setUserStatus(id, status)`：更新 `profiles.status`
+- [x] 实现 `setRequiresPasswordChange(id, true)`：重置密码链路用
+- [x] 实现 `countEnabledAdmins()`：禁用末位 admin 防护
+- [x] 新增 `apps/api/src/repositories/admin-user.repository.test.ts`：Mock Supabase；断言不暴露 `service_role` 到返回值
 
 ---
 
 ### M2-C 数据库 SECURITY DEFINER（若 M0 未覆盖 admin 写列）
 
-- [ ] 确认 M0 已含 `profiles_guard_self_update`；若缺失则 `npx supabase migration new profiles_guard_self_update` 并 `db push`
-- [ ] 新增迁移 `npx supabase migration new admin_profile_functions`：`admin_update_profile(...)`、`admin_set_user_status(...)`（仅 `service_role` 调用路径）
-- [ ] 同上迁移：`admin_mark_password_reset_required(user_id uuid)` 置 `requires_password_change=true`
-- [ ] 新增 `apps/api/src/__tests__/admin-user-rls.db.test.ts`：律师 JWT 无法 `UPDATE` 他人 `profiles.role`
+- [x] 确认 M0 已含 `profiles_guard_self_update`；若缺失则 `npx supabase migration new profiles_guard_self_update` 并 `db push`
+- [x] 新增迁移 `npx supabase migration new admin_profile_functions`：`admin_update_profile(...)`、`admin_set_user_status(...)`（仅 `service_role` 调用路径）
+- [x] 同上迁移：`admin_mark_password_reset_required(user_id uuid)` 置 `requires_password_change=true`
+- [x] 新增 `apps/api/src/__tests__/admin-user-rls.db.test.ts`：律师 JWT 无法 `UPDATE` 他人 `profiles.role`
 
 ---
 
 ### M2-D Auth Admin 适配器扩展（`apps/api`）
 
-- [ ] 扩展 `supabase-auth.adapter.ts`：`adminCreateUser(virtualEmail, initialPassword)` → `auth.admin.createUser`
-- [ ] 实现 `adminUpdateUserPassword(userId, password)`（`AUTH_INITIAL_PASSWORD` 来自 env）
-- [ ] 实现 `adminSignOutGlobal(userId)` → `auth.admin.signOut(userId, 'global')`
-- [ ] 新增 `apps/api/src/adapters/auth/supabase-auth.adapter.admin.test.ts`：Mock Admin API；禁止日志输出密码
+- [x] 扩展 `supabase-auth.adapter.ts`：`adminCreateUser(virtualEmail, initialPassword)` → `auth.admin.createUser`
+- [x] 实现 `adminUpdateUserPassword(userId, password)`（`AUTH_INITIAL_PASSWORD` 来自 env）
+- [x] 实现 `adminSignOutGlobal(userId)` → `auth.admin.signOut(userId, 'global')`
+- [x] 新增 `apps/api/src/adapters/auth/supabase-auth.adapter.admin.test.ts`：Mock Admin API；禁止日志输出密码
 
 ---
 
 ### M2-E Service + 单元测试（每条 Service 对应一个 `.test.ts`）
 
-- [ ] 新增 `apps/api/src/services/admin-user-list.service.ts`：组装列表 DTO + 分页 meta
-- [ ] 新增 `apps/api/src/services/admin-user-list.service.test.ts`
-- [ ] 新增 `apps/api/src/services/admin-user-create.service.ts`：用户名唯一 → 虚拟邮箱 → `createUser` + `profiles` + 可选 `drive_nodes` 根目录种子（`database.md` §7.2.1）+ `append_audit_log('user.create')`
-- [ ] 新增 `apps/api/src/services/admin-user-create.service.test.ts`：重复用户名 → `VALIDATION_FAILED`；部分写入回滚
-- [ ] 新增 `apps/api/src/services/admin-user-update.service.ts`：禁止改 `username`/`status`；`user.update` 审计
-- [ ] 新增 `apps/api/src/services/admin-user-update.service.test.ts`
-- [ ] 新增 `apps/api/src/services/admin-user-status.service.ts`：禁用 → `signOut(global)` + `user.disable`；启用 → `user.enable`；末位 admin / 内置 admin → `OPERATION_NOT_ALLOWED`
-- [ ] 新增 `apps/api/src/services/admin-user-status.service.test.ts`
-- [ ] 新增 `apps/api/src/services/admin-user-reset-password.service.ts`：**单 DB 事务**：Auth 密码=`AUTH_INITIAL_PASSWORD` → `requires_password_change=true` → `signOut(global)` → `auth.password_reset` 审计（`architecture.md` §5.1.4.1）
-- [ ] 新增 `apps/api/src/services/admin-user-reset-password.service.test.ts`：断言事务失败时不遗留半状态
+- [x] 新增 `apps/api/src/services/admin-user-list.service.ts`：组装列表 DTO + 分页 meta
+- [x] 新增 `apps/api/src/services/admin-user-list.service.test.ts`
+- [x] 新增 `apps/api/src/services/admin-user-create.service.ts`：用户名唯一 → 虚拟邮箱 → `createUser` + `profiles` + 可选 `drive_nodes` 根目录种子（`database.md` §7.2.1）+ `append_audit_log('user.create')`
+- [x] 新增 `apps/api/src/services/admin-user-create.service.test.ts`：重复用户名 → `VALIDATION_FAILED`；部分写入回滚
+- [x] 新增 `apps/api/src/services/admin-user-update.service.ts`：禁止改 `username`/`status`；`user.update` 审计
+- [x] 新增 `apps/api/src/services/admin-user-update.service.test.ts`
+- [x] 新增 `apps/api/src/services/admin-user-status.service.ts`：禁用 → `signOut(global)` + `user.disable`；启用 → `user.enable`；末位 admin / 内置 admin → `OPERATION_NOT_ALLOWED`
+- [x] 新增 `apps/api/src/services/admin-user-status.service.test.ts`
+- [x] 新增 `apps/api/src/services/admin-user-reset-password.service.ts`：**单 DB 事务**：Auth 密码=`AUTH_INITIAL_PASSWORD` → `requires_password_change=true` → `signOut(global)` → `auth.password_reset` 审计（`architecture.md` §5.1.4.1）
+- [x] 新增 `apps/api/src/services/admin-user-reset-password.service.test.ts`：断言事务失败时不遗留半状态
 
 ---
 
 ### M2-F 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `GET /api/admin/users` → `admin-users.routes.ts` + `admin-users-list.controller.ts` + `admin-users-list.controller.test.ts`（`requireRoles('admin')`）
-- [ ] 注册 `POST /api/admin/users` → `admin-users-create.controller.ts` + `admin-users-create.controller.test.ts`
-- [ ] 注册 `GET /api/admin/users/:id` → `admin-users-get.controller.ts` + `admin-users-get.controller.test.ts`
-- [ ] 注册 `PATCH /api/admin/users/:id` → `admin-users-patch.controller.ts` + `admin-users-patch.controller.test.ts`
-- [ ] 注册 `PATCH /api/admin/users/:id/status` → `admin-users-status.controller.ts` + `admin-users-status.controller.test.ts`
-- [ ] 注册 `POST /api/admin/users/:id/reset-password` → `admin-users-reset-password.controller.ts` + `admin-users-reset-password.controller.test.ts`
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/admin/users` 路由组；全组前置 `auth.middleware` + `password-change-gate` + `requireRoles('admin')`
+- [x] 注册 `GET /api/admin/users` → `admin-users.routes.ts` + `admin-users-list.controller.ts` + `admin-users-list.controller.test.ts`（`requireRoles('admin')`）
+- [x] 注册 `POST /api/admin/users` → `admin-users-create.controller.ts` + `admin-users-create.controller.test.ts`
+- [x] 注册 `GET /api/admin/users/:id` → `admin-users-get.controller.ts` + `admin-users-get.controller.test.ts`
+- [x] 注册 `PATCH /api/admin/users/:id` → `admin-users-patch.controller.ts` + `admin-users-patch.controller.test.ts`
+- [x] 注册 `PATCH /api/admin/users/:id/status` → `admin-users-status.controller.ts` + `admin-users-status.controller.test.ts`
+- [x] 注册 `POST /api/admin/users/:id/reset-password` → `admin-users-reset-password.controller.ts` + `admin-users-reset-password.controller.test.ts`
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/admin/users` 路由组；全组前置 `auth.middleware` + `password-change-gate` + `requireRoles('admin')`
 
 ---
 

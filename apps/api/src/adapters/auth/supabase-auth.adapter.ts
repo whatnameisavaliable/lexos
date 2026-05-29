@@ -105,6 +105,56 @@ export class SupabaseAuthAdapter {
   }
 
   /**
+   * 管理员创建 Auth 用户（虚拟邮箱 + 初始密码，PRD §2.5.1）。
+   */
+  async adminCreateUser(
+    virtualEmail: string,
+    initialPassword: string,
+  ): Promise<{ readonly userId: string }> {
+    const { data, error } = await this.adminClient.auth.admin.createUser({
+      email: virtualEmail,
+      password: initialPassword,
+      email_confirm: true,
+    });
+
+    if (error || !data.user) {
+      throw new AuthAdapterError(
+        "INTERNAL_ERROR",
+        error?.message ?? "admin createUser failed",
+      );
+    }
+
+    return { userId: data.user.id };
+  }
+
+  /**
+   * 删除 Auth 用户（创建失败回滚；须先删除 `profiles` 行）。
+   */
+  async adminDeleteUser(userId: string): Promise<void> {
+    const { error } = await this.adminClient.auth.admin.deleteUser(userId);
+    if (error) {
+      throw new AuthAdapterError("INTERNAL_ERROR", error.message);
+    }
+  }
+
+  /**
+   * 管理员更新用户密码（`AUTH_INITIAL_PASSWORD` 等，M2 重置密码）。
+   */
+  async adminUpdateUserPassword(
+    userId: string,
+    password: string,
+  ): Promise<void> {
+    await this.updateUserPasswordAsAdmin(userId, password);
+  }
+
+  /**
+   * 吊销指定用户全部会话（管理员禁用/重置密码）。
+   */
+  async adminSignOutGlobal(userId: string): Promise<void> {
+    await this.signOutGlobal(userId);
+  }
+
+  /**
    * 吊销指定用户全部会话（管理员重置密码等场景，M2 复用）。
    */
   async signOutGlobal(userId: string): Promise<void> {
@@ -116,6 +166,9 @@ export class SupabaseAuthAdapter {
 
   /**
    * 以用户 access token 更新本人密码。
+   *
+   * @remarks 仅设置 `Authorization` 头不足以满足 `auth.updateUser`（会报 Auth session missing）；
+   * BFF 改密请用 {@link updateUserPasswordAsAdmin}（请求经 JWT 鉴权后）。
    */
   async updateUserPasswordWithSession(
     accessToken: string,

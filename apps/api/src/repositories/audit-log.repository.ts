@@ -6,7 +6,12 @@ export type AuditAction =
   | "auth.login_success"
   | "auth.login_failure"
   | "auth.logout"
-  | "auth.password_change";
+  | "auth.password_change"
+  | "auth.password_reset"
+  | "user.create"
+  | "user.update"
+  | "user.disable"
+  | "user.enable";
 
 /** `append_audit_log` 入参。 */
 export interface AppendAuditLogInput {

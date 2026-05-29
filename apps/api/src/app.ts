@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   loadAppRuntimeEnv,
   loadAuthRuntimeEnvFromProcess,
+  loadAuthSeedEnvFromProcess,
   loadSupabaseEnvFromProcess,
   type AppRuntimeEnvConfig,
 } from "@lexos/shared/config";
@@ -15,7 +16,9 @@ import { ProfilePatchController } from "./controllers/profile-patch.controller.j
 import { AuthMiddleware } from "./middleware/auth.middleware.js";
 import { withErrorHandler } from "./middleware/error-handler.middleware.js";
 import { enforcePasswordChangeGate } from "./middleware/password-change-gate.middleware.js";
+import { requireRoles } from "./middleware/role-gate.factory.js";
 import { withRequestId } from "./middleware/request-id.middleware.js";
+import { AdminUserRepository } from "./repositories/admin-user.repository.js";
 import { AuditLogRepository } from "./repositories/audit-log.repository.js";
 import { ProfileAdminRepository } from "./repositories/profile-admin.repository.js";
 import { ProfileRepository } from "./repositories/profile.repository.js";
@@ -29,6 +32,19 @@ import { HealthController } from "./controllers/health.controller.js";
 import { RedisHealthAdapter } from "./adapters/redis-health.adapter.js";
 import { PostgresHealthRepository } from "./repositories/postgres-health.repository.js";
 import { HealthCheckService } from "./services/health-check.service.js";
+import { AdminUserListService } from "./services/admin-user-list.service.js";
+import { AdminUserCreateService } from "./services/admin-user-create.service.js";
+import { AdminUserGetService } from "./services/admin-user-get.service.js";
+import { AdminUserUpdateService } from "./services/admin-user-update.service.js";
+import { AdminUserStatusService } from "./services/admin-user-status.service.js";
+import { AdminUserResetPasswordService } from "./services/admin-user-reset-password.service.js";
+import { AdminUsersListController } from "./controllers/admin-users-list.controller.js";
+import { AdminUsersCreateController } from "./controllers/admin-users-create.controller.js";
+import { AdminUsersGetController } from "./controllers/admin-users-get.controller.js";
+import { AdminUsersPatchController } from "./controllers/admin-users-patch.controller.js";
+import { AdminUsersStatusController } from "./controllers/admin-users-status.controller.js";
+import { AdminUsersResetPasswordController } from "./controllers/admin-users-reset-password.controller.js";
+import { handleAdminUsersRoute } from "./routes/admin-users.routes.js";
 
 /** 已组装的 U2 HTTP 应用上下文。 */
 export interface LexosApiApp {
@@ -42,10 +58,12 @@ export interface LexosApiApp {
 export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const supabaseEnv = loadSupabaseEnvFromProcess();
   const authEnv = loadAuthRuntimeEnvFromProcess();
+  const authSeedEnv = loadAuthSeedEnvFromProcess();
 
   const authAdapter = new SupabaseAuthAdapter(supabaseEnv, authEnv);
   const profileRepository = new ProfileRepository(supabaseEnv);
   const profileAdminRepository = new ProfileAdminRepository(supabaseEnv);
+  const adminUserRepository = AdminUserRepository.fromSupabaseEnv(supabaseEnv);
   const auditLogRepository = new AuditLogRepository(supabaseEnv);
 
   const authLoginService = new AuthLoginService(
@@ -61,8 +79,31 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     auditLogRepository,
   );
   const profileService = new ProfileService(profileRepository);
+  const adminUserListService = new AdminUserListService(adminUserRepository);
+  const adminUserCreateService = new AdminUserCreateService(
+    authAdapter,
+    adminUserRepository,
+    auditLogRepository,
+    authSeedEnv.authInitialPassword,
+  );
+  const adminUserGetService = new AdminUserGetService(adminUserRepository);
+  const adminUserUpdateService = new AdminUserUpdateService(
+    adminUserRepository,
+    auditLogRepository,
+  );
+  const adminUserStatusService = new AdminUserStatusService(
+    authAdapter,
+    adminUserRepository,
+    auditLogRepository,
+  );
+  const adminUserResetPasswordService = new AdminUserResetPasswordService(
+    authAdapter,
+    adminUserRepository,
+    authSeedEnv.authInitialPassword,
+  );
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
+  const requireAdmin = requireRoles("admin");
 
   const loginController = new AuthLoginController(
     authLoginService,
@@ -88,6 +129,30 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     profileService,
     env.requestIdHeader,
   );
+  const adminUsersListController = new AdminUsersListController(
+    adminUserListService,
+    env.requestIdHeader,
+  );
+  const adminUsersCreateController = new AdminUsersCreateController(
+    adminUserCreateService,
+    env.requestIdHeader,
+  );
+  const adminUsersGetController = new AdminUsersGetController(
+    adminUserGetService,
+    env.requestIdHeader,
+  );
+  const adminUsersPatchController = new AdminUsersPatchController(
+    adminUserUpdateService,
+    env.requestIdHeader,
+  );
+  const adminUsersStatusController = new AdminUsersStatusController(
+    adminUserStatusService,
+    env.requestIdHeader,
+  );
+  const adminUsersResetPasswordController = new AdminUsersResetPasswordController(
+    adminUserResetPasswordService,
+    env.requestIdHeader,
+  );
 
   const healthController = new HealthController(
     new HealthCheckService(
@@ -108,6 +173,17 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
         await handler(req, res);
       });
     };
+  };
+
+  const protectedAdminRoute = (
+    handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
+  ) => {
+    return protectedRoute(async (req, res) => {
+      if (!requireAdmin(res)) {
+        return;
+      }
+      await handler(req, res);
+    });
   };
 
   const routes: Array<{
@@ -164,6 +240,32 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
         }
 
         const path = req.url?.split("?")[0] ?? "/";
+
+        if (path.startsWith("/api/admin/users")) {
+          let handled = false;
+          await protectedAdminRoute(async (adminReq, adminRes) => {
+            handled = await handleAdminUsersRoute(adminReq, adminRes, path, {
+              list: adminUsersListController,
+              create: adminUsersCreateController,
+              get: adminUsersGetController,
+              patch: adminUsersPatchController,
+              status: adminUsersStatusController,
+              resetPassword: adminUsersResetPasswordController,
+            });
+            if (!handled) {
+              adminRes.statusCode = 404;
+              adminRes.setHeader("content-type", "application/json; charset=utf-8");
+              adminRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
         const route = routes.find(
           (r) => r.method === req.method && r.path === path,
         );

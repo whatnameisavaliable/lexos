@@ -2,10 +2,24 @@
   "name": "@lexos/worker-pipeline",
   "version": "0.1.0",
   "private": true,
-  "description": "LexOS U3 BullMQ worker (FFmpeg, ASR, LLM orchestration)",
+  "description": "LexOS U3 Pipeline Worker (Postgres Outbox, FFmpeg, ASR, LLM)",
   "type": "module",
   "scripts": {
-    "build": "echo \"M0 scaffold: implement in M5\"",
-    "test": "echo \"M0 scaffold: no tests yet\""
+    "build": "tsc -p tsconfig.json",
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lexos/shared": "*",
+    "@supabase/supabase-js": "^2.106.2",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/pg": "^8.15.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.1"
   }
 }

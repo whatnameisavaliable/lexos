@@ -2,25 +2,12 @@
   "name": "@lexos/outbox-dispatcher",
   "version": "0.1.0",
   "private": true,
-  "description": "LexOS Outbox → BullMQ dispatcher (唯一允许 queue.add 的进程)",
+  "description": "【已废弃 v1.3】请使用 @lexos/worker-pipeline",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "tsx index.ts",
-    "dev": "tsx watch index.ts",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@lexos/shared": "*",
-    "@supabase/supabase-js": "^2.106.2",
-    "bullmq": "^5.56.0",
-    "pg": "^8.16.0"
+    "start": "tsx index.ts"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
-    "@types/pg": "^8.15.2",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.1"
+    "tsx": "^4.19.4"
   }
 }

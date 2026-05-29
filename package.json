@@ -23,7 +23,7 @@
     "dev:api:kill": "npx --yes kill-port 4000",
     "dev:api:restart": "npm run dev:api:kill && npm run dev:api",
     "dev:web": "npm run build:shared && npm run dev -w @lexos/web",
-    "outbox:dispatcher": "npm run build:shared && npm run start -w @lexos/outbox-dispatcher",
+    "worker:pipeline": "npm run build:shared && npm run start -w @lexos/worker-pipeline",
     "test:integration": "vitest run packages/shared/src/**/*.integration.test.ts",
     "verify:m0-gate": "npx tsx packages/shared/src/milestones/run-m0-gate-cli.ts"
   },

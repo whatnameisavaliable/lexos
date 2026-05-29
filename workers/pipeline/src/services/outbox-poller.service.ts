@@ -1,33 +1,32 @@
 import pg from "pg";
 import type { OutboxRuntimeEnvConfig } from "@lexos/shared/config";
-import { BullMqPublisher } from "./bullmq-publisher.js";
+import { OutboxEventRepository } from "../repositories/outbox-event.repository.js";
 import {
   OutboxFailureHandler,
   type OutboxMaxAttemptsAlertHook,
 } from "./outbox-failure.handler.js";
-import { OutboxEventRepository } from "./outbox-event.repository.js";
+import type { OutboxStageProcessor } from "./outbox-stage-processor.js";
 
 /**
- * 轮询 `outbox_events` 并投递 BullMQ（`architecture.md` §3.7.3）。
+ * 轮询 `outbox_events` 并按 `payload.stage` 分发 Handler（`architecture.md` §3.7.3 · v1.3 无 Redis）。
  */
 export class OutboxPollerService {
   private readonly pool: pg.Pool;
   private readonly repository = new OutboxEventRepository();
-  private readonly publisher: BullMqPublisher;
   private readonly failureHandler: OutboxFailureHandler;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
   constructor(
     private readonly env: OutboxRuntimeEnvConfig,
+    private readonly stageProcessor?: OutboxStageProcessor,
     alertHook?: OutboxMaxAttemptsAlertHook,
   ) {
     this.pool = new pg.Pool({
       connectionString: env.outboxDbUrl,
       max: 5,
-      application_name: "lexos-outbox-dispatcher",
+      application_name: "lexos-pipeline-worker",
     });
-    this.publisher = new BullMqPublisher(env.redisUrl);
     this.failureHandler = new OutboxFailureHandler(
       env.supabaseUrl,
       env.supabaseServiceRoleKey,
@@ -52,12 +51,11 @@ export class OutboxPollerService {
       clearInterval(this.timer);
       this.timer = null;
     }
-    await this.publisher.close();
     await this.pool.end();
   }
 
   /**
-   * 执行一次轮询周期；返回成功发布条数。
+   * 执行一次轮询周期；返回成功处理条数。
    */
   async pollOnce(): Promise<number> {
     if (this.running) {
@@ -66,7 +64,7 @@ export class OutboxPollerService {
     this.running = true;
     try {
       const client = await this.pool.connect();
-      let published = 0;
+      let processed = 0;
       try {
         await client.query("BEGIN");
         const events = await this.repository.fetchUnpublishedBatch(
@@ -75,14 +73,17 @@ export class OutboxPollerService {
         );
 
         for (const event of events) {
+          if (!this.stageProcessor) {
+            continue;
+          }
           try {
             const payload = this.repository.parsePipelinePayload(event.payload);
-            await this.publisher.publish(payload);
+            await this.stageProcessor.processStage(event, payload);
             await this.repository.markPublished(client, event.id);
-            published += 1;
+            processed += 1;
           } catch (error) {
             const message =
-              error instanceof Error ? error.message : "Unknown publish error";
+              error instanceof Error ? error.message : "Unknown stage error";
             const attempts = await this.repository.incrementPublishAttempts(
               client,
               event.id,
@@ -104,7 +105,7 @@ export class OutboxPollerService {
       } finally {
         client.release();
       }
-      return published;
+      return processed;
     } finally {
       this.running = false;
     }

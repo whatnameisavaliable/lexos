@@ -21,7 +21,7 @@ interface OutboxEventRowDb {
 }
 
 /**
- * Outbox 表读写（Dispatcher 专用；`service_role` 连接）。
+ * Outbox 表读写（U3 Pipeline Worker · `service_role` 连接）。
  */
 export class OutboxEventRepository {
   /**
@@ -46,7 +46,7 @@ export class OutboxEventRepository {
     return result.rows.map(mapOutboxRow);
   }
 
-  /** 标记事件已发布。 */
+  /** 标记事件已发布（阶段 Handler 成功后调用）。 */
   async markPublished(client: PoolClient, eventId: string): Promise<void> {
     const result = await client.query(
       `UPDATE public.outbox_events
@@ -61,7 +61,7 @@ export class OutboxEventRepository {
     }
   }
 
-  /** 递增投递失败次数。 */
+  /** 递增处理失败次数。 */
   async incrementPublishAttempts(
     client: PoolClient,
     eventId: string,

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { PIPELINE_QUEUE_MEDIA_PREPROCESS } from "@lexos/shared";
+import { PIPELINE_STAGE_MEDIA_PREPROCESS } from "@lexos/shared";
 import type { OutboxRuntimeEnvConfig } from "@lexos/shared/config";
 import { OutboxPollerService } from "./outbox-poller.service.js";
 
@@ -19,15 +19,7 @@ vi.mock("pg", () => ({
   },
 }));
 
-const mockPublish = vi.fn();
-const mockClose = vi.fn();
-
-vi.mock("./bullmq-publisher.js", () => ({
-  BullMqPublisher: vi.fn(() => ({
-    publish: mockPublish,
-    close: mockClose,
-  })),
-}));
+const mockProcessStage = vi.fn();
 
 const mockHandleMaxAttempts = vi.fn();
 
@@ -39,7 +31,6 @@ vi.mock("./outbox-failure.handler.js", () => ({
 
 const env: OutboxRuntimeEnvConfig = {
   outboxDbUrl: "postgres://localhost/db",
-  redisUrl: "redis://localhost:6379",
   outboxPollIntervalMs: 1000,
   outboxMaxAttempts: 3,
   supabaseUrl: "https://example.supabase.co",
@@ -62,7 +53,7 @@ describe("OutboxPollerService", () => {
               aggregate_id: "task-1",
               event_type: "task.queued",
               payload: {
-                queueName: PIPELINE_QUEUE_MEDIA_PREPROCESS,
+                stage: PIPELINE_STAGE_MEDIA_PREPROCESS,
                 taskId: "task-1",
                 createdBy: "user-1",
                 isMp4: false,
@@ -82,25 +73,31 @@ describe("OutboxPollerService", () => {
     });
   });
 
-  it("publishes event and marks published on success", async () => {
-    mockPublish.mockResolvedValue(undefined);
-    const alertHook = vi.fn();
-    const poller = new OutboxPollerService(env, alertHook);
+  it("processes stage and marks published on success", async () => {
+    mockProcessStage.mockResolvedValue(undefined);
+    const poller = new OutboxPollerService(env, {
+      processStage: mockProcessStage,
+    });
 
     const count = await poller.pollOnce();
 
     expect(count).toBe(1);
-    expect(mockPublish).toHaveBeenCalledWith(
-      expect.objectContaining({ taskId: "task-1" }),
+    expect(mockProcessStage).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "evt-1" }),
+      expect.objectContaining({ taskId: "task-1", stage: PIPELINE_STAGE_MEDIA_PREPROCESS }),
     );
     expect(mockHandleMaxAttempts).not.toHaveBeenCalled();
     await poller.stop();
   });
 
-  it("increments attempts and invokes alert hook when publish fails at max", async () => {
-    mockPublish.mockRejectedValue(new Error("redis down"));
+  it("increments attempts and invokes alert hook when stage fails at max", async () => {
+    mockProcessStage.mockRejectedValue(new Error("stage failed"));
     const alertHook = vi.fn();
-    const poller = new OutboxPollerService(env, alertHook);
+    const poller = new OutboxPollerService(
+      env,
+      { processStage: mockProcessStage },
+      alertHook,
+    );
 
     const count = await poller.pollOnce();
 
@@ -108,8 +105,18 @@ describe("OutboxPollerService", () => {
     expect(mockHandleMaxAttempts).toHaveBeenCalledWith(
       mockClient,
       expect.objectContaining({ id: "evt-1", publishAttempts: 3 }),
-      "redis down",
+      "stage failed",
     );
+    await poller.stop();
+  });
+
+  it("skips events when no stage processor registered", async () => {
+    const poller = new OutboxPollerService(env);
+
+    const count = await poller.pollOnce();
+
+    expect(count).toBe(0);
+    expect(mockProcessStage).not.toHaveBeenCalled();
     await poller.stop();
   });
 });

@@ -1,14 +1,12 @@
 import { requireEnv } from "./env.js";
 
-/** Outbox Dispatcher 运行时配置（`architecture.md` §3.7 · §4.2.4）。 */
+/** U3 Pipeline Worker 运行时配置（`architecture.md` §3.7 · v1.3 无 Redis）。 */
 export interface OutboxRuntimeEnvConfig {
-  /** Postgres 连接串；默认同 `SUPABASE_DB_URL`。 */
+  /** Postgres 连接串；`WORKER_DB_URL` 优先，否则 `OUTBOX_DB_URL`，否则 `SUPABASE_DB_URL`。 */
   readonly outboxDbUrl: string;
-  /** BullMQ Redis 连接串。 */
-  readonly redisUrl: string;
   /** 轮询间隔（毫秒）。 */
   readonly outboxPollIntervalMs: number;
-  /** 单条事件最大投递尝试次数。 */
+  /** 单条事件最大处理尝试次数。 */
   readonly outboxMaxAttempts: number;
   /** Supabase 项目 URL（审计 RPC 用）。 */
   readonly supabaseUrl: string;
@@ -20,17 +18,20 @@ const DEFAULT_OUTBOX_POLL_INTERVAL_MS = 1000;
 const DEFAULT_OUTBOX_MAX_ATTEMPTS = 20;
 
 /**
- * 从 `process.env` 加载 Outbox Dispatcher 配置。
+ * 从 `process.env` 加载 U3 Pipeline Worker 配置（不校验 `REDIS_URL`）。
  */
 export function loadOutboxRuntimeEnvFromProcess(): OutboxRuntimeEnvConfig {
+  const workerDbUrl = process.env.WORKER_DB_URL?.trim();
   const outboxDbUrl =
-    process.env.OUTBOX_DB_URL?.trim() || requireEnv("SUPABASE_DB_URL");
+    workerDbUrl ||
+    process.env.OUTBOX_DB_URL?.trim() ||
+    requireEnv("SUPABASE_DB_URL");
 
   return {
     outboxDbUrl,
-    redisUrl: requireEnv("REDIS_URL"),
     outboxPollIntervalMs: parsePositiveInt(
-      process.env.OUTBOX_POLL_INTERVAL_MS,
+      process.env.WORKER_POLL_INTERVAL_MS ??
+        process.env.OUTBOX_POLL_INTERVAL_MS,
       DEFAULT_OUTBOX_POLL_INTERVAL_MS,
     ),
     outboxMaxAttempts: parsePositiveInt(

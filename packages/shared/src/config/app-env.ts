@@ -6,12 +6,11 @@ import {
   type SupabaseEnvConfig,
 } from "./env.js";
 
-/** 应用运行时环境配置（U2 API / Worker 共用子集）。 */
+/** 应用运行时环境配置（U2 API 共用子集；v1.3 起不依赖 Redis）。 */
 export interface AppRuntimeEnvConfig extends SupabaseEnvConfig {
   readonly nodeEnv: string;
   readonly appUrl: string;
   readonly apiUrl: string;
-  readonly redisUrl: string;
   readonly requestIdHeader: string;
 }
 
@@ -27,7 +26,7 @@ export function parseApiListenPort(apiUrl: string): number {
 }
 
 /**
- * 加载 API 进程所需环境变量（含 Supabase 与 Redis）。
+ * 加载 API 进程所需环境变量（含 Supabase；不校验 `REDIS_URL`）。
  */
 export function loadAppRuntimeEnvFromProcess(): AppRuntimeEnvConfig {
   return {
@@ -35,7 +34,6 @@ export function loadAppRuntimeEnvFromProcess(): AppRuntimeEnvConfig {
     nodeEnv: requireEnv("NODE_ENV"),
     appUrl: requireEnv("APP_URL"),
     apiUrl: requireEnv("API_URL"),
-    redisUrl: requireEnv("REDIS_URL"),
     requestIdHeader:
       process.env.REQUEST_ID_HEADER?.trim() || "x-request-id",
   };

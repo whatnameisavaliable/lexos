@@ -2,9 +2,9 @@
 
 | 字段 | 内容 |
 |------|------|
-| 文档版本 | 1.1 |
+| 文档版本 | 1.2 |
 | 粒度 | 模块级大纲；原子任务在各 Milestone 启动时再拆解 |
-| 基准 | `CONTEXT_SUMMARY.md` · 冻结 PRD v0.3 业务边界 |
+| 基准 | `CONTEXT_SUMMARY.md` v1.1 · `architecture.md` v1.3 · `database.md` v1.4 · 冻结 PRD v0.3 业务边界 |
 
 ---
 
@@ -12,7 +12,8 @@
 
 - 按 **Milestone 序号升序** 推进；完成当前 Milestone 验收后再进入下一项。
 - 子任务级拆解、测试与 `git commit` 遵守根目录 `.cursorrules` §5。
-- 每个 Milestone 启动前读取对应完整规范（`architecture.md` / `database.md` / `ui_design.md`）。
+- 每个 Milestone 启动前读取对应完整规范（`architecture.md` v1.3 / `database.md` v1.4 / `ui_design.md`）。
+- **v1.3 架构简化**（2026-05-30）：废除 Redis/BullMQ；U3 单进程轮询 Postgres Outbox；`WORKER_MAX_CONCURRENCY` 默认 5。M4 已交付的 `outbox-dispatcher` 为遗留，在 **M5-0** 合并入 `workers/pipeline`。
 
 ---
 
@@ -98,7 +99,7 @@
 ### M0-D 应用基建最小集（M0 验收所需）
 
 - [x] 初始化 `packages/shared`：`ErrorCode` 枚举（对齐 `architecture.md` §6.2）、`ApiSuccess`/`ApiError` 响应类型、分页 `limit` 默认 50
-- [x] 初始化 `apps/api` 最小入口：加载 `.env.development`；`GET /health` 检测 Postgres（`SUPABASE_DB_URL`）与 Redis（`REDIS_URL`，可失败仅警告）
+- [x] 初始化 `apps/api` 最小入口：加载 `.env.development`；`GET /health` 检测 Postgres（`SUPABASE_DB_URL`）；~~Redis~~（M4 遗留，**M5-0** 移除 `REDIS_URL` 探测）
 - [x] 添加数据库连通性 smoke 测试（可选：`psql` 或 vitest 单测查询 `SELECT 1`）
 - [x] 添加 RLS smoke 脚本或测试用例：律师 JWT 无法读取他人 `transcription_tasks` 行（可用 Supabase 测试用户）
 
@@ -572,20 +573,22 @@
 
 ## Milestone 4：语音转写 — BFF 元数据与上传（U2）
 
-**目标**：任务创建、TUS 上传会话、完成回调、Outbox 入队；**不经 API 传文件流**。
+**目标**：任务创建、TUS 上传会话、完成回调、Outbox 写入（触发 U3）；**不经 API 传文件流**。
 
 **局部规范索引**（无拆分文件时，以以下章节为准）：
 
 | 文档 | 章节 |
 |------|------|
 | `prd.md` | §3.5、§3.5.1 媒体约束与状态机 |
-| `architecture.md` | §3.2.1 队列命名、§3.7 Outbox、§5.5 Storage 网关、§7 `/api/transcription/*` |
+| `architecture.md` v1.3 | §3.2 Outbox 流水线、§3.7 Outbox、§5.5 Storage 网关、§7 `/api/transcription/*` |
 | `ui_design.md` | §6.3 任务列表与 TUS 时序、§6.3.4 上传防误离开 |
-| `database.md` | §3.2 `transcription_tasks`、§3.13 `upload_sessions`、§3.15 `outbox_events`、§4.11 `transition_task_status`、§7.1 / §7.5 |
+| `database.md` v1.4 | §3.2 `transcription_tasks`、§3.13 `upload_sessions`、§3.15 `outbox_events`、§4.11 `transition_task_status`、§7.1 / §7.5 |
 
-**验收**：`size_bytes≤1GB`、`duration_sec≤18000`；`init→TUS→complete` 后任务 `queued` 且 Outbox 行存在；`outbox_dispatcher` 将 Job 投递至 `media.extract` 或 `media.preprocess`；律师仅本人任务；admin 可见全部；**禁止** API 收 `File` body。
+**验收**：`size_bytes≤1GB`、`duration_sec≤18000`；`init→TUS→complete` 后任务 `queued` 且 Outbox 行存在（`published_at IS NULL`，`payload.stage` 为 `media.extract` 或 `media.preprocess`）；律师仅本人任务；admin 可见全部；**禁止** API 收 `File` body。
 
 **前置依赖**：M0（表/RLS/Outbox）、M1（鉴权）、M3 非必须（Worker 消费属 M5）。
+
+**v1.3 说明**：M4-G 曾实现 BullMQ 投递路径，已标记遗留；U3 直消费 Outbox 在 **M5-0** 落地。
 
 ---
 
@@ -618,11 +621,11 @@
 
 ---
 
-### M4-D 领域逻辑（状态机 / 队列路由，单文件一项）
+### M4-D 领域逻辑（状态机 / Outbox 载荷，单文件一项）
 
 - [x] 新增 `apps/api/src/domain/task-state-machine.ts`：合法迁移表（`uploading→queued` 等）；非法迁移抛 `TASK_INVALID_STATE`
-- [x] 新增 `apps/api/src/domain/asr-queue-tier.ts`：`resolveAsrQueueTier(durationSec)` → `express`|`batch`（阈值 `ASR_EXPRESS_MAX_DURATION_SEC`）
-- [x] 新增 `apps/api/src/domain/outbox-payload.factory.ts`：`buildQueuedPayload(task)` → 首队列 `media.extract`（`is_mp4`）或 `media.preprocess`
+- [x] 新增 `apps/api/src/domain/asr-queue-tier.ts`：**【遗留·v1.3 停止写入】** `resolveAsrQueueTier`；M5-0 移除 complete 调用
+- [x] 新增 `apps/api/src/domain/outbox-payload.factory.ts`：`buildQueuedPayload(task)` → 首阶段 `media.extract`（`is_mp4`）或 `media.preprocess`（M5-0 改为 `payload.stage`）
 - [x] 新增 `apps/api/src/domain/task-state-machine.test.ts`
 
 ---
@@ -631,7 +634,7 @@
 
 - [x] 新增 `apps/api/src/services/transcription-upload-init.service.ts`：校验限额；创建 `transcription_tasks`（`uploading`）+ `upload_sessions`；`storage_key_prefix={uid}/{task_id}/`；返回 TUS 参数；`append_audit_log('task.create')`
 - [x] 新增 `apps/api/src/services/transcription-upload-init.service.test.ts`：超 1GB → `RESOURCE_LIMIT_EXCEEDED`；重复 `idempotencyKey` → 幂等返回原会话
-- [x] 新增 `apps/api/src/services/transcription-upload-complete.service.ts`：**单事务**：Storage 前缀校验（§7.5.1）→ 写 `source_storage_key` → `asr_queue_tier` → `transition_task_status(uploading,queued)` → `upload_sessions.completed_at` → `outbox_events`（**禁止** `queue.add`）
+- [x] 新增 `apps/api/src/services/transcription-upload-complete.service.ts`：**单事务**：Storage 前缀校验 → 写 `source_storage_key` → `transition_task_status(uploading,queued)` → `upload_sessions.completed_at` → `outbox_events`（**禁止** U2 同步 Worker / **禁止** `queue.add`）
 - [x] 新增 `apps/api/src/services/transcription-upload-complete.service.test.ts`：过期会话 → `UPLOAD_SESSION_INVALID`；未上传对象 → 400
 - [x] 新增 `apps/api/src/services/transcription-task-list.service.ts` + 测试（分页 50）
 - [x] 新增 `apps/api/src/services/transcription-task-get.service.ts` + 测试（含状态、错误码；律师越权 → `AUTH_FORBIDDEN`）
@@ -648,13 +651,14 @@
 
 ---
 
-### M4-G Outbox Dispatcher 进程（U2 侧；**唯一**允许 `queue.add` 的位置）
+### M4-G Outbox Dispatcher 进程【遗留 · M4 已完成 · M5-0 废弃】
 
-- [x] 初始化 `workers/outbox-dispatcher/` 入口：`index.ts` 加载 `.env`、连接 `OUTBOX_DB_URL` 与 `REDIS_URL`
-- [x] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.ts`：轮询 `published_at IS NULL`（`OUTBOX_POLL_INTERVAL_MS`）
-- [x] 新增 `workers/outbox-dispatcher/src/bullmq-publisher.ts`：按 `payload.queueName` 调用 `queue.add`；成功更新 `published_at`
-- [x] 新增 `workers/outbox-dispatcher/src/outbox-poller.service.test.ts`：Mock BullMQ；失败递增 `publish_attempts`；超 `OUTBOX_MAX_ATTEMPTS` 写审计【待确认】告警钩子
-- [x] 在 `package.json` 增加脚本：`outbox:dispatcher`（文档化与 API 同机启动方式）
+> v1.3 起 **不再使用** Redis/BullMQ；下列项为 M4 历史交付，M5-0 合并入 `workers/pipeline` 后删除。
+
+- [x] 初始化 `workers/outbox-dispatcher/`（**待 M5-0 删除**）
+- [x] `outbox-poller.service.ts` + `bullmq-publisher.ts`（**待 M5-0 删除**）
+- [x] `outbox-poller.service.test.ts`
+- [x] 根脚本 `outbox:dispatcher`（**待 M5-0 改为 `worker:pipeline` 或移除**）
 
 ---
 
@@ -691,8 +695,8 @@
 
 ### M4-K 集成与 Milestone 4 完成门禁
 
-- [x] 新增 `apps/api/src/__tests__/transcription-upload-flow.integration.test.ts`：init → mock Storage 有对象 → complete → 断言 `status=queued` 且存在未发布 Outbox 行
-- [x] 启动 `outbox:dispatcher` + Redis；complete 后断言 BullMQ 出现 `media.extract` 或 `media.preprocess` Job（Worker 可不消费）
+- [x] 新增 `apps/api/src/__tests__/transcription-upload-flow.integration.test.ts`：init → mock Storage → complete → `status=queued` + 未发布 Outbox
+- [x] ~~BullMQ 断言~~（v1.3 废除；**M5-0** 改为断言 U3 消费后 `published_at` 非空，或保留仅 Outbox 断言）
 - [x] 手工验收：律师 A 无法 `GET` 律师 B 的 `taskId`（集成测试覆盖；需配置 Supabase 时自动执行）
 - [x] 手工验收：上传中切换路由弹出 `AlertDialog`；完成后监听移除（M4-J 已实现 Guard；浏览器冒烟建议本地确认）
 - [x] 运行 M4 测试全绿；连续失败 >2 次停止汇报
@@ -704,127 +708,137 @@
 ---
 
 
-## Milestone 5：异步流水线 Worker（U3）
+## Milestone 5：异步流水线 Worker（U3 · Postgres Outbox）
 
-**目标**：FFmpeg 抽音/物理切片、公有 ASR、LLM 润色/摘要、归档云盘；Stalled 补偿。
+**目标**：单 U3 进程轮询 Outbox，顺序执行抽音→预处理→ASR→LLM→归档；**无 Redis**；全局并发 ≤5；Stalled Cron 补偿。
 
-**局部规范索引**（无拆分文件时，以以下章节为准；**以 `architecture.md` v1.2 为准**，废除 PRD 中 Python VAD 描述）：
+**局部规范索引**（**以 `architecture.md` v1.3 为准**；废除 PRD Python VAD、废除 v1.2 BullMQ 六队列）：
 
 | 文档 | 章节 |
 |------|------|
 | `prd.md` | §3.5 状态机、§4.1–§4.2 AI 场景与降级 |
-| `architecture.md` | §3.2 Worker/队列/FFmpeg、§3.3 状态机、§3.6 并发与 Stalled、§3.7 Outbox 后续入队、§5.6.2 Worker 写库红线 |
-| `database.md` | §3.3 `transcription_segments`、§3.4 `transcription_transcripts`、§3.14 `pipeline_job_runs`、§4.4.2 `upsert_task_segments`、§4.11 `transition_task_status` |
+| `architecture.md` v1.3 | §3.2 Outbox 流水线、§3.3 状态机、§3.6 并发与 Stalled、§3.7 Outbox、§5.6.2 Worker 写库红线 |
+| `database.md` v1.4 | §3.3 `transcription_segments`、§3.4 `transcription_transcripts`、§3.14 `pipeline_job_runs`、§4.4.2 `upsert_task_segments`、§4.11 `transition_task_status` |
 | `ui_design.md` | §6.3.5 任务状态轮询（无独立 Worker UI） |
 
-**验收**：M4 上传完成后端到端至 `completed`；失败为 `failed` 且 `error_code` 可查；切片仅存 `WORKER_TMP_DIR` 不入 Storage；ASR 单任务并发 3 + 全局限流 50/min；`pipeline_job_runs` 重复 Job ACK 跳过；Cron 补偿 stalled 任务。
+**验收**：M4 上传后 U3 端到端至 `completed`；失败为 `failed` 且 `error_code` 可查；切片仅存 `WORKER_TMP_DIR` 不入 Storage；同时处理任务 ≤5；单任务 ASR 切片并发 3；ASR 全局限流 50/min（进程内）；`pipeline_job_runs` 重复 `outbox_event_id` 跳过；Cron 补偿 stalled；**不**依赖 Redis。
 
-**前置依赖**：M3（`AiAdapterFactory`、模型映射）、M4（Outbox 首 Job、`queued` 任务）。
+**前置依赖**：M3（`AiAdapterFactory`）、M4（Outbox 首行、`queued` 任务）。
+
+---
+
+### M5-0 v1.3 架构迁移（自 M4 遗留代码对齐）
+
+- [x] 新增迁移 `supabase migration new pipeline_job_runs_v13`：`queue_name`→`stage`、`bull_job_id`→`outbox_event_id`（FK → `outbox_events`）；更新 UNIQUE（`database.md` v1.4 §3.14）
+- [x] 更新 `packages/shared/src/types/transcription-queued-outbox-payload.ts`：主字段 `stage`（保留 `queueName` 只读别名至 M5-K 后删除）
+- [x] 更新 `buildQueuedPayload` / complete 服务：**停止**写 `asr_queue_tier`；Outbox `payload.stage` 为首阶段名
+- [x] 将 `workers/outbox-dispatcher/src/outbox-poller.service.ts` 逻辑迁入 `workers/pipeline`（**删除** `bullmq-publisher.ts` 与 Redis 依赖）
+- [x] 删除根脚本 `outbox:dispatcher`；新增/替换为 `worker:pipeline`
+- [x] 移除 `apps/api` 对 `REDIS_URL` 的健康检查与 `redis` npm 依赖（若仅 health 使用）
+- [x] 更新 `transcription-upload-flow.integration.test.ts`：删除 BullMQ 用例；可选增加 U3 `pollOnce` 后 `published_at` 断言
+- [x] 更新 `.env.example`：`WORKER_DB_URL`、`WORKER_MAX_CONCURRENCY`、`WORKER_POLL_INTERVAL_MS`、`ASR_RATE_LIMIT_MAX`；标注 `REDIS_URL` 已废弃
 
 ---
 
 ### M5-A Worker 进程骨架（`workers/pipeline`）
 
-- [ ] 新增 `workers/pipeline/package.json`（或根 workspace 引用）与 `workers/pipeline/src/index.ts`：加载 `.env`；校验 `REDIS_URL`、`SUPABASE_DB_URL`、`FFMPEG_PATH`
-- [ ] 新增 `workers/pipeline/src/health/ffmpeg-healthcheck.ts`：启动前执行 `ffmpeg -version`（`architecture.md` §4.4.1）
-- [ ] 新增 `packages/shared/src/constants/bull-queues.ts`：六队列名常量（`media.extract` 等）
-- [ ] 新增 `workers/pipeline/src/infra/bullmq-connection.ts`：共享 Redis 连接；BullMQ `limiter`（`BULLMQ_RATE_LIMIT_MAX`/60s）
-- [ ] 新增 `workers/pipeline/src/infra/worker-options.ts`：`stallInterval=30000`、`maxStalledCount=2`（§3.6.4.1）
+- [ ] 新增 `workers/pipeline/package.json` 与 `workers/pipeline/src/index.ts`：加载 `.env`；校验 `WORKER_DB_URL`（或 `SUPABASE_DB_URL`）、`FFMPEG_PATH`；**不**校验 `REDIS_URL`
+- [ ] 新增 `workers/pipeline/src/health/ffmpeg-healthcheck.ts`：启动前 `ffmpeg -version`（§4.4.1）
+- [ ] 新增 `packages/shared/src/constants/pipeline-stages.ts`：五阶段常量（`media.extract`、`media.preprocess`、`asr`、`llm`、`drive.archive`）
+- [ ] 新增 `workers/pipeline/src/infra/worker-concurrency.ts`：`p-limit(WORKER_MAX_CONCURRENCY)` 默认 **5**
+- [ ] 新增 `workers/pipeline/src/infra/asr-rate-limiter.ts`：进程内令牌桶或 DB 计数（`ASR_RATE_LIMIT_MAX`/60s）
+- [ ] 新增 `workers/pipeline/src/infra/worker-db-pool.ts`：`pg.Pool` 连接 `WORKER_DB_URL`
 - [ ] 在根 `package.json` 增加脚本：`worker:pipeline`
 
 ---
 
 ### M5-B 数据库函数（若 M0 未含 `upsert_task_segments`）
 
-- [ ] 新增迁移 `npx supabase migration new upsert_task_segments`：实现 `upsert_task_segments(p_task_id, p_segments jsonb)`（`SECURITY DEFINER`；§4.4.2）
+- [ ] 新增迁移 `npx supabase migration new upsert_task_segments`：`upsert_task_segments(p_task_id, p_segments jsonb)`（`SECURITY DEFINER`；§4.4.2）
 - [ ] 新增 `workers/pipeline/src/__tests__/upsert-task-segments.db.test.ts`：service_role 写入片段成功
 
 ---
 
-### M5-C Job 幂等与 Outbox 后续入队（Worker 内禁止 Service 直调 `queue.add`）
+### M5-C 阶段幂等与 Outbox 链式入队
 
-- [ ] 新增 `workers/pipeline/src/middleware/job-idempotency.middleware.ts`：处理前插入 `pipeline_job_runs`；`UNIQUE` 冲突则 ACK 跳过（§3.2.5.1）
-- [ ] 新增 `workers/pipeline/src/middleware/job-idempotency.middleware.test.ts`
-- [ ] 新增 `workers/pipeline/src/domain/worker-outbox.factory.ts`：生成下一阶段 `outbox_events` 行（如 `preprocess`→`asr`）
-- [ ] 新增 `workers/pipeline/src/services/worker-transaction.service.ts`：封装「`transition_task_status` + `insert outbox`」同事务（AsyncLocalStorage/单连接）
+- [ ] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.ts`：处理前插入 `pipeline_job_runs(stage, outbox_event_id, attempt)`；UNIQUE 冲突则跳过（§3.2.5.1）
+- [ ] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.test.ts`
+- [ ] 新增 `workers/pipeline/src/domain/worker-outbox.factory.ts`：生成下一阶段 Outbox 行（如 `media.preprocess`→`asr`）
+- [ ] 新增 `workers/pipeline/src/services/worker-transaction.service.ts`：`transition_task_status` + `insert outbox` + `mark published_at` 同事务
 
 ---
 
 ### M5-D FFmpeg 与临时目录（单文件一项）
 
-- [ ] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.ts`：`spawn` 白名单参数；超时 `FFMPEG_TIMEOUT_MS`；并发信号量 `FFMPEG_MAX_CONCURRENT`
+- [ ] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.ts`：`spawn` 白名单；超时 `FFMPEG_TIMEOUT_MS`；信号量 `FFMPEG_MAX_CONCURRENT`
 - [ ] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.test.ts`：Mock `child_process`
 - [ ] 新增 `workers/pipeline/src/services/media-extract.service.ts`：MP4→16kHz mono MP3；更新 `audio_storage_key`；失败 `MEDIA_EXTRACT_FAILED`
 - [ ] 新增 `workers/pipeline/src/services/media-extract.service.test.ts`
-- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.ts`：下载 Storage 流式落盘 → 重采样 → **物理切片**（`ASR_SEGMENT_DURATION_SEC`）；输出 `WORKER_TMP_DIR/{taskId}/*.mp3`
-- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.test.ts`：断言切片路径列表；**禁止**上传切片至 Storage
+- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.ts`：Storage 流式落盘 → 重采样 → 物理切片（`ASR_SEGMENT_DURATION_SEC`）；输出 `WORKER_TMP_DIR/{taskId}/*.mp3`
+- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.test.ts`：断言切片路径；**禁止**上传切片至 Storage
 - [ ] 新增 `workers/pipeline/src/services/temp-dir-cleanup.service.ts`：任务结束/失败后删除 `{taskId}` 目录
 
 ---
 
 ### M5-E Storage 下载（Worker 专用）
 
-- [ ] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.ts`：流式 `downloadToFile(storageKey, localPath)`（禁止整文件读入堆）
+- [ ] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.ts`：流式 `downloadToFile(storageKey, localPath)`
 - [ ] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.test.ts`
 
 ---
 
 ### M5-F AI 编排（复用 M3 适配器，单文件一项）
 
-- [ ] 新增 `workers/pipeline/src/services/ai-orchestration.service.ts`：按 `feature_key` 查映射 → 主模型 → `fallback` 一次；写 `ai_invocation_logs` + `idempotency_key`（§3.2.5.2）
-- [ ] 新增 `workers/pipeline/src/services/ai-orchestration.service.test.ts`：Mock Adapter；429 退避【待确认】
-- [ ] 新增 `workers/pipeline/src/services/asr-segment-runner.service.ts`：`p-limit(ASR_API_CONCURRENCY)` 并行片 ASR；合并 `asr_raw_json`；`diarization_degraded` 降级（§4.3 PRD 文案数据源）
+- [ ] 新增 `workers/pipeline/src/services/ai-orchestration.service.ts`：`feature_key` 映射 → 主模型 → fallback 一次；`ai_invocation_logs` + `idempotency_key`
+- [ ] 新增 `workers/pipeline/src/services/ai-orchestration.service.test.ts`
+- [ ] 新增 `workers/pipeline/src/services/asr-segment-runner.service.ts`：`p-limit(ASR_API_CONCURRENCY=3)`；合并 `asr_raw_json`；`diarization_degraded` 降级
 - [ ] 新增 `workers/pipeline/src/services/asr-segment-runner.service.test.ts`
-- [ ] 新增 `workers/pipeline/src/services/llm-transcript.service.ts`：`llm_transcript_polish` + 已发布 Prompt
+- [ ] 新增 `workers/pipeline/src/services/llm-transcript.service.ts`：`llm_transcript_polish`
 - [ ] 新增 `workers/pipeline/src/services/llm-transcript.service.test.ts`
-- [ ] 新增 `workers/pipeline/src/services/llm-summary.service.ts`：`llm_legal_summary` + 写 `summary_text`
+- [ ] 新增 `workers/pipeline/src/services/llm-summary.service.ts`：`llm_legal_summary` → `summary_text`
 - [ ] 新增 `workers/pipeline/src/services/llm-summary.service.test.ts`
 
 ---
 
 ### M5-G Repository（Worker · `service_role`）
 
-- [ ] 新增 `workers/pipeline/src/repositories/worker-task.repository.ts`：`claimQueuedTask`（`FOR UPDATE SKIP LOCKED` 逻辑在 Service 层调用 RPC/SQL）
+- [ ] 新增 `workers/pipeline/src/repositories/outbox-event.repository.ts`：`fetchUnpublishedBatch`（`FOR UPDATE SKIP LOCKED`）、`markPublished`、`incrementPublishAttempts`（自 M4-G 迁入并去 BullMQ）
 - [ ] 新增 `workers/pipeline/src/repositories/worker-segment.repository.ts`：调用 `upsert_task_segments`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-transcript.repository.ts`：`upsertTranscript`（`asr_raw_json`/`polished_text`/`summary_text`）
-- [ ] 新增 `workers/pipeline/src/repositories/pipeline-job-run.repository.ts`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-outbox.repository.ts`
+- [ ] 新增 `workers/pipeline/src/repositories/worker-transcript.repository.ts`：`upsertTranscript`
+- [ ] 新增 `workers/pipeline/src/repositories/pipeline-job-run.repository.ts`：`stage` + `outbox_event_id` 幂等
+- [ ] 新增 `workers/pipeline/src/repositories/worker-task.repository.ts`：读/更新任务行；封装 `transition_task_status` 调用
 
 ---
 
-### M5-H Job Handler（每条队列一个 Handler 文件 + 测试）
+### M5-H 阶段 Handler（每个 `stage` 一个 Handler + 测试）
 
-- [ ] 新增 `workers/pipeline/src/handlers/media-extract.handler.ts`：`queued|extracting` 迁移；MP4 分支；完成后 Outbox → `media.preprocess` 或跳过至 ASR 队列
+- [ ] 新增 `workers/pipeline/src/handlers/media-extract.handler.ts`：`stage=media.extract`；`extracting`；完成后同事务 Outbox → `media.preprocess`（非 MP4 可跳过至 preprocess/asr）
 - [ ] 新增 `workers/pipeline/src/handlers/media-extract.handler.test.ts`
-- [ ] 新增 `workers/pipeline/src/handlers/media-preprocess.handler.ts`：`preprocessing`；切片；Outbox → `transcription.asr.express|batch`（读 `asr_queue_tier`）
+- [ ] 新增 `workers/pipeline/src/handlers/media-preprocess.handler.ts`：`stage=media.preprocess`；`preprocessing`；Outbox → `asr`
 - [ ] 新增 `workers/pipeline/src/handlers/media-preprocess.handler.test.ts`
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-asr-express.handler.ts`：`asr_running`；`asr_physical` feature
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-asr-express.handler.test.ts`
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-asr-batch.handler.ts`：同 express 逻辑、低优先级 Worker 选项
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-asr-batch.handler.test.ts`
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-llm.handler.ts`：`llm_running`；润色+摘要；Outbox → `drive.archive`
-- [ ] 新增 `workers/pipeline/src/handlers/transcription-llm.handler.test.ts`
-- [ ] 新增 `workers/pipeline/src/handlers/drive-archive.handler.ts`：创建 `YYYY-MM-DD/任务名/` 目录；写 `archive_folder_id`；`completed` + `task.complete` 审计
+- [ ] 新增 `workers/pipeline/src/handlers/asr.handler.ts`：`stage=asr`；`asr_running`；`asr_physical` feature
+- [ ] 新增 `workers/pipeline/src/handlers/asr.handler.test.ts`
+- [ ] 新增 `workers/pipeline/src/handlers/llm.handler.ts`：`stage=llm`；`llm_running`；润色+摘要；Outbox → `drive.archive`
+- [ ] 新增 `workers/pipeline/src/handlers/llm.handler.test.ts`
+- [ ] 新增 `workers/pipeline/src/handlers/drive-archive.handler.ts`：`stage=drive.archive`；云盘目录；`completed` + `task.complete` 审计
 - [ ] 新增 `workers/pipeline/src/handlers/drive-archive.handler.test.ts`
+- [ ] 新增 `workers/pipeline/src/handlers/stage-error.handler.ts`：未捕获异常 → `failed` + `error_code` + 清理临时目录
 
 ---
 
-### M5-I Worker 注册（每条队列一个 `Worker` 实例任务）
+### M5-I Pipeline 调度器（替代 BullMQ Worker 注册）
 
-- [ ] 在 `index.ts` 注册 BullMQ Worker：`media.extract` → `media-extract.handler`
-- [ ] 注册 Worker：`media.preprocess`
-- [ ] 注册 Worker：`transcription.asr.express`
-- [ ] 注册 Worker：`transcription.asr.batch`（`concurrency` 可低于 express）
-- [ ] 注册 Worker：`transcription.llm`
-- [ ] 注册 Worker：`drive.archive`
-- [ ] 新增 `workers/pipeline/src/handlers/job-error.handler.ts`：未捕获异常 → `transition_task_status`→`failed` + `error_code` + 清理临时目录
+- [ ] 新增 `workers/pipeline/src/services/outbox-poller.service.ts`：定时 `pollOnce`；按 `payload.stage` 分发 Handler；成功 `published_at=now()`；失败递增 `publish_attempts`
+- [ ] 新增 `workers/pipeline/src/services/outbox-poller.service.test.ts`：Mock Handler；超 `OUTBOX_MAX_ATTEMPTS` 告警【待确认】
+- [ ] 新增 `workers/pipeline/src/services/stage-router.ts`：`stage` → Handler 映射表
+- [ ] 在 `index.ts` 启动：`ffmpeg-healthcheck` → `outbox-poller.start()` → 优雅关闭 `SIGTERM`
 
 ---
 
-### M5-J Stalled 补偿 Cron（独立进程或同仓库 `workers/scheduler`）
+### M5-J Stalled 补偿 Cron（`workers/scheduler` 或 API 定时任务）
 
 - [ ] 新增 `workers/scheduler/src/index.ts`：每 10 分钟扫描 `last_progress_at`（§3.6.4.2）
-- [ ] 新增 `workers/scheduler/src/stalled-task-scanner.service.ts`：`retry_count < STALLED_TASK_MAX_RETRIES` → 回滚 `queued`；否则 `failed`/`TASK_STALLED`
+- [ ] 新增 `workers/scheduler/src/stalled-task-scanner.service.ts`：`retry_count < STALLED_TASK_MAX_RETRIES` → 回滚 `queued` + 新 Outbox；否则 `failed`/`TASK_STALLED`
 - [ ] 新增 `workers/scheduler/src/stalled-task-scanner.service.test.ts`
 - [ ] 根 `package.json` 脚本：`scheduler:stalled`
 
@@ -832,16 +846,17 @@
 
 ### M5-K 端到端与 Milestone 5 完成门禁
 
-- [ ] 集成测试：fixture 小音频 → 走完整队列至 `completed`（可 Mock 外部 ASR/LLM HTTP）
-- [ ] 集成测试：重复投递同一 `bull_job_id` → 不重复 ASR（`pipeline_job_runs`）
-- [ ] 集成测试：模拟 `last_progress_at` 超时 → Cron 回滚 `queued` 或 `failed`
-- [ ] 手工验收：任务列表（M4 UI）状态随阶段变化；轮询 ≥2s 可见 `extracting`→…→`completed`
-- [ ] 手工验收：Worker 宿主机 `/tmp/lexos/{taskId}` 在完成后被清理
+- [ ] 集成测试：fixture 小音频 → U3 全阶段至 `completed`（Mock ASR/LLM HTTP）
+- [ ] 集成测试：重复处理同一 `outbox_event_id` → 不重复 ASR（`pipeline_job_runs`）
+- [ ] 集成测试：模拟 `last_progress_at` 超时 → Cron 回滚或 `failed`
+- [ ] 手工验收：M4 任务列表状态 `queued`→…→`completed`；轮询 ≥2s
+- [ ] 手工验收：`/tmp/lexos/{taskId}` 完成后清理
+- [ ] 手工验收：**无需**启动 Redis；仅 `worker:pipeline` + API + Web
 - [ ] 运行 M5 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(worker): ffmpeg asr llm pipeline and stalled recovery`
+- [ ] `git commit`：`feat(worker): postgres outbox pipeline without redis`
 - [ ] 进度表 **M5** 标为「已完成」
 
-**M5 明确不在此 Milestone**：转写工作台 UI、文稿 `PATCH`/导出下载（M6）、云盘浏览 UI（M7）。
+**M5 明确不在此 Milestone**：转写工作台 UI、文稿 PATCH/导出（M6）、云盘浏览 UI（M7）。
 
 ---
 
@@ -1236,7 +1251,7 @@
 ### M9-A 交付文档（每个文件一项）
 
 - [ ] 新增 `.env.production.example`（自 `.env.example` 派生；内网占位符；**无**真实密钥）
-- [ ] 新增 `docs/DEPLOYMENT.md`：进程清单（API、Web、`outbox:dispatcher`、`worker:pipeline`、`scheduler:stalled`）与启动顺序
+- [ ] 新增 `docs/DEPLOYMENT.md`：进程清单（API、Web、`worker:pipeline`、`scheduler:stalled`）与启动顺序；**无 Redis**
 - [ ] 在 `docs/DEPLOYMENT.md` 增加私有化替代矩阵验收表（对照 `architecture.md` §4.4 逐行勾选说明）
 - [ ] 新增 `docs/OPEN_ISSUES.md`：汇总 `prd.md` / `architecture.md` / `database.md` 中【待确认】条目（链接章节号）
 - [ ] 新增 `docs/E2E_MANUAL_CHECKLIST.md`：无法自动化的验收步骤（MFA 真机扫码等）
@@ -1246,8 +1261,7 @@
 ### M9-B `/health` 与就绪探针（每条探测一项）
 
 - [ ] 扩展 `GET /health`：探测 Postgres `SELECT 1`（`apps/api`）
-- [ ] 同上：探测 `REDIS_URL` PING；失败时 API 进程 **exit 非 0**（私有化必配，§4.2.4）
-- [ ] 同上：探测 Storage `media`/`exports` 桶 HEAD
+- [ ] 同上：探测 Storage `media`/`exports` 桶 HEAD（**不**探测 Redis，v1.3）
 - [ ] 新增 `workers/pipeline/src/health/worker-health.ts`：报告 `ffmpeg -version` 解析结果（Worker 独立 `/health` 或启动日志）
 - [ ] 新增 `apps/api/src/__tests__/health.integration.test.ts`：Mock 依赖；断言 JSON 结构含各子系统 `status`
 
@@ -1256,7 +1270,7 @@
 ### M9-C 架构红线静态检查（每个检查一个测试文件）
 
 - [ ] 新增 `tools/compliance/no-hardcoded-supabase-host.test.ts`：源码禁止 `*.supabase.co`（§4.4.2）
-- [ ] 新增 `tools/compliance/no-service-queue-add.test.ts`：`apps/api/src/services` 禁止 `queue.add(`（Outbox 红线）
+- [ ] 新增 `tools/compliance/no-service-queue-add.test.ts`：`apps/api/src/services` 禁止 `queue.add(`；`apps/api` 禁止 `bullmq`/`ioredis` 生产依赖（v1.3）
 - [ ] 新增 `tools/compliance/no-browser-ffmpeg-wasm.test.ts`：`apps/web` 禁止 `ffmpeg.wasm` / `@ffmpeg`（PRD Out of Scope）
 - [ ] 新增 `tools/compliance/no-python-vad-service.test.ts`：仓库禁止独立 Python VAD 微服务目录/依赖
 - [ ] 新增 `tools/compliance/no-business-supabase-writes.test.ts`：`apps/web` 禁止业务表 `supabase.from(...).insert|update|delete`（§5.7.1）
@@ -1267,7 +1281,7 @@
 ### M9-D 私有化就绪脚本（单文件一项）
 
 - [ ] 新增 `scripts/privatization-readiness-check.mjs`：校验 `CAPTCHA_PROVIDER=none` 时 `LOGIN_IP_ALLOWLIST` 已配置（§4.2.3）
-- [ ] 同上脚本：校验 `REDIS_URL`、`FFMPEG_PATH`、`AI_CREDENTIALS_ENCRYPTION_KEY` 在 production 模板中已声明
+- [ ] 同上脚本：校验 `FFMPEG_PATH`、`WORKER_MAX_CONCURRENCY`、`AI_CREDENTIALS_ENCRYPTION_KEY` 在 production 模板中已声明（**不**要求 `REDIS_URL`）
 - [ ] 同上脚本：校验 `REALTIME_ENABLED` 未默认开启（§3.4.3）
 - [ ] 根 `package.json` 脚本：`check:privatization`
 
@@ -1345,8 +1359,8 @@ M*  → M9
 | M1 | 已完成（2026-05-29；自动化测试通过；admin/lawyer 登录与强制改密已随 M2-K 验收） |
 | M2 | 已完成（用户管理 API + 管理端 UI；M2-K 四项手工验收已通过） |
 | M3 | 已完成（AI 配置 API/UI + M3-K 四项手工验收已通过） |
-| M4 | 已完成（2026-05-29；BFF init/TUS/complete + Outbox + 任务列表 UI） |
-| M5 | 已拆解（见上方原子任务） |
+| M4 | 已完成（2026-05-29；BFF + Outbox 写入 + 任务列表 UI；**M5-0** 对齐 v1.3 代码） |
+| M5 | 已拆解（v1.3 · Postgres Outbox · 无 Redis；见 M5-0～M5-K） |
 | M6 | 已拆解（见上方原子任务） |
 | M7 | 已拆解（见上方原子任务） |
 | M8 | 已拆解（见上方原子任务） |

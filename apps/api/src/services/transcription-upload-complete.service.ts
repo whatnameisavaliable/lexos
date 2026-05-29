@@ -7,7 +7,6 @@ import pg from "pg";
 import type { SupabaseEnvConfig } from "@lexos/shared/config";
 import type { SupabaseStorageAdapter } from "../adapters/storage/supabase-storage.adapter.js";
 import { assertTaskStatusTransition } from "../domain/task-state-machine.js";
-import { resolveAsrQueueTier } from "../domain/asr-queue-tier.js";
 import { buildQueuedPayload } from "../domain/outbox-payload.factory.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { OutboxRepository } from "../repositories/outbox.repository.js";
@@ -106,7 +105,6 @@ export class TranscriptionUploadCompleteService {
     const primaryObject =
       objects.find((o) => o.name === task.sourceStorageKey) ?? objects[0];
     const sourceStorageKey = primaryObject.name;
-    const asrQueueTier = resolveAsrQueueTier(task.durationSec);
     const outboxPayload = buildQueuedPayload({
       taskId: task.id,
       createdBy: task.createdBy,
@@ -121,7 +119,6 @@ export class TranscriptionUploadCompleteService {
 
       await this.taskWriteRepository.updateForUploadComplete(client, task.id, {
         sourceStorageKey,
-        asrQueueTier,
         durationSec: task.durationSec,
       });
 

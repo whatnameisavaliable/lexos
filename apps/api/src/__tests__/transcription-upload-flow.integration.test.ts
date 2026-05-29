@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
 import {
-  PIPELINE_QUEUE_MEDIA_PREPROCESS,
+  PIPELINE_STAGE_MEDIA_PREPROCESS,
   createAuthContext,
 } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
@@ -85,7 +85,7 @@ function canRunTranscriptionIntegration(): boolean {
   }
 }
 
-function canRunOutboxRedisIntegration(): boolean {
+function canRunPipelineWorkerIntegration(): boolean {
   if (!canRunTranscriptionIntegration()) {
     return false;
   }
@@ -255,7 +255,7 @@ describe("transcription upload flow (integration)", () => {
           expect(rows[0]?.event_type).toBe("task.queued");
           expect(rows[0]?.published_at).toBeNull();
           expect(rows[0]?.payload).toMatchObject({
-            queueName: PIPELINE_QUEUE_MEDIA_PREPROCESS,
+            stage: PIPELINE_STAGE_MEDIA_PREPROCESS,
             taskId: initResult.taskId,
             createdBy: fixture.userId,
             isMp4: false,
@@ -326,27 +326,21 @@ describe("transcription upload flow (integration)", () => {
     120_000,
   );
 
-  it.skipIf(!canRunOutboxRedisIntegration())(
-    "outbox dispatcher publishes media.preprocess BullMQ job after complete",
+  it.skipIf(!canRunPipelineWorkerIntegration())(
+    "pipeline worker pollOnce leaves unpublished outbox without stage handlers",
     async () => {
       const repoRoot = resolveRepoRoot();
       loadEnvFiles(repoRoot, [".env", ".env.development"]);
       const appEnv = loadAppRuntimeEnv(repoRoot);
-      const outboxEnv = loadOutboxRuntimeEnvFromProcess();
+      loadOutboxRuntimeEnvFromProcess();
       const suffix = Date.now().toString(36);
       const { fixture, cleanup } = await createLawyerFixture(suffix);
 
       const { OutboxPollerService } = await import(
-        "../../../../workers/outbox-dispatcher/src/outbox-poller.service.js"
+        "../../../../workers/pipeline/src/services/outbox-poller.service.js"
       );
-      const { Queue } = await import("bullmq");
-      const IORedis = (await import("ioredis")).default;
 
-      const poller = new OutboxPollerService(outboxEnv);
-      const redis = new IORedis(outboxEnv.redisUrl, { maxRetriesPerRequest: null });
-      const queue = new Queue(PIPELINE_QUEUE_MEDIA_PREPROCESS, {
-        connection: redis,
-      });
+      const poller = new OutboxPollerService(loadOutboxRuntimeEnvFromProcess());
 
       try {
         const { storage, taskRepository, initService, completeService } =
@@ -359,7 +353,7 @@ describe("transcription upload flow (integration)", () => {
         });
 
         const initResult = await initService.init(actor, fixture.accessToken, {
-          title: "Outbox 投递测试",
+          title: "Outbox 轮询测试",
           fileName: "queue.mp3",
           mimeType: "audio/mpeg",
           sizeBytes: 2048n,
@@ -380,26 +374,26 @@ describe("transcription upload flow (integration)", () => {
           uploadSessionId: initResult.uploadSessionId,
         });
 
-        const published = await poller.pollOnce();
-        expect(published).toBeGreaterThanOrEqual(1);
+        const processed = await poller.pollOnce();
+        expect(processed).toBe(0);
 
-        const job = await queue.getJob(
-          `${initResult.taskId}:${PIPELINE_QUEUE_MEDIA_PREPROCESS}`,
-        );
-        expect(job).toBeTruthy();
-        expect(job?.data).toMatchObject({
-          taskId: initResult.taskId,
-          createdBy: fixture.userId,
-          isMp4: false,
-        });
-
-        if (job) {
-          await job.remove();
+        const db = new pg.Client({ connectionString: appEnv.supabaseDbUrl });
+        await db.connect();
+        try {
+          const { rows } = await db.query<{ published_at: string | null }>(
+            `SELECT published_at
+             FROM public.outbox_events
+             WHERE aggregate_id = $1::uuid
+             ORDER BY created_at DESC
+             LIMIT 1`,
+            [initResult.taskId],
+          );
+          expect(rows[0]?.published_at).toBeNull();
+        } finally {
+          await db.end();
         }
       } finally {
         await poller.stop();
-        await queue.close();
-        redis.disconnect();
         await cleanup();
       }
     },

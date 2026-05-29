@@ -1,15 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 import type { PoolClient } from "pg";
-import type { OutboxEventRow } from "./outbox-event.repository.js";
+import type { OutboxEventRow } from "../repositories/outbox-event.repository.js";
 
-/** 超最大投递次数时的告警钩子（可注入测试替身）。 */
+/** 超最大处理次数时的告警钩子（可注入测试替身）。 */
 export type OutboxMaxAttemptsAlertHook = (
   event: OutboxEventRow,
   errorMessage: string,
 ) => void | Promise<void>;
 
 /**
- * Outbox 投递失败后的审计与任务标记（`architecture.md` §3.7.4）。
+ * Outbox 阶段处理失败后的审计与任务标记（`architecture.md` §3.7.4）。
  */
 export class OutboxFailureHandler {
   private readonly client;
@@ -40,7 +40,7 @@ export class OutboxFailureHandler {
       p_ip: null,
       p_user_agent: null,
       p_metadata: {
-        reason: "outbox_publish_exhausted",
+        reason: "outbox_stage_exhausted",
         outboxEventId: event.id,
         eventType: event.eventType,
         publishAttempts: event.publishAttempts,
@@ -55,7 +55,7 @@ export class OutboxFailureHandler {
              error_message = $2,
              updated_at = now()
          WHERE id = $1::uuid`,
-        [event.aggregateId, "Outbox publish failed after max attempts"],
+        [event.aggregateId, "Outbox stage failed after max attempts"],
       );
 
       await pgClient.query(

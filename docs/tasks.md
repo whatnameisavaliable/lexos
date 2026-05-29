@@ -163,18 +163,18 @@
 
 ### M1-C 中间件（`apps/api` · 每条一个文件）
 
-- [ ] 新增 `apps/api/src/middleware/request-id.middleware.ts`：注入 `requestId` + `AsyncLocalStorage`
-- [ ] 新增 `apps/api/src/middleware/error-handler.middleware.ts`：统一 `{ success, error }` 响应体
-- [ ] 新增 `apps/api/src/middleware/auth.middleware.ts`：解析 Bearer JWT；加载 `profiles`；`status=disabled` → `AUTH_ACCOUNT_DISABLED`；**以 `profiles.role` 为准**
-- [ ] 新增 `apps/api/src/middleware/password-change-gate.middleware.ts`：白名单 `/api/auth/change-password`、`/api/auth/session`、`/api/auth/logout`；否则 `AUTH_PASSWORD_CHANGE_REQUIRED`
-- [ ] 新增 `apps/api/src/middleware/role-gate.factory.ts`：导出 `requireRoles(...roles)` 高阶函数（M1 仅挂载 profile 路由测试用）
+- [x] 新增 `apps/api/src/middleware/request-id.middleware.ts`：注入 `requestId` + `AsyncLocalStorage`
+- [x] 新增 `apps/api/src/middleware/error-handler.middleware.ts`：统一 `{ success, error }` 响应体
+- [x] 新增 `apps/api/src/middleware/auth.middleware.ts`：解析 Bearer JWT；加载 `profiles`；`status=disabled` → `AUTH_ACCOUNT_DISABLED`；**以 `profiles.role` 为准**
+- [x] 新增 `apps/api/src/middleware/password-change-gate.middleware.ts`：白名单 `/api/auth/change-password`、`/api/auth/session`、`/api/auth/logout`；否则 `AUTH_PASSWORD_CHANGE_REQUIRED`
+- [x] 新增 `apps/api/src/middleware/role-gate.factory.ts`：导出 `requireRoles(...roles)` 高阶函数（M1 仅挂载 profile 路由测试用）
 
 ---
 
 ### M1-D Repository（`apps/api`）
 
-- [ ] 新增 `apps/api/src/repositories/profile.repository.ts`：`findById`、`findByUsername`、`updateDisplayContact`（用户 JWT 客户端，RLS 生效）
-- [ ] 新增 `apps/api/src/repositories/profile-admin.repository.ts`（可选合并）：`setRequiresPasswordChange`、`setMfaEnabled` 经 RPC 调用 `complete_password_change` / `set_profile_mfa_enabled`（`service_role` 或 supabase rpc）
+- [x] 新增 `apps/api/src/repositories/profile.repository.ts`：`findById`、`findByUsername`、`updateDisplayContact`（用户 JWT 客户端，RLS 生效）
+- [x] 新增 `apps/api/src/repositories/profile-admin.repository.ts`（可选合并）：`setRequiresPasswordChange`、`setMfaEnabled` 经 RPC 调用 `complete_password_change` / `set_profile_mfa_enabled`（`service_role` 或 supabase rpc）
 
 ---
 

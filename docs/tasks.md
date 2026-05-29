@@ -31,7 +31,7 @@
 - [x] 确认已配置 `.env.development`（自 `.env.example` 复制）且 `SUPABASE_*` 可连接远端项目
 - [x] 安装并验证 Supabase CLI：`supabase --version`（或全局 `supabase`）
 - [x] 在项目根目录执行 `supabase init`（若尚无 `supabase/config.toml`）；保留默认结构并核对 `project_id` 与远端项目关联方式（`supabase link --project-ref <ref>`）
-- [ ] 创建目录：`supabase/migrations/`、`supabase/seed.sql`（若 CLI 未自动生成则手动创建）
+- [x] 创建目录：`supabase/migrations/`、`supabase/seed.sql`（若 CLI 未自动生成则手动创建）
 - [ ] 在 `.gitignore` 中忽略 `.env`、`.env.development`、`.env.production`；**禁止**提交含秘密值的 env 文件
 - [ ] 初始化 monorepo 目录骨架（空包即可）：`apps/api/`、`apps/web/`、`workers/pipeline/`、`packages/shared/`（与 `architecture.md` §2.1 一致）
 

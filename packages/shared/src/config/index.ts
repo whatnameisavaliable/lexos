@@ -26,3 +26,8 @@ export {
   parseProjectRefFromSupabaseUrl,
   readLinkedProjectRef,
 } from "./supabase-project.js";
+export {
+  assertSupabaseLayout,
+  getSupabaseLayoutPaths,
+  type SupabaseLayoutPaths,
+} from "./supabase-layout.js";

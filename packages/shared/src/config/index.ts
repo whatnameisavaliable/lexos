@@ -31,3 +31,8 @@ export {
   getSupabaseLayoutPaths,
   type SupabaseLayoutPaths,
 } from "./supabase-layout.js";
+export {
+  REQUIRED_ENV_GITIGNORE_ENTRIES,
+  assertEnvFilesGitignored,
+  parseGitignoreLines,
+} from "./gitignore-env.js";

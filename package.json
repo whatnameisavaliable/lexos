@@ -14,8 +14,9 @@
     "verify:supabase-cli": "vitest run packages/shared/src/config/supabase-cli.test.ts",
     "seed:admin": "npx tsx packages/shared/src/seed/run-builtin-admin-cli.ts",
     "seed:sql": "supabase db query --linked -f supabase/seed.sql",
-    "dev:api": "npm run dev -w @lexos/api",
-    "dev:web": "npm run dev -w @lexos/web",
+    "build:shared": "npm run build -w @lexos/shared",
+    "dev:api": "npm run build:shared && npm run dev -w @lexos/api",
+    "dev:web": "npm run build:shared && npm run dev -w @lexos/web",
     "test:integration": "vitest run packages/shared/src/**/*.integration.test.ts",
     "verify:m0-gate": "npx tsx packages/shared/src/milestones/run-m0-gate-cli.ts"
   },

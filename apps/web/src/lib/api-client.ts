@@ -54,13 +54,18 @@ export async function apiFetch<T>(
     credentials: "include",
   });
 
+  const rawText = await response.text();
   let payload: ApiResponse<T>;
   try {
-    payload = (await response.json()) as ApiResponse<T>;
+    payload = (rawText ? JSON.parse(rawText) : {}) as ApiResponse<T>;
   } catch {
+    const hint =
+      response.status === 404 || response.status === 502 || response.status === 503
+        ? "无法连接 BFF/API，请先运行 npm run dev:api（端口 4000）"
+        : "服务端返回非 JSON 响应";
     throw new ApiClientError(
       "INTERNAL_ERROR",
-      "Invalid JSON response",
+      hint,
       undefined,
       response.status,
     );

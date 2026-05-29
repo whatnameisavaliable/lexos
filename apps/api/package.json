@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "tsx src/index.ts",
+    "predev": "npm run build -w @lexos/shared",
     "dev": "tsx watch src/index.ts",
     "test": "vitest run"
   },

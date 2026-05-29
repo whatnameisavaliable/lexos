@@ -23,8 +23,12 @@
       "import": "./dist/client.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "test": "vitest run"
   },
   "dependencies": {

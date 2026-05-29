@@ -22,6 +22,13 @@ export * from "./dto/ai-feature-mapping-upsert.dto.js";
 export * from "./dto/ai-prompt-create.dto.js";
 export * from "./dto/ai-prompt-update.dto.js";
 export * from "./dto/ai-invocation-logs-query.dto.js";
+export * from "./enums/transcription-task-status.js";
+export * from "./lib/transcription-limits.js";
+export * from "./dto/transcription-upload-init.dto.js";
+export * from "./dto/transcription-upload-complete.dto.js";
+export * from "./dto/transcription-task-list-query.dto.js";
+export * from "./types/transcription-upload-init-response.js";
+export * from "./types/transcription-task-summary.js";
 export * from "./lib/mask-api-key.js";
 export * from "./db/index.js";
 export {

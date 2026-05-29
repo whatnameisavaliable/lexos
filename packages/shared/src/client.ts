@@ -31,3 +31,35 @@ export * from "./types/user-role.js";
 export * from "./types/auth-context.js";
 export * from "./errors/auth-error-codes.js";
 export * from "./validation/username.js";
+export * from "./enums/ai-feature-key.js";
+export * from "./enums/ai-provider-kind.js";
+export * from "./types/ai-model-public.js";
+export type { AiModelCreateBody } from "./dto/ai-model-create.dto.js";
+export type { AiModelUpdateBody } from "./dto/ai-model-update.dto.js";
+export type { AiFeatureMappingUpsertBody } from "./dto/ai-feature-mapping-upsert.dto.js";
+export type { AiPromptCreateBody } from "./dto/ai-prompt-create.dto.js";
+export type { AiPromptUpdateBody } from "./dto/ai-prompt-update.dto.js";
+export {
+  parseTranscriptionUploadInitBody,
+  type TranscriptionUploadInitBody,
+} from "./dto/transcription-upload-init.dto.js";
+export {
+  parseTranscriptionUploadCompleteBody,
+  type TranscriptionUploadCompleteBody,
+} from "./dto/transcription-upload-complete.dto.js";
+export {
+  parseTranscriptionTaskListQuery,
+  type TranscriptionTaskListQuery,
+} from "./dto/transcription-task-list-query.dto.js";
+export type { TranscriptionUploadInitResponse } from "./types/transcription-upload-init-response.js";
+export type { TranscriptionTaskSummary } from "./types/transcription-task-summary.js";
+export {
+  MAX_SIZE_BYTES,
+  MAX_DURATION_SEC,
+  ALLOWED_TRANSCRIPTION_MIME_TYPES,
+  isMp4SourceMime,
+} from "./lib/transcription-limits.js";
+export {
+  TRANSCRIPTION_TASK_STATUS_VALUES,
+  type TranscriptionTaskStatus,
+} from "./enums/transcription-task-status.js";

@@ -558,9 +558,9 @@
 ### M3-K 种子数据与 Milestone 3 完成门禁
 
 - [x] 可选 `supabase/seed.sql` 片段：插入 4 条 `ai_feature_model_mappings` 占位（`primary_model_id` 指向 seed 模型，若无可跳过）
-- [ ] 手工验收：创建 OpenAI 兼容模型 → 连通性测试成功/失败提示明确
-- [ ] 手工验收：配置 `llm_transcript_polish` 映射并发布 Prompt；响应中无完整 `apiKey`
-- [ ] 手工验收：lawyer 调用 `GET /api/admin/ai/models` → `403`
+- [x] 手工验收：创建 OpenAI 兼容模型 → 连通性测试成功/失败提示明确
+- [x] 手工验收：配置 `llm_transcript_polish` 映射并发布 Prompt；响应中无完整 `apiKey`
+- [x] 手工验收：lawyer 调用 `GET /api/admin/ai/models` → `403`
 - [x] 运行 M3 测试全绿；连续失败 >2 次停止汇报
 - [x] `git commit`：`feat(admin-ai): credentials mappings prompts and healthcheck`
 - [x] 进度表 **M3** 标为「已完成」
@@ -591,12 +591,12 @@
 
 ### M4-A 共享 DTO（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/dto/transcription-upload-init.dto.ts`：`title`、`fileName`、`mimeType`、`sizeBytes`、`durationSec?`、`idempotencyKey?`
-- [ ] 新增 `packages/shared/src/dto/transcription-upload-complete.dto.ts`：`uploadSessionId`
-- [ ] 新增 `packages/shared/src/dto/transcription-task-list-query.dto.ts`：`limit`（默认 50）、`cursor?`、`status?`
-- [ ] 新增 `packages/shared/src/types/transcription-upload-init-response.ts`：`uploadSessionId`、`taskId`、`storageKeyPrefix`、`tusEndpoint`、`tusHeaders?`
-- [ ] 新增 `packages/shared/src/types/transcription-task-summary.ts`：列表行（`id`、`title`、`status`、`durationSec`、`sizeBytes`、`createdAt`）
-- [ ] 新增 `packages/shared/src/lib/transcription-limits.ts`：`MAX_SIZE_BYTES=1073741824`、`MAX_DURATION_SEC=18000`（与 DB 触发器一致）
+- [x] 新增 `packages/shared/src/dto/transcription-upload-init.dto.ts`：`title`、`fileName`、`mimeType`、`sizeBytes`、`durationSec?`、`idempotencyKey?`
+- [x] 新增 `packages/shared/src/dto/transcription-upload-complete.dto.ts`：`uploadSessionId`
+- [x] 新增 `packages/shared/src/dto/transcription-task-list-query.dto.ts`：`limit`（默认 50）、`cursor?`、`status?`
+- [x] 新增 `packages/shared/src/types/transcription-upload-init-response.ts`：`uploadSessionId`、`taskId`、`storageKeyPrefix`、`tusEndpoint`、`tusHeaders?`
+- [x] 新增 `packages/shared/src/types/transcription-task-summary.ts`：列表行（`id`、`title`、`status`、`durationSec`、`sizeBytes`、`createdAt`）
+- [x] 新增 `packages/shared/src/lib/transcription-limits.ts`：`MAX_SIZE_BYTES=1073741824`、`MAX_DURATION_SEC=18000`（与 DB 触发器一致）
 
 ---
 
@@ -1344,7 +1344,7 @@ M*  → M9
 | M0 | 已完成（2026-05-29；`npm run verify:m0-gate`） |
 | M1 | 已完成（2026-05-29；自动化测试通过；admin/lawyer 登录与强制改密已随 M2-K 验收） |
 | M2 | 已完成（用户管理 API + 管理端 UI；M2-K 四项手工验收已通过） |
-| M3 | 已完成（代码与自动化测试；手工验收项见 M3-K） |
+| M3 | 已完成（AI 配置 API/UI + M3-K 四项手工验收已通过） |
 | M4 | 已拆解（见上方原子任务） |
 | M5 | 已拆解（见上方原子任务） |
 | M6 | 已拆解（见上方原子任务） |

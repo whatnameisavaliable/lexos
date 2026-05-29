@@ -33,6 +33,10 @@ export {
   type AiRuntimeEnvConfig,
 } from "./ai-runtime-env.js";
 export {
+  loadStorageRuntimeEnvFromProcess,
+  type StorageRuntimeEnvConfig,
+} from "./storage-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

@@ -602,9 +602,9 @@
 
 ### M4-B Storage 适配器（TUS 签发，单文件一项）
 
-- [ ] 新增 `apps/api/src/adapters/storage/storage.adapter.ts` 接口：`listObjectsByPrefix`、`headObject`
-- [ ] 新增 `apps/api/src/adapters/storage/supabase-storage.adapter.ts`：`createResumableUploadUrl` / TUS 端点元数据（读 `STORAGE_BUCKET_MEDIA`）
-- [ ] 新增 `apps/api/src/adapters/storage/supabase-storage.adapter.test.ts`：Mock SDK；**禁止**日志输出签名 token
+- [x] 新增 `apps/api/src/adapters/storage/storage.adapter.ts` 接口：`listObjectsByPrefix`、`headObject`
+- [x] 新增 `apps/api/src/adapters/storage/supabase-storage.adapter.ts`：`createResumableUploadUrl` / TUS 端点元数据（读 `STORAGE_BUCKET_MEDIA`）
+- [x] 新增 `apps/api/src/adapters/storage/supabase-storage.adapter.test.ts`：Mock SDK；**禁止**日志输出签名 token
 
 ---
 

@@ -853,7 +853,7 @@
 - [x] 手工验收：`/tmp/lexos/{taskId}` 完成后清理
 - [x] 手工验收：**无需**启动 Redis；仅 `worker:pipeline` + API + Web
 - [x] 运行 M5 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(worker): postgres outbox pipeline without redis`
+- [x] `git commit`：`feat(worker): postgres outbox pipeline without redis`
 - [x] 进度表 **M5** 标为「已完成」
 
 **M5 明确不在此 Milestone**：转写工作台 UI、文稿 PATCH/导出（M6）、云盘浏览 UI（M7）。
@@ -882,10 +882,10 @@
 
 ### M6-A 共享 DTO（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/dto/transcript-patch.dto.ts`：`polishedText`（编辑模式唯一可写字段）
-- [ ] 新增 `packages/shared/src/types/transcript-detail.ts`：`asrRawJson`、`polishedText`、`summaryText`、`version`、`diarizationDegraded`
-- [ ] 新增 `packages/shared/src/types/transcription-task-detail.ts`：扩展 M4 摘要 + 文稿摘要 + 播放用 `audioStorageKey` 引用（**不**返回 Storage 直链）
-- [ ] 新增 `packages/shared/src/enums/export-format.ts`：`docx` | `pdf` | `txt`
+- [x] 新增 `packages/shared/src/dto/transcript-patch.dto.ts`：`polishedText`（编辑模式唯一可写字段）
+- [x] 新增 `packages/shared/src/types/transcript-detail.ts`：`asrRawJson`、`polishedText`、`summaryText`、`version`、`diarizationDegraded`
+- [x] 新增 `packages/shared/src/types/transcription-task-detail.ts`：扩展 M4 摘要 + 文稿摘要 + 播放用 `audioStorageKey` 引用（**不**返回 Storage 直链）
+- [x] 新增 `packages/shared/src/enums/export-format.ts`：`docx` | `pdf` | `txt`
 
 ---
 

@@ -770,20 +770,20 @@
 
 ### M5-D FFmpeg 与临时目录（单文件一项）
 
-- [ ] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.ts`：`spawn` 白名单；超时 `FFMPEG_TIMEOUT_MS`；信号量 `FFMPEG_MAX_CONCURRENT`
-- [ ] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.test.ts`：Mock `child_process`
-- [ ] 新增 `workers/pipeline/src/services/media-extract.service.ts`：MP4→16kHz mono MP3；更新 `audio_storage_key`；失败 `MEDIA_EXTRACT_FAILED`
-- [ ] 新增 `workers/pipeline/src/services/media-extract.service.test.ts`
-- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.ts`：Storage 流式落盘 → 重采样 → 物理切片（`ASR_SEGMENT_DURATION_SEC`）；输出 `WORKER_TMP_DIR/{taskId}/*.mp3`
-- [ ] 新增 `workers/pipeline/src/services/media-preprocess.service.test.ts`：断言切片路径；**禁止**上传切片至 Storage
-- [ ] 新增 `workers/pipeline/src/services/temp-dir-cleanup.service.ts`：任务结束/失败后删除 `{taskId}` 目录
+- [x] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.ts`：`spawn` 白名单；超时 `FFMPEG_TIMEOUT_MS`；信号量 `FFMPEG_MAX_CONCURRENT`
+- [x] 新增 `workers/pipeline/src/adapters/ffmpeg/ffmpeg.runner.test.ts`：Mock `child_process`
+- [x] 新增 `workers/pipeline/src/services/media-extract.service.ts`：MP4→16kHz mono MP3；更新 `audio_storage_key`；失败 `MEDIA_EXTRACT_FAILED`
+- [x] 新增 `workers/pipeline/src/services/media-extract.service.test.ts`
+- [x] 新增 `workers/pipeline/src/services/media-preprocess.service.ts`：Storage 流式落盘 → 重采样 → 物理切片（`ASR_SEGMENT_DURATION_SEC`）；输出 `WORKER_TMP_DIR/{taskId}/*.mp3`
+- [x] 新增 `workers/pipeline/src/services/media-preprocess.service.test.ts`：断言切片路径；**禁止**上传切片至 Storage
+- [x] 新增 `workers/pipeline/src/services/temp-dir-cleanup.service.ts`：任务结束/失败后删除 `{taskId}` 目录
 
 ---
 
 ### M5-E Storage 下载（Worker 专用）
 
-- [ ] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.ts`：流式 `downloadToFile(storageKey, localPath)`
-- [ ] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.test.ts`
+- [x] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.ts`：流式 `downloadToFile(storageKey, localPath)`
+- [x] 新增 `workers/pipeline/src/adapters/storage/worker-storage.adapter.test.ts`
 
 ---
 
@@ -802,11 +802,11 @@
 
 ### M5-G Repository（Worker · `service_role`）
 
-- [ ] 新增 `workers/pipeline/src/repositories/outbox-event.repository.ts`：`fetchUnpublishedBatch`（`FOR UPDATE SKIP LOCKED`）、`markPublished`、`incrementPublishAttempts`（自 M4-G 迁入并去 BullMQ）
-- [ ] 新增 `workers/pipeline/src/repositories/worker-segment.repository.ts`：调用 `upsert_task_segments`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-transcript.repository.ts`：`upsertTranscript`
-- [ ] 新增 `workers/pipeline/src/repositories/pipeline-job-run.repository.ts`：`stage` + `outbox_event_id` 幂等
-- [ ] 新增 `workers/pipeline/src/repositories/worker-task.repository.ts`：读/更新任务行；封装 `transition_task_status` 调用
+- [x] 新增 `workers/pipeline/src/repositories/outbox-event.repository.ts`：`fetchUnpublishedBatch`（`FOR UPDATE SKIP LOCKED`）、`markPublished`、`incrementPublishAttempts`（自 M4-G 迁入并去 BullMQ）
+- [x] 新增 `workers/pipeline/src/repositories/worker-segment.repository.ts`：调用 `upsert_task_segments`
+- [x] 新增 `workers/pipeline/src/repositories/worker-transcript.repository.ts`：`upsertTranscript`
+- [x] 新增 `workers/pipeline/src/repositories/pipeline-job-run.repository.ts`：`stage` + `outbox_event_id` 幂等
+- [x] 新增 `workers/pipeline/src/repositories/worker-task.repository.ts`：读/更新任务行；封装 `transition_task_status` 调用
 
 ---
 

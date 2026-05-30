@@ -14,6 +14,7 @@ export const APP_NAV_ITEMS: readonly AppNavItem[] = [
   { href: "/admin/transcription", label: "语音转写", allowedRoles: ["admin"] },
   { href: "/admin", label: "管理首页", allowedRoles: ["admin"] },
   { href: "/transcription", label: "语音转写", allowedRoles: ["lawyer"] },
+  { href: "/drive", label: "个人云盘", allowedRoles: ["lawyer", "admin"] },
   { href: "/lawyer", label: "律师工作台", allowedRoles: ["lawyer", "admin"] },
   { href: "/profile", label: "个人中心", allowedRoles: ["admin", "lawyer", "director", "client", "channel"] },
 ] as const;

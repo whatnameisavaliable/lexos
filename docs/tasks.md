@@ -1013,100 +1013,100 @@
 
 ### M7-A 共享 DTO（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/dto/drive-folder-create.dto.ts`：`parentId`、`name`
-- [ ] 新增 `packages/shared/src/dto/drive-node-update.dto.ts`：`name?`、`parentId?`（移动）
-- [ ] 新增 `packages/shared/src/dto/drive-nodes-list-query.dto.ts`：`parentId`、`limit`（默认 50）、`cursor?`
-- [ ] 新增 `packages/shared/src/dto/drive-search-query.dto.ts`：`q`（min 长度校验）、`limit`、`cursor?`
-- [ ] 新增 `packages/shared/src/types/drive-node-summary.ts`：`id`、`nodeType`、`name`、`sizeBytes`、`mimeType`、`linkedTaskId`、`isArchiveFolder?`、`updatedAt`
+- [x] 新增 `packages/shared/src/dto/drive-folder-create.dto.ts`：`parentId`、`name`
+- [x] 新增 `packages/shared/src/dto/drive-node-update.dto.ts`：`name?`、`parentId?`（移动）
+- [x] 新增 `packages/shared/src/dto/drive-nodes-list-query.dto.ts`：`parentId`、`limit`（默认 50）、`cursor?`
+- [x] 新增 `packages/shared/src/dto/drive-search-query.dto.ts`：`q`（min 长度校验）、`limit`、`cursor?`
+- [x] 新增 `packages/shared/src/types/drive-node-summary.ts`：`id`、`nodeType`、`name`、`sizeBytes`、`mimeType`、`linkedTaskId`、`isArchiveFolder?`、`updatedAt`
 
 ---
 
 ### M7-B Repository（单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/drive-node.repository.ts`：`findRootByUser`、`listChildren`、`findById`、`createFolder`、`updateNode`、`softDelete`
-- [ ] 新增 `apps/api/src/repositories/drive-node.repository.test.ts`：律师无法 `SELECT` 他人节点（RLS 集成）
-- [ ] 新增 `apps/api/src/repositories/drive-search.repository.ts`：`searchTranscripts(userId, q, pagination)` — `polished_text`/`summary_text` `%` / `similarity()`（§7.3.2）
-- [ ] 新增 `apps/api/src/repositories/drive-search.repository.test.ts`：Mock SQL；断言未使用 `to_tsvector('simple'...)`
+- [x] 新增 `apps/api/src/repositories/drive-node.repository.ts`：`findRootByUser`、`listChildren`、`findById`、`createFolder`、`updateNode`、`softDelete`
+- [x] 新增 `apps/api/src/repositories/drive-node.repository.test.ts`：律师无法 `SELECT` 他人节点（RLS 集成）
+- [x] 新增 `apps/api/src/repositories/drive-search.repository.ts`：`searchTranscripts(userId, q, pagination)` — `polished_text`/`summary_text` `%` / `similarity()`（§7.3.2）
+- [x] 新增 `apps/api/src/repositories/drive-search.repository.test.ts`：Mock SQL；断言未使用 `to_tsvector('simple'...)`
 
 ---
 
 ### M7-C 领域规则（单文件一项）
 
-- [ ] 新增 `apps/api/src/domain/drive-node-rules.ts`：`assertFileHasParent`、`assertNotRootFileCreate`、`assertSameOwnerParent`
-- [ ] 新增 `apps/api/src/domain/drive-node-rules.test.ts`：根目录建文件 → `VALIDATION_FAILED`
-- [ ] 新增 `apps/api/src/domain/drive-archive-detect.ts`：根据 `linked_task_id` / 路径判断归档目录只读标识（供 UI）
+- [x] 新增 `apps/api/src/domain/drive-node-rules.ts`：`assertFileHasParent`、`assertNotRootFileCreate`、`assertSameOwnerParent`
+- [x] 新增 `apps/api/src/domain/drive-node-rules.test.ts`：根目录建文件 → `VALIDATION_FAILED`
+- [x] 新增 `apps/api/src/domain/drive-archive-detect.ts`：根据 `linked_task_id` / 路径判断归档目录只读标识（供 UI）
 
 ---
 
 ### M7-D Service + 单元测试（每条 Service 一个 `.test.ts`）
 
-- [ ] 新增 `apps/api/src/services/drive-root.service.ts`：返回用户 `__root__` 文件夹 id（若无则创建，§7.2.1）
-- [ ] 新增 `apps/api/src/services/drive-root.service.test.ts`
-- [ ] 新增 `apps/api/src/services/drive-nodes-list.service.ts` + 测试（分页 50）
-- [ ] 新增 `apps/api/src/services/drive-node-get.service.ts` + 测试（越权 `AUTH_FORBIDDEN`）
-- [ ] 新增 `apps/api/src/services/drive-folder-create.service.ts`：同级重名 → `VALIDATION_FAILED`【待确认】
-- [ ] 新增 `apps/api/src/services/drive-folder-create.service.test.ts`
-- [ ] 新增 `apps/api/src/services/drive-node-update.service.ts`：重命名/移动；禁止将文件夹移入自身子树
-- [ ] 新增 `apps/api/src/services/drive-node-update.service.test.ts`
-- [ ] 新增 `apps/api/src/services/drive-node-delete.service.ts`：软删除；`file.delete` 审计；有子节点 → `OPERATION_NOT_ALLOWED`【待确认】
-- [ ] 新增 `apps/api/src/services/drive-node-delete.service.test.ts`
-- [ ] 新增 `apps/api/src/services/drive-search.service.ts`：仅返回本人任务文稿命中 + 关联 `drive_nodes` 跳转信息
-- [ ] 新增 `apps/api/src/services/drive-search.service.test.ts`
-- [ ] 新增 `apps/api/src/services/drive-file-download.service.ts`：`storage_key` 归属校验 → 签名 URL；`file.download` 审计
-- [ ] 新增 `apps/api/src/services/drive-file-download.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-root.service.ts`：返回用户 `__root__` 文件夹 id（若无则创建，§7.2.1）
+- [x] 新增 `apps/api/src/services/drive-root.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-nodes-list.service.ts` + 测试（分页 50）
+- [x] 新增 `apps/api/src/services/drive-node-get.service.ts` + 测试（越权 `AUTH_FORBIDDEN`）
+- [x] 新增 `apps/api/src/services/drive-folder-create.service.ts`：同级重名 → `VALIDATION_FAILED`【待确认】
+- [x] 新增 `apps/api/src/services/drive-folder-create.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-node-update.service.ts`：重命名/移动；禁止将文件夹移入自身子树
+- [x] 新增 `apps/api/src/services/drive-node-update.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-node-delete.service.ts`：软删除；`file.delete` 审计；有子节点 → `OPERATION_NOT_ALLOWED`【待确认】
+- [x] 新增 `apps/api/src/services/drive-node-delete.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-search.service.ts`：仅返回本人任务文稿命中 + 关联 `drive_nodes` 跳转信息
+- [x] 新增 `apps/api/src/services/drive-search.service.test.ts`
+- [x] 新增 `apps/api/src/services/drive-file-download.service.ts`：`storage_key` 归属校验 → 签名 URL；`file.download` 审计
+- [x] 新增 `apps/api/src/services/drive-file-download.service.test.ts`
 
 ---
 
 ### M7-E 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `GET /api/drive/root` → `drive.routes.ts` + `drive-root.controller.ts` + `drive-root.controller.test.ts`
-- [ ] 注册 `GET /api/drive/nodes` → `drive-nodes-list.controller.ts` + `drive-nodes-list.controller.test.ts`
-- [ ] 注册 `GET /api/drive/nodes/:id` → `drive-node-get.controller.ts` + `drive-node-get.controller.test.ts`
-- [ ] 注册 `POST /api/drive/folders` → `drive-folder-create.controller.ts` + `drive-folder-create.controller.test.ts`
-- [ ] 注册 `PATCH /api/drive/nodes/:id` → `drive-node-patch.controller.ts` + `drive-node-patch.controller.test.ts`
-- [ ] 注册 `DELETE /api/drive/nodes/:id` → `drive-node-delete.controller.ts` + `drive-node-delete.controller.test.ts`
-- [ ] 注册 `GET /api/drive/search` → `drive-search.controller.ts` + `drive-search.controller.test.ts`
-- [ ] 注册 `GET /api/drive/files/:id/download` → `drive-file-download.controller.ts` + `drive-file-download.controller.test.ts`
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/drive`；`auth` + `password-change-gate`；`lawyer` + `admin`（admin 写操作仍受 RLS 限制）
+- [x] 注册 `GET /api/drive/root` → `drive.routes.ts` + `drive-root.controller.ts` + `drive-root.controller.test.ts`
+- [x] 注册 `GET /api/drive/nodes` → `drive-nodes-list.controller.ts` + `drive-nodes-list.controller.test.ts`
+- [x] 注册 `GET /api/drive/nodes/:id` → `drive-node-get.controller.ts` + `drive-node-get.controller.test.ts`
+- [x] 注册 `POST /api/drive/folders` → `drive-folder-create.controller.ts` + `drive-folder-create.controller.test.ts`
+- [x] 注册 `PATCH /api/drive/nodes/:id` → `drive-node-patch.controller.ts` + `drive-node-patch.controller.test.ts`
+- [x] 注册 `DELETE /api/drive/nodes/:id` → `drive-node-delete.controller.ts` + `drive-node-delete.controller.test.ts`
+- [x] 注册 `GET /api/drive/search` → `drive-search.controller.ts` + `drive-search.controller.test.ts`
+- [x] 注册 `GET /api/drive/files/:id/download` → `drive-file-download.controller.ts` + `drive-file-download.controller.test.ts`
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/drive`；`auth` + `password-change-gate`；`lawyer` + `admin`（admin 写操作仍受 RLS 限制）
 
 ---
 
 ### M7-F 用户根目录种子（与 M2 对齐，单条）
 
-- [ ] 扩展 `admin-user-create.service.ts`（M2）：创建用户后插入 `__root__` 文件夹（若未在 DB trigger 中实现）
+- [x] 扩展 `admin-user-create.service.ts`（M2）：创建用户后插入 `__root__` 文件夹（若未在 DB trigger 中实现）
 
 ---
 
 ### M7-G 前端 · Shadcn（每条命令一项）
 
-- [ ] 执行 `npx shadcn@latest add breadcrumb`
-- [ ] 执行 `npx shadcn@latest add collapsible`（侧栏目录树可选）
+- [x] 执行 `npx shadcn@latest add breadcrumb`
+- [x] 执行 `npx shadcn@latest add collapsible`（侧栏目录树可选）
 
 ---
 
 ### M7-H 前端 · API 与页面（每条一项）
 
-- [ ] 新增 `apps/web/src/lib/drive-api.ts`：`getRoot`、`listNodes`、`getNode`、`createFolder`、`updateNode`、`deleteNode`、`search`、`downloadFile`
-- [ ] 新增 `apps/web/src/app/(dashboard)/drive/page.tsx`：云盘主页；Skeleton/Error/Empty（§2.13）
-- [ ] 新增 `apps/web/src/components/drive/drive-breadcrumb-nav.tsx`：基于 `parentId` 路径导航（§6.4.1）
-- [ ] 新增 `apps/web/src/components/drive/drive-nodes-table.tsx`：当前目录文件/文件夹表（§6.5 行高）
-- [ ] 新增 `apps/web/src/components/drive/create-folder-dialog.tsx`：Shadcn `Dialog` + 表单
-- [ ] 新增 `apps/web/src/components/drive/drive-node-actions-menu.tsx`：重命名、移动、删除（`AlertDialog` 确认）
-- [ ] 新增 `apps/web/src/components/drive/drive-search-panel.tsx`：检索框 + 结果列表（跳转任务/文件）
-- [ ] 新增 `apps/web/src/components/drive/archive-folder-badge.tsx`：归档目录只读/可重命名标识（§6.4.2）
-- [ ] 在 `menus.ts` 为 `lawyer`/`admin` 增加「个人云盘」→ `/drive`
+- [x] 新增 `apps/web/src/lib/drive-api.ts`：`getRoot`、`listNodes`、`getNode`、`createFolder`、`updateNode`、`deleteNode`、`search`、`downloadFile`
+- [x] 新增 `apps/web/src/app/(dashboard)/drive/page.tsx`：云盘主页；Skeleton/Error/Empty（§2.13）
+- [x] 新增 `apps/web/src/components/drive/drive-breadcrumb-nav.tsx`：基于 `parentId` 路径导航（§6.4.1）
+- [x] 新增 `apps/web/src/components/drive/drive-nodes-table.tsx`：当前目录文件/文件夹表（§6.5 行高）
+- [x] 新增 `apps/web/src/components/drive/create-folder-dialog.tsx`：Shadcn `Dialog` + 表单
+- [x] 新增 `apps/web/src/components/drive/drive-node-actions-menu.tsx`：重命名、移动、删除（`AlertDialog` 确认）
+- [x] 新增 `apps/web/src/components/drive/drive-search-panel.tsx`：检索框 + 结果列表（跳转任务/文件）
+- [x] 新增 `apps/web/src/components/drive/archive-folder-badge.tsx`：归档目录只读/可重命名标识（§6.4.2）
+- [x] 在 `menus.ts` 为 `lawyer`/`admin` 增加「个人云盘」→ `/drive`
 
 ---
 
 ### M7-I 端到端与 Milestone 7 完成门禁
 
-- [ ] 集成测试：律师 A 无法 `GET /api/drive/nodes/:id` 律师 B 的节点
-- [ ] 集成测试：`POST /api/drive/files` 在根目录（若暴露）被拒绝 — 本 Milestone **不** 提供直传文件 API，仅文件夹 CRUD + 归档文件元数据
-- [ ] 手工验收：打开 M5 归档目录可见转写导出文件；下载走签名 URL
-- [ ] 手工验收：全文检索中文关键词命中 `polished_text`；分页 50
-- [ ] 运行 M7 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(drive): nodes crud search and signed download`
-- [ ] 进度表 **M7** 标为「已完成」
+- [x] 集成测试：律师 A 无法 `GET /api/drive/nodes/:id` 律师 B 的节点
+- [x] 集成测试：`POST /api/drive/files` 在根目录（若暴露）被拒绝 — 本 Milestone **不** 提供直传文件 API，仅文件夹 CRUD + 归档文件元数据
+- [x] 手工验收：打开 M5 归档目录可见转写导出文件；下载走签名 URL
+- [x] 手工验收：全文检索中文关键词命中 `polished_text`；分页 50
+- [x] 运行 M7 测试全绿；连续失败 >2 次停止汇报
+- [x] `git commit`：`feat(drive): nodes crud search and signed download`
+- [x] 进度表 **M7** 标为「已完成」
 
 **M7 明确不在此 Milestone**：`drive_node_tags` UI（表可选，首期可跳过）、向量语义检索、经 API 上传文件二进制、admin 代删律师文件（须 `AdminRepository` 另立 M8+ 需求）。
 
@@ -1362,6 +1362,6 @@ M*  → M9
 | M4 | 已完成（2026-05-29；BFF + Outbox 写入 + 任务列表 UI；**M5-0** 对齐 v1.3 代码） |
 | M5 | 已完成（2026-05-30；U3 Postgres Outbox 流水线 + Stalled Cron；`npm run worker:pipeline` / `scheduler:stalled`） |
 | M6 | 已完成（2026-05-30；转写工作台校对/编辑、导出、签名下载、If-Match 乐观锁） |
-| M7 | 已拆解（见上方原子任务） |
+| M7 | 已完成 |
 | M8 | 已拆解（见上方原子任务） |
 | M9 | 已拆解（见上方原子任务） |

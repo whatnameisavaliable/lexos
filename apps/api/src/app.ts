@@ -117,7 +117,26 @@ import { TranscriptionTaskExportTxtController } from "./controllers/transcriptio
 import { TranscriptionTaskDeleteController } from "./controllers/transcription-task-delete.controller.js";
 import { handleTranscriptionUploadsRoute } from "./routes/transcription-uploads.routes.js";
 import { handleTranscriptionTasksRoute } from "./routes/transcription-tasks.routes.js";
+import { handleDriveRoute } from "./routes/drive.routes.js";
 import { loadStorageRuntimeEnvFromProcess } from "@lexos/shared/config";
+import { DriveNodeRepository } from "./repositories/drive-node.repository.js";
+import { DriveSearchRepository } from "./repositories/drive-search.repository.js";
+import { DriveRootService } from "./services/drive-root.service.js";
+import { DriveNodesListService } from "./services/drive-nodes-list.service.js";
+import { DriveNodeGetService } from "./services/drive-node-get.service.js";
+import { DriveFolderCreateService } from "./services/drive-folder-create.service.js";
+import { DriveNodeUpdateService } from "./services/drive-node-update.service.js";
+import { DriveNodeDeleteService } from "./services/drive-node-delete.service.js";
+import { DriveSearchService } from "./services/drive-search.service.js";
+import { DriveFileDownloadService } from "./services/drive-file-download.service.js";
+import { DriveRootController } from "./controllers/drive-root.controller.js";
+import { DriveNodesListController } from "./controllers/drive-nodes-list.controller.js";
+import { DriveNodeGetController } from "./controllers/drive-node-get.controller.js";
+import { DriveFolderCreateController } from "./controllers/drive-folder-create.controller.js";
+import { DriveNodePatchController } from "./controllers/drive-node-patch.controller.js";
+import { DriveNodeDeleteController } from "./controllers/drive-node-delete.controller.js";
+import { DriveSearchController } from "./controllers/drive-search.controller.js";
+import { DriveFileDownloadController } from "./controllers/drive-file-download.controller.js";
 
 /** 已组装的 U2 HTTP 应用上下文。 */
 export interface LexosApiApp {
@@ -304,9 +323,28 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     auditLogRepository,
   );
 
+  const driveNodeRepository = new DriveNodeRepository(supabaseEnv);
+  const driveSearchRepository = new DriveSearchRepository(env.supabaseDbUrl);
+  const driveRootService = new DriveRootService(driveNodeRepository);
+  const driveNodesListService = new DriveNodesListService(driveNodeRepository);
+  const driveNodeGetService = new DriveNodeGetService(driveNodeRepository);
+  const driveFolderCreateService = new DriveFolderCreateService(driveNodeRepository);
+  const driveNodeUpdateService = new DriveNodeUpdateService(driveNodeRepository);
+  const driveNodeDeleteService = new DriveNodeDeleteService(
+    driveNodeRepository,
+    auditLogRepository,
+  );
+  const driveSearchService = new DriveSearchService(driveSearchRepository);
+  const driveFileDownloadService = new DriveFileDownloadService(
+    driveNodeRepository,
+    storageAdapter,
+    auditLogRepository,
+  );
+
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
   const requireAdmin = requireRoles("admin");
   const requireTranscriptionAccess = requireRoles("admin", "lawyer");
+  const requireDriveAccess = requireRoles("admin", "lawyer");
 
   const loginController = new AuthLoginController(
     authLoginService,
@@ -472,6 +510,38 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTaskDeleteService,
     env.requestIdHeader,
   );
+  const driveRootController = new DriveRootController(
+    driveRootService,
+    env.requestIdHeader,
+  );
+  const driveNodesListController = new DriveNodesListController(
+    driveNodesListService,
+    env.requestIdHeader,
+  );
+  const driveNodeGetController = new DriveNodeGetController(
+    driveNodeGetService,
+    env.requestIdHeader,
+  );
+  const driveFolderCreateController = new DriveFolderCreateController(
+    driveFolderCreateService,
+    env.requestIdHeader,
+  );
+  const driveNodePatchController = new DriveNodePatchController(
+    driveNodeUpdateService,
+    env.requestIdHeader,
+  );
+  const driveNodeDeleteController = new DriveNodeDeleteController(
+    driveNodeDeleteService,
+    env.requestIdHeader,
+  );
+  const driveSearchController = new DriveSearchController(
+    driveSearchService,
+    env.requestIdHeader,
+  );
+  const driveFileDownloadController = new DriveFileDownloadController(
+    driveFileDownloadService,
+    env.requestIdHeader,
+  );
 
   const healthController = new HealthController(
     new HealthCheckService(new PostgresHealthRepository(env.supabaseDbUrl)),
@@ -507,6 +577,17 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   ) => {
     return protectedRoute(async (req, res) => {
       if (!requireTranscriptionAccess(res)) {
+        return;
+      }
+      await handler(req, res);
+    });
+  };
+
+  const protectedDriveRoute = (
+    handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
+  ) => {
+    return protectedRoute(async (req, res) => {
+      if (!requireDriveAccess(res)) {
         return;
       }
       await handler(req, res);
@@ -633,6 +714,33 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               txRes.statusCode = 404;
               txRes.setHeader("content-type", "application/json; charset=utf-8");
               txRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/drive")) {
+          let handled = false;
+          await protectedDriveRoute(async (driveReq, driveRes) => {
+            handled = await handleDriveRoute(driveReq, driveRes, path, {
+              root: driveRootController,
+              listNodes: driveNodesListController,
+              getNode: driveNodeGetController,
+              createFolder: driveFolderCreateController,
+              patchNode: driveNodePatchController,
+              deleteNode: driveNodeDeleteController,
+              search: driveSearchController,
+              downloadFile: driveFileDownloadController,
+            });
+            if (!handled) {
+              driveRes.statusCode = 404;
+              driveRes.setHeader("content-type", "application/json; charset=utf-8");
+              driveRes.end(
                 JSON.stringify({
                   success: false,
                   error: { code: "RESOURCE_NOT_FOUND" },

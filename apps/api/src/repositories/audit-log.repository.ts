@@ -16,7 +16,10 @@ export type AuditAction =
   | "ai.mapping.upsert"
   | "ai.prompt.publish"
   | "task.create"
-  | "task.complete";
+  | "task.complete"
+  | "file.download"
+  | "file.export"
+  | "file.delete";
 
 /** `append_audit_log` 入参。 */
 export interface AppendAuditLogInput {

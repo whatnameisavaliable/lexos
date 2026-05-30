@@ -179,6 +179,31 @@ export class SupabaseStorageAdapter implements StorageAdapter {
       bucket,
     };
   }
+
+  /** @inheritdoc */
+  async uploadObject(
+    bucket: StorageBucketName,
+    objectKey: string,
+    ownerId: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    assertStorageKeyOwnedByUser(objectKey, ownerId);
+
+    const bucketName =
+      bucket === "media" ? this.mediaBucket : this.storageEnv.storageBucketExports;
+
+    const { error } = await this.adminClient.storage
+      .from(bucketName)
+      .upload(objectKey, body, {
+        upsert: true,
+        contentType,
+      });
+
+    if (error) {
+      throw new Error(`Storage upload failed: ${error.message}`);
+    }
+  }
 }
 
 function normalizePrefix(prefix: string): string {

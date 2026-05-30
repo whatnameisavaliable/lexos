@@ -77,6 +77,17 @@ export interface StorageAdapter {
     ownerId: string,
     ttlSec?: number,
   ): Promise<SignedDownloadUrlResult>;
+
+  /**
+   * 上传对象至指定桶（导出文件等；须校验路径归属）。
+   */
+  uploadObject(
+    bucket: StorageBucketName,
+    objectKey: string,
+    ownerId: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void>;
 }
 
 /** Storage 桶名称（来自环境配置）。 */

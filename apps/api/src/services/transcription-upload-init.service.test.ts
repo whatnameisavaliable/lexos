@@ -34,6 +34,7 @@ describe("TranscriptionUploadInitService", () => {
     uploadSessionRepository as never,
     storageAdapter as never,
     auditLogRepository as never,
+    "media",
   );
 
   it("throws RESOURCE_LIMIT_EXCEEDED when size over 1GB", async () => {

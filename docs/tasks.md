@@ -910,18 +910,18 @@
 
 ### M6-D Service + 单元测试（每条 Service 一个 `.test.ts`）
 
-- [ ] 新增 `apps/api/src/services/transcription-transcript-get.service.ts`：律师/ admin 读文稿；越权 `AUTH_FORBIDDEN`
-- [ ] 新增 `apps/api/src/services/transcription-transcript-get.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-transcript-patch.service.ts`：解析 `If-Match`；仅更新 `polished_text` + `version++`；冲突 `RESOURCE_CONFLICT`
-- [ ] 新增 `apps/api/src/services/transcription-transcript-patch.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-task-download.service.ts`：选 `audio_storage_key` 或 `source_storage_key`；签名 URL；`append_audit_log('file.download')`
-- [ ] 新增 `apps/api/src/services/transcription-task-download.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-export-docx.service.ts`：生成 → 上传 `exports` 桶 → 返回短期签名 URL；`file.export` 审计
-- [ ] 新增 `apps/api/src/services/transcription-export-docx.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-export-pdf.service.ts` + `transcription-export-pdf.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-export-txt.service.ts` + `transcription-export-txt.service.test.ts`
-- [ ] 新增 `apps/api/src/services/transcription-task-delete.service.ts`：软删除 `deleted_at`；仅 `completed|failed`【待确认】或任意非进行中；审计【待确认】`task.delete` 用 `file.delete` 或扩展枚举
-- [ ] 新增 `apps/api/src/services/transcription-task-delete.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-transcript-get.service.ts`：律师/ admin 读文稿；越权 `AUTH_FORBIDDEN`
+- [x] 新增 `apps/api/src/services/transcription-transcript-get.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-transcript-patch.service.ts`：解析 `If-Match`；仅更新 `polished_text` + `version++`；冲突 `RESOURCE_CONFLICT`
+- [x] 新增 `apps/api/src/services/transcription-transcript-patch.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-task-download.service.ts`：选 `audio_storage_key` 或 `source_storage_key`；签名 URL；`append_audit_log('file.download')`
+- [x] 新增 `apps/api/src/services/transcription-task-download.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-export-docx.service.ts`：生成 → 上传 `exports` 桶 → 返回短期签名 URL；`file.export` 审计
+- [x] 新增 `apps/api/src/services/transcription-export-docx.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-export-pdf.service.ts` + `transcription-export-pdf.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-export-txt.service.ts` + `transcription-export-txt.service.test.ts`
+- [x] 新增 `apps/api/src/services/transcription-task-delete.service.ts`：软删除 `deleted_at`；仅 `completed|failed`【待确认】或任意非进行中；审计【待确认】`task.delete` 用 `file.delete` 或扩展枚举
+- [x] 新增 `apps/api/src/services/transcription-task-delete.service.test.ts`
 
 ---
 

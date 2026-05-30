@@ -33,6 +33,7 @@ export class TranscriptionUploadInitService {
     private readonly uploadSessionRepository: UploadSessionRepository,
     private readonly storageAdapter: SupabaseStorageAdapter,
     private readonly auditLogRepository: AuditLogRepository,
+    private readonly storageBucketMedia: string,
   ) {}
 
   /**
@@ -59,6 +60,7 @@ export class TranscriptionUploadInitService {
     const isMp4 = isMp4SourceMime(body.mimeType);
     const placeholderKey = `${actor.userId}/pending/${crypto.randomUUID()}`;
     const task = await this.taskRepository.createUploading(accessToken, {
+      createdBy: actor.userId,
       title: body.title,
       sourceMime: body.mimeType,
       sourceStorageKey: placeholderKey,
@@ -105,6 +107,8 @@ export class TranscriptionUploadInitService {
       uploadSessionId: session.id,
       taskId: task.id,
       storageKeyPrefix,
+      storageObjectKey: sourceStorageKey,
+      storageBucket: this.storageBucketMedia,
       tusEndpoint: tus.tusEndpoint,
       tusHeaders: tus.tusHeaders,
     };
@@ -145,7 +149,9 @@ export class TranscriptionUploadInitService {
       );
     }
 
-    const objectKey = buildObjectStorageKey(session.storageKeyPrefix, fileName);
+    const objectKey =
+      task.sourceStorageKey ||
+      buildObjectStorageKey(session.storageKeyPrefix, fileName);
     const tus = await this.storageAdapter.createResumableUploadUrl({
       objectKey,
     });
@@ -154,6 +160,8 @@ export class TranscriptionUploadInitService {
       uploadSessionId: session.id,
       taskId: task.id,
       storageKeyPrefix: session.storageKeyPrefix,
+      storageObjectKey: objectKey,
+      storageBucket: this.storageBucketMedia,
       tusEndpoint: tus.tusEndpoint,
       tusHeaders: tus.tusHeaders,
     };

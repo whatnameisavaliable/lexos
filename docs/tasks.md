@@ -754,17 +754,17 @@
 
 ### M5-B 数据库函数（若 M0 未含 `upsert_task_segments`）
 
-- [ ] 新增迁移 `npx supabase migration new upsert_task_segments`：`upsert_task_segments(p_task_id, p_segments jsonb)`（`SECURITY DEFINER`；§4.4.2）
-- [ ] 新增 `workers/pipeline/src/__tests__/upsert-task-segments.db.test.ts`：service_role 写入片段成功
+- [x] 新增迁移 `npx supabase migration new upsert_task_segments`：`upsert_task_segments(p_task_id, p_segments jsonb)`（`SECURITY DEFINER`；§4.4.2）
+- [x] 新增 `workers/pipeline/src/__tests__/upsert-task-segments.db.test.ts`：service_role 写入片段成功
 
 ---
 
 ### M5-C 阶段幂等与 Outbox 链式入队
 
-- [ ] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.ts`：处理前插入 `pipeline_job_runs(stage, outbox_event_id, attempt)`；UNIQUE 冲突则跳过（§3.2.5.1）
-- [ ] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.test.ts`
-- [ ] 新增 `workers/pipeline/src/domain/worker-outbox.factory.ts`：生成下一阶段 Outbox 行（如 `media.preprocess`→`asr`）
-- [ ] 新增 `workers/pipeline/src/services/worker-transaction.service.ts`：`transition_task_status` + `insert outbox` + `mark published_at` 同事务
+- [x] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.ts`：处理前插入 `pipeline_job_runs(stage, outbox_event_id, attempt)`；UNIQUE 冲突则跳过（§3.2.5.1）
+- [x] 新增 `workers/pipeline/src/middleware/stage-idempotency.middleware.test.ts`
+- [x] 新增 `workers/pipeline/src/domain/worker-outbox.factory.ts`：生成下一阶段 Outbox 行（如 `media.preprocess`→`asr`）
+- [x] 新增 `workers/pipeline/src/services/worker-transaction.service.ts`：`transition_task_status` + `insert outbox` + `mark published_at` 同事务
 
 ---
 

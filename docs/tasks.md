@@ -939,53 +939,53 @@
 
 ### M6-F 前端 · Shadcn / 依赖（单条一项）
 
-- [ ] 执行 `npx shadcn@latest add switch`
-- [ ] 执行 `npx shadcn@latest add scroll-area`
-- [ ] 执行 `npx shadcn@latest add separator`
-- [ ] **经用户授权后**安装 TipTap（或 Slate）无头富文本 + 仅 Tailwind 样式（`.cursorrules` §2.12）
+- [x] 执行 `npx shadcn@latest add switch`
+- [x] 执行 `npx shadcn@latest add scroll-area`
+- [x] 执行 `npx shadcn@latest add separator`
+- [x] **经用户授权后**安装 TipTap（或 Slate）无头富文本 + 仅 Tailwind 样式（`.cursorrules` §2.12）
 
 ---
 
 ### M6-G 前端 · API 客户端（单文件一项）
 
-- [ ] 扩展 `apps/web/src/lib/transcription-api.ts`：`getTranscript`、`patchTranscript`、`getDownloadUrl`、`exportDocx`、`exportPdf`、`exportTxt`、`deleteTask`
-- [ ] 新增 `apps/web/src/lib/transcript-if-match.ts`：从 PATCH 响应更新本地 `version` 缓存
+- [x] 扩展 `apps/web/src/lib/transcription-api.ts`：`getTranscript`、`patchTranscript`、`getDownloadUrl`、`exportDocx`、`exportPdf`、`exportTxt`、`deleteTask`
+- [x] 新增 `apps/web/src/lib/transcript-if-match.ts`：从 PATCH 响应更新本地 `version` 缓存
 
 ---
 
 ### M6-H 前端 · 工作台页面与组件（每条一项）
 
-- [ ] 新增 `apps/web/src/app/(dashboard)/transcription/[taskId]/page.tsx`：工作台路由；未完成态引导回列表；Skeleton/Error
-- [ ] 新增 `apps/web/src/components/transcription/workbench/transcript-workbench-shell.tsx`：CSS Grid 两列（`ui_design.md` §4.3.1）
-- [ ] 新增 `apps/web/src/components/transcription/workbench/audio-player-panel.tsx`：Flex 列；`ref` 暴露 `seek(ms)`
-- [ ] 新增 `apps/web/src/components/transcription/workbench/proofread-transcript-view.tsx`：只读 `asr_raw_json`；`<button data-start-ms>` 点击 seek
-- [ ] 新增 `apps/web/src/components/transcription/workbench/polished-text-editor.tsx`：TipTap/Slate 封装；仅绑定 `polished_text`
-- [ ] 新增 `apps/web/src/components/transcription/workbench/transcript-mode-switch.tsx`：Shadcn `Switch`/`Tabs` + 切编辑模式 `AlertDialog`（§4.3.2.1）
-- [ ] 新增 `apps/web/src/components/transcription/workbench/diarization-degraded-alert.tsx`：固定文案 Alert（§4.3.5）
-- [ ] 新增 `apps/web/src/components/transcription/workbench/transcript-save-toolbar.tsx`：保存调用 PATCH + `If-Match`；冲突 Toast `RESOURCE_CONFLICT`
-- [ ] 新增 `apps/web/src/components/transcription/workbench/export-menu.tsx`：导出 Word/PDF/TXT 触发对应 POST
-- [ ] 新增 `apps/web/src/components/transcription/workbench/print-preview-panel.tsx`：语义化 HTML + `@media print`（§4.2；禁止 Mermaid/canvas 图表）
-- [ ] 在任务列表表增加「打开工作台」链接 → `/transcription/[taskId]`
+- [x] 新增 `apps/web/src/app/(dashboard)/transcription/[taskId]/page.tsx`：工作台路由；未完成态引导回列表；Skeleton/Error
+- [x] 新增 `apps/web/src/components/transcription/workbench/transcript-workbench-shell.tsx`：CSS Grid 两列（`ui_design.md` §4.3.1）
+- [x] 新增 `apps/web/src/components/transcription/workbench/audio-player-panel.tsx`：Flex 列；`ref` 暴露 `seek(ms)`
+- [x] 新增 `apps/web/src/components/transcription/workbench/proofread-transcript-view.tsx`：只读 `asr_raw_json`；`<button data-start-ms>` 点击 seek
+- [x] 新增 `apps/web/src/components/transcription/workbench/polished-text-editor.tsx`：TipTap/Slate 封装；仅绑定 `polished_text`
+- [x] 新增 `apps/web/src/components/transcription/workbench/transcript-mode-switch.tsx`：Shadcn `Switch`/`Tabs` + 切编辑模式 `AlertDialog`（§4.3.2.1）
+- [x] 新增 `apps/web/src/components/transcription/workbench/diarization-degraded-alert.tsx`：固定文案 Alert（§4.3.5）
+- [x] 新增 `apps/web/src/components/transcription/workbench/transcript-save-toolbar.tsx`：保存调用 PATCH + `If-Match`；冲突 Toast `RESOURCE_CONFLICT`
+- [x] 新增 `apps/web/src/components/transcription/workbench/export-menu.tsx`：导出 Word/PDF/TXT 触发对应 POST
+- [x] 新增 `apps/web/src/components/transcription/workbench/print-preview-panel.tsx`：语义化 HTML + `@media print`（§4.2；禁止 Mermaid/canvas 图表）
+- [x] 在任务列表表增加「打开工作台」链接 → `/transcription/[taskId]`
 
 ---
 
 ### M6-I 样式与无障碍（单文件一项）
 
-- [ ] 在 `apps/web/src/styles/transcript-workbench.css`（或 `globals.css`）添加 `.transcript-workbench` Grid 与打印块（§4.3.1、§4.2.3）
-- [ ] 校对模式段落按钮：键盘可聚焦、`type="button"` 可访问名称含时间戳
+- [x] 在 `apps/web/src/styles/transcript-workbench.css`（或 `globals.css`）添加 `.transcript-workbench` Grid 与打印块（§4.3.1、§4.2.3）
+- [x] 校对模式段落按钮：键盘可聚焦、`type="button"` 可访问名称含时间戳
 
 ---
 
 ### M6-J 端到端与 Milestone 6 完成门禁
 
-- [ ] 集成测试：PATCH 陈旧 `version` → 409 `RESOURCE_CONFLICT`
-- [ ] 集成测试：律师 B 无法 `GET` 律师 A 的 `transcript`
-- [ ] 手工验收：校对模式点击段落音频跳转；编辑模式保存后刷新仍保留
-- [ ] 手工验收：下载音频返回签名 URL 且审计表有 `file.download`
-- [ ] 手工验收：三种导出格式可下载；`diarization_degraded=true` 显示 Banner
-- [ ] 运行 M6 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(transcription): workbench transcript patch export download`
-- [ ] 进度表 **M6** 标为「已完成」
+- [x] 集成测试：PATCH 陈旧 `version` → 409 `RESOURCE_CONFLICT`
+- [x] 集成测试：律师 B 无法 `GET` 律师 A 的 `transcript`
+- [x] 手工验收：校对模式点击段落音频跳转；编辑模式保存后刷新仍保留
+- [x] 手工验收：下载音频返回签名 URL 且审计表有 `file.download`
+- [x] 手工验收：三种导出格式可下载；`diarization_degraded=true` 显示 Banner
+- [x] 运行 M6 测试全绿；连续失败 >2 次停止汇报
+- [x] `git commit`：`feat(transcription): workbench transcript patch export download`
+- [x] 进度表 **M6** 标为「已完成」
 
 **M6 明确不在此 Milestone**：云盘目录 UI（M7）、审计查询 UI（M8）、转写任务上传 init/complete（M4）。
 
@@ -1361,7 +1361,7 @@ M*  → M9
 | M3 | 已完成（AI 配置 API/UI + M3-K 四项手工验收已通过） |
 | M4 | 已完成（2026-05-29；BFF + Outbox 写入 + 任务列表 UI；**M5-0** 对齐 v1.3 代码） |
 | M5 | 已完成（2026-05-30；U3 Postgres Outbox 流水线 + Stalled Cron；`npm run worker:pipeline` / `scheduler:stalled`） |
-| M6 | 已拆解（见上方原子任务） |
+| M6 | 已完成（2026-05-30；转写工作台校对/编辑、导出、签名下载、If-Match 乐观锁） |
 | M7 | 已拆解（见上方原子任务） |
 | M8 | 已拆解（见上方原子任务） |
 | M9 | 已拆解（见上方原子任务） |

@@ -900,11 +900,11 @@
 
 ### M6-C 导出与下载适配器（单文件一项）
 
-- [ ] 新增 `apps/api/src/adapters/export/docx-export.adapter.ts`：由 `polished_text`/`summary_text` 生成 docx 缓冲（**实施前若需新依赖须用户授权**）
-- [ ] 新增 `apps/api/src/adapters/export/pdf-export.adapter.ts`：HTML 模板 + 打印引擎或 pdf 库（同上授权）
-- [ ] 新增 `apps/api/src/adapters/export/txt-export.adapter.ts`：纯文本导出
-- [ ] 扩展 `supabase-storage.adapter.ts`：`createSignedDownloadUrl(key, ttl)`；校验 key 前缀归属 `created_by`
-- [ ] 新增 `apps/api/src/adapters/export/docx-export.adapter.test.ts`：Mock 输出；无密钥日志
+- [x] 新增 `apps/api/src/adapters/export/docx-export.adapter.ts`：由 `polished_text`/`summary_text` 生成 docx 缓冲（**实施前若需新依赖须用户授权**）
+- [x] 新增 `apps/api/src/adapters/export/pdf-export.adapter.ts`：HTML 模板 + 打印引擎或 pdf 库（同上授权）
+- [x] 新增 `apps/api/src/adapters/export/txt-export.adapter.ts`：纯文本导出
+- [x] 扩展 `supabase-storage.adapter.ts`：`createSignedDownloadUrl(key, ttl)`；校验 key 前缀归属 `created_by`
+- [x] 新增 `apps/api/src/adapters/export/docx-export.adapter.test.ts`：Mock 输出；无密钥日志
 
 ---
 

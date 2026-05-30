@@ -8,17 +8,20 @@
     "build": "tsc -p tsconfig.json",
     "start": "tsx src/index.ts",
     "predev": "npm run build -w @lexos/shared",
-    "dev": "tsx watch src/index.ts",
+    "dev": "node ../../scripts/kill-listen-port.mjs 4000 && tsx watch src/index.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "@lexos/shared": "*",
     "@supabase/supabase-js": "^2.106.2",
+    "docx": "^9.7.1",
+    "pdfkit": "^0.18.0",
     "pg": "^8.16.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",
+    "@types/pdfkit": "^0.17.6",
     "@types/pg": "^8.15.2",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",

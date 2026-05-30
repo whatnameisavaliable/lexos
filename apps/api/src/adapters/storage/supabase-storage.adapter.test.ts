@@ -25,6 +25,7 @@ function createMockStorageApi() {
     list: vi.fn(),
     info: vi.fn(),
     createSignedUploadUrl: vi.fn(),
+    createSignedUrl: vi.fn(),
   };
 }
 
@@ -152,5 +153,38 @@ describe("SupabaseStorageAdapter", () => {
 
     logSpy.mockRestore();
     errorSpy.mockRestore();
+  });
+
+  it("createSignedDownloadUrl validates owner prefix and returns signed URL", async () => {
+    bucketApi.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: "https://example.supabase.co/signed" },
+      error: null,
+    });
+
+    const adapter = new SupabaseStorageAdapter(supabaseEnv, storageEnv);
+    const result = await adapter.createSignedDownloadUrl(
+      "media",
+      "user-1/task-1/audio.mp3",
+      "user-1",
+    );
+
+    expect(mockFrom).toHaveBeenCalledWith("media");
+    expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
+      "user-1/task-1/audio.mp3",
+      300,
+    );
+    expect(result.signedUrl).toBe("https://example.supabase.co/signed");
+    expect(result.expiresInSec).toBe(300);
+  });
+
+  it("createSignedDownloadUrl rejects key not owned by user", async () => {
+    const adapter = new SupabaseStorageAdapter(supabaseEnv, storageEnv);
+    await expect(
+      adapter.createSignedDownloadUrl(
+        "media",
+        "other-user/task-1/audio.mp3",
+        "user-1",
+      ),
+    ).rejects.toThrow(/does not belong to owner/);
   });
 });

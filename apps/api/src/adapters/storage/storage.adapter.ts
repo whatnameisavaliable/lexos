@@ -62,4 +62,30 @@ export interface StorageAdapter {
   createResumableUploadUrl(
     params: CreateResumableUploadParams,
   ): Promise<ResumableUploadMetadata>;
+
+  /**
+   * 签发短期签名下载 URL（`architecture.md` §5.5.3）。
+   *
+   * @param bucket - 目标桶（media / exports）
+   * @param objectKey - 桶内对象键
+   * @param ownerId - 须与对象键首段 `{auth.uid()}` 一致
+   * @param ttlSec - 可选 TTL；默认取环境配置
+   */
+  createSignedDownloadUrl(
+    bucket: StorageBucketName,
+    objectKey: string,
+    ownerId: string,
+    ttlSec?: number,
+  ): Promise<SignedDownloadUrlResult>;
+}
+
+/** Storage 桶名称（来自环境配置）。 */
+export type StorageBucketName = "media" | "exports";
+
+/** 签名下载 URL 结果。 */
+export interface SignedDownloadUrlResult {
+  readonly signedUrl: string;
+  readonly expiresInSec: number;
+  readonly objectKey: string;
+  readonly bucket: StorageBucketName;
 }

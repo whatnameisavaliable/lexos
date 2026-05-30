@@ -6,7 +6,9 @@ import {
 import type {
   CreateResumableUploadParams,
   ResumableUploadMetadata,
+  SignedDownloadUrlResult,
   StorageAdapter,
+  StorageBucketName,
   StorageObjectHead,
   StorageObjectSummary,
 } from "./storage.adapter.js";
@@ -141,6 +143,42 @@ export class SupabaseStorageAdapter implements StorageAdapter {
   getMediaBucketName(): string {
     return this.mediaBucket;
   }
+
+  /** 导出桶名称（来自环境配置）。 */
+  getExportsBucketName(): string {
+    return this.storageEnv.storageBucketExports;
+  }
+
+  /** @inheritdoc */
+  async createSignedDownloadUrl(
+    bucket: StorageBucketName,
+    objectKey: string,
+    ownerId: string,
+    ttlSec?: number,
+  ): Promise<SignedDownloadUrlResult> {
+    assertStorageKeyOwnedByUser(objectKey, ownerId);
+
+    const bucketName =
+      bucket === "media" ? this.mediaBucket : this.storageEnv.storageBucketExports;
+    const expiresInSec = ttlSec ?? this.storageEnv.storageSignedUrlTtlSec;
+
+    const { data, error } = await this.adminClient.storage
+      .from(bucketName)
+      .createSignedUrl(objectKey, expiresInSec);
+
+    if (error || !data?.signedUrl) {
+      throw new Error(
+        `Storage signed download URL failed: ${error?.message ?? "missing signedUrl"}`,
+      );
+    }
+
+    return {
+      signedUrl: data.signedUrl,
+      expiresInSec,
+      objectKey,
+      bucket,
+    };
+  }
 }
 
 function normalizePrefix(prefix: string): string {
@@ -155,4 +193,18 @@ function joinStorageKey(prefix: string, name: string): string {
 function isNotFoundStorageError(message: string): boolean {
   const lower = message.toLowerCase();
   return lower.includes("not found") || lower.includes("object not found");
+}
+
+/**
+ * 校验 Storage 对象键首段归属指定用户（`database.md` §5 · RLS 路径规则）。
+ */
+export function assertStorageKeyOwnedByUser(
+  objectKey: string,
+  ownerId: string,
+): void {
+  const normalized = objectKey.trim().replace(/^\/+/, "");
+  const firstSegment = normalized.split("/")[0];
+  if (!firstSegment || firstSegment !== ownerId) {
+    throw new Error("Storage object key prefix does not belong to owner");
+  }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { getDownloadUrl } from "@/lib/transcription-api";
+import { getPlaybackDownloadUrl } from "@/lib/transcription-api";
 import { toApiClientError } from "@/lib/api-client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +22,9 @@ export const AudioPlayerPanel = forwardRef<AudioPlayerHandle, AudioPlayerPanelPr
   function AudioPlayerPanel({ taskId, disabled = false }, ref) {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [src, setSrc] = useState<string | null>(null);
+    const [playbackKind, setPlaybackKind] = useState<"audio" | "source" | null>(
+      null,
+    );
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -42,14 +45,16 @@ export const AudioPlayerPanel = forwardRef<AudioPlayerHandle, AudioPlayerPanelPr
         setLoading(true);
         setError(null);
         try {
-          const result = await getDownloadUrl(taskId, "audio");
+          const result = await getPlaybackDownloadUrl(taskId);
           if (!cancelled) {
             setSrc(result.signedUrl);
+            setPlaybackKind(result.kind);
           }
         } catch (err) {
           if (!cancelled) {
             setError(toApiClientError(err).message);
             setSrc(null);
+            setPlaybackKind(null);
           }
         } finally {
           if (!cancelled) {
@@ -90,7 +95,9 @@ export const AudioPlayerPanel = forwardRef<AudioPlayerHandle, AudioPlayerPanelPr
           src={src ?? undefined}
         />
         <p className="text-xs text-muted-foreground">
-          校对模式下点击右侧段落可跳转播放位置
+          {playbackKind === "source"
+            ? "当前播放原始上传文件（抽音文件不可用）；校对模式下点击右侧 ASR 段落可跳转"
+            : "校对模式下点击右侧 ASR 源稿段落可跳转播放位置"}
         </p>
       </div>
     );

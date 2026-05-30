@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TaskStatusBadge } from "../task-status-badge";
 import { formatDurationSec } from "../format-duration";
@@ -24,10 +23,13 @@ import {
 import { DiarizationDegradedAlert } from "./diarization-degraded-alert";
 import { ExportMenu } from "./export-menu";
 import { PolishedTextEditor } from "./polished-text-editor";
-import { PrintPreviewPanel } from "./print-preview-panel";
 import { ProofreadTranscriptView } from "./proofread-transcript-view";
-import { TranscriptModeSwitch, type TranscriptWorkbenchMode } from "./transcript-mode-switch";
+import { SummaryTranscriptView } from "./summary-transcript-view";
 import { TranscriptSaveToolbar } from "./transcript-save-toolbar";
+import {
+  WorkbenchViewTabs,
+  type WorkbenchView,
+} from "./workbench-view-tabs";
 import "@/styles/transcript-workbench.css";
 
 export interface TranscriptWorkbenchShellProps {
@@ -42,14 +44,40 @@ function hasTimestampSegments(asrRawJson: unknown | null): boolean {
   return Array.isArray(segments) && segments.length > 0;
 }
 
-/** 转写工作台 Grid 布局（`ui_design.md` §4.3.1）。 */
+function resolveInitialView(
+  transcript: TranscriptionTranscriptDetail,
+): WorkbenchView {
+  if (hasTimestampSegments(transcript.asrRawJson)) {
+    return "proofread";
+  }
+  if (transcript.polishedText?.trim()) {
+    return "edit";
+  }
+  if (transcript.summaryText?.trim()) {
+    return "summary";
+  }
+  return "edit";
+}
+
+function viewTitle(view: WorkbenchView): string {
+  switch (view) {
+    case "proofread":
+      return "校对（ASR 源稿）";
+    case "edit":
+      return "润色编辑（AI 整理稿）";
+    case "summary":
+      return "法律摘要";
+  }
+}
+
+/** 转写工作台 Grid 布局（`ui_design.md` §4.3.1：左音频 · 右文稿）。 */
 export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellProps) {
   const audioRef = useRef<AudioPlayerHandle>(null);
   const [task, setTask] = useState<TranscriptionTaskDetail | null>(null);
   const [transcript, setTranscript] = useState<TranscriptionTranscriptDetail | null>(
     null,
   );
-  const [mode, setMode] = useState<TranscriptWorkbenchMode>("proofread");
+  const [view, setView] = useState<WorkbenchView>("proofread");
   const [draftPolishedText, setDraftPolishedText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,9 +97,7 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
       setTranscript(transcriptData);
       setDraftPolishedText(transcriptData.polishedText ?? "");
       setCachedTranscriptVersion(taskId, transcriptData.version);
-      setMode(
-        hasTimestampSegments(transcriptData.asrRawJson) ? "proofread" : "edit",
-      );
+      setView(resolveInitialView(transcriptData));
     } catch (err) {
       setError(toApiClientError(err).message);
       setTask(null);
@@ -127,6 +153,7 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
   }
 
   const showTimestamps = hasTimestampSegments(transcript.asrRawJson);
+  const hasSummary = Boolean(transcript.summaryText?.trim());
 
   return (
     <div className="flex flex-col gap-4">
@@ -142,13 +169,8 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <TranscriptModeSwitch
-            mode={mode}
-            onModeChange={setMode}
-            hasTimestamps={showTimestamps}
-          />
           <ExportMenu taskId={taskId} />
-          {mode === "edit" ? (
+          {view === "edit" ? (
             <TranscriptSaveToolbar
               taskId={taskId}
               polishedText={draftPolishedText}
@@ -170,36 +192,38 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
           <CardHeader className="pb-3">
             <CardTitle className="text-base">音频</CardTitle>
           </CardHeader>
-          <CardContent className="flex min-h-0 flex-1 flex-col gap-3">
+          <CardContent className="flex min-h-0 flex-1 flex-col">
             <AudioPlayerPanel ref={audioRef} taskId={taskId} />
-            <Separator />
-            <PrintPreviewPanel
-              title={task.title}
-              polishedText={transcript.polishedText}
-              summaryText={transcript.summaryText}
-            />
           </CardContent>
         </Card>
 
         <Card className="transcript-workbench__panel">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {mode === "proofread" ? "校对视图" : "润色编辑"}
-            </CardTitle>
+          <CardHeader className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-base">{viewTitle(view)}</CardTitle>
+            <WorkbenchViewTabs
+              view={view}
+              onViewChange={setView}
+              hasTimestamps={showTimestamps}
+              hasSummary={hasSummary}
+            />
           </CardHeader>
           <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
             <ScrollArea className="h-full max-h-[calc(100dvh-var(--header-height)-12rem)] px-6 pb-6">
-              {mode === "proofread" ? (
+              {view === "proofread" ? (
                 <ProofreadTranscriptView
                   asrRawJson={transcript.asrRawJson}
                   onSeek={(ms) => audioRef.current?.seek(ms)}
                 />
-              ) : (
+              ) : null}
+              {view === "edit" ? (
                 <PolishedTextEditor
                   value={draftPolishedText}
                   onChange={setDraftPolishedText}
                 />
-              )}
+              ) : null}
+              {view === "summary" ? (
+                <SummaryTranscriptView summaryText={transcript.summaryText} />
+              ) : null}
             </ScrollArea>
           </CardContent>
         </Card>

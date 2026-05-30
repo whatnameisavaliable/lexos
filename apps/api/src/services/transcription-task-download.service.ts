@@ -43,8 +43,19 @@ export class TranscriptionTaskDownloadService {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 
-    const objectKey =
-      type === "audio" ? task.audioStorageKey : task.sourceStorageKey;
+    let objectKey: string | null;
+    let effectiveType: TranscriptionDownloadType = type;
+
+    if (type === "audio") {
+      objectKey = task.audioStorageKey;
+      if (!objectKey && task.sourceStorageKey) {
+        objectKey = task.sourceStorageKey;
+        effectiveType = "source";
+      }
+    } else {
+      objectKey = task.sourceStorageKey;
+    }
+
     if (!objectKey) {
       throw new AppHttpError(
         ErrorCode.RESOURCE_NOT_FOUND,
@@ -67,7 +78,8 @@ export class TranscriptionTaskDownloadService {
       ip: meta.ip ?? null,
       userAgent: meta.userAgent ?? null,
       metadata: {
-        downloadType: type,
+        downloadType: effectiveType,
+        requestedType: type,
         objectKey: signed.objectKey,
         bucket: signed.bucket,
       },

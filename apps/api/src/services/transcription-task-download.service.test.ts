@@ -66,4 +66,46 @@ describe("TranscriptionTaskDownloadService", () => {
       ),
     ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
   });
+
+  it("falls back to source when audio key is missing but source exists", async () => {
+    taskRepository.findById.mockResolvedValue({
+      id: "task-1",
+      createdBy: "user-1",
+      sourceStorageKey: "user-1/task-1/source.mp3",
+      audioStorageKey: null,
+    });
+    storageAdapter.createSignedDownloadUrl.mockResolvedValue({
+      signedUrl: "https://signed.example/source.mp3",
+      expiresInSec: 300,
+      objectKey: "user-1/task-1/source.mp3",
+      bucket: "media",
+    });
+
+    const result = await service.download(
+      createAuthContext({
+        userId: "user-1",
+        role: "lawyer",
+        username: "l",
+        requiresPasswordChange: false,
+      }),
+      "token",
+      "task-1",
+      "audio",
+    );
+
+    expect(result.objectKey).toBe("user-1/task-1/source.mp3");
+    expect(storageAdapter.createSignedDownloadUrl).toHaveBeenCalledWith(
+      "media",
+      "user-1/task-1/source.mp3",
+      "user-1",
+    );
+    expect(auditLogRepository.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          downloadType: "source",
+          requestedType: "audio",
+        }),
+      }),
+    );
+  });
 });

@@ -191,6 +191,19 @@ export async function getDownloadUrl(
   return res.data;
 }
 
+/** 播放用签名 URL：优先抽音音频，不可用时回退至原始源文件。 */
+export async function getPlaybackDownloadUrl(
+  taskId: string,
+): Promise<{ readonly signedUrl: string; readonly kind: "audio" | "source" }> {
+  try {
+    const audio = await getDownloadUrl(taskId, "audio");
+    return { signedUrl: audio.signedUrl, kind: "audio" };
+  } catch {
+    const source = await getDownloadUrl(taskId, "source");
+    return { signedUrl: source.signedUrl, kind: "source" };
+  }
+}
+
 /** `POST /api/transcription/tasks/:id/export/docx` */
 export async function exportDocx(taskId: string): Promise<SignedDownloadUrlResult> {
   const res = await apiFetch<SignedDownloadUrlResult>(

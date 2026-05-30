@@ -1,5 +1,8 @@
 import PDFDocument from "pdfkit";
+import { loadPdfCjkFontBuffer } from "../../lib/pdf-cjk-font.js";
 import type { ExportAdapter, TranscriptExportInput } from "./export.adapter.js";
+
+const PDF_CJK_FONT = "NotoSansSC";
 
 /**
  * 由 HTML/纯文本模板生成 PDF 缓冲（`tasks.md` M6-C · `ui_design.md` §4.2）。
@@ -7,48 +10,56 @@ import type { ExportAdapter, TranscriptExportInput } from "./export.adapter.js";
 export class PdfExportAdapter implements ExportAdapter {
   /** @inheritdoc */
   async generate(input: TranscriptExportInput): Promise<Buffer> {
+    const fontBuffer = await loadPdfCjkFontBuffer();
+
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 50 });
-      const chunks: Buffer[] = [];
+      try {
+        const doc = new PDFDocument({ margin: 50 });
+        const chunks: Buffer[] = [];
 
-      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-      doc.on("end", () => resolve(Buffer.concat(chunks)));
-      doc.on("error", reject);
+        doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+        doc.on("end", () => resolve(Buffer.concat(chunks)));
+        doc.on("error", reject);
 
-      doc.fontSize(18).text(input.title, { underline: true });
-      doc.moveDown();
+        doc.registerFont(PDF_CJK_FONT, fontBuffer);
 
-      if (input.summaryText?.trim()) {
-        doc.fontSize(14).text("摘要", { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(11).text(stripHtml(input.summaryText), {
-          align: "left",
+        const contentWidth =
+          doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+        doc.font(PDF_CJK_FONT).fontSize(18).text(input.title, {
+          width: contentWidth,
         });
         doc.moveDown();
-      }
 
-      if (input.polishedText?.trim()) {
-        doc.fontSize(14).text("正文", { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(11).text(stripHtml(input.polishedText), {
-          align: "left",
-        });
-      }
+        if (input.summaryText) {
+          doc.font(PDF_CJK_FONT).fontSize(14).text("摘要", {
+            width: contentWidth,
+          });
+          doc.moveDown(0.5);
+          doc.font(PDF_CJK_FONT).fontSize(11).text(input.summaryText, {
+            align: "left",
+            width: contentWidth,
+            lineGap: 4,
+          });
+          doc.moveDown();
+        }
 
-      doc.end();
+        if (input.polishedText) {
+          doc.font(PDF_CJK_FONT).fontSize(14).text("正文", {
+            width: contentWidth,
+          });
+          doc.moveDown(0.5);
+          doc.font(PDF_CJK_FONT).fontSize(11).text(input.polishedText, {
+            align: "left",
+            width: contentWidth,
+            lineGap: 4,
+          });
+        }
+
+        doc.end();
+      } catch (err) {
+        reject(err);
+      }
     });
   }
-}
-
-/** 去除简单 HTML 标签，保留可读纯文本。 */
-function stripHtml(value: string): string {
-  return value
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
 }

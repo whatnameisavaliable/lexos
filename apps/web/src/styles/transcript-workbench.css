@@ -38,6 +38,11 @@
   outline: none;
 }
 
+.transcript-proofread-segment--active {
+  background: hsl(var(--primary) / 0.12);
+  border-color: hsl(var(--primary) / 0.45);
+}
+
 .transcript-print-preview {
   display: flex;
   flex-direction: column;

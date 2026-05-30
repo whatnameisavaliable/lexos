@@ -1,66 +1,27 @@
 "use client";
 
-/** ASR 段落块（与 Worker `AsrRawJson` 对齐）。 */
-export interface AsrProofreadSegment {
-  readonly segmentIndex: number;
-  readonly startMs: number;
-  readonly endMs: number;
-  readonly text: string;
-  readonly speakerLabel?: string | null;
-}
+import { toast } from "sonner";
+import {
+  findActiveSegmentIndex,
+  formatTranscriptTimestamp,
+  parseAsrSegments,
+} from "@/lib/asr-segments";
 
 export interface ProofreadTranscriptViewProps {
   readonly asrRawJson: unknown | null;
   readonly onSeek: (startMs: number) => void;
-}
-
-function parseAsrSegments(asrRawJson: unknown | null): readonly AsrProofreadSegment[] {
-  if (!asrRawJson || typeof asrRawJson !== "object") {
-    return [];
-  }
-  const segments = (asrRawJson as { segments?: unknown }).segments;
-  if (!Array.isArray(segments)) {
-    return [];
-  }
-  return segments
-    .map((item, index) => {
-      if (!item || typeof item !== "object") {
-        return null;
-      }
-      const record = item as Record<string, unknown>;
-      const text = typeof record.text === "string" ? record.text.trim() : "";
-      const startMs = Number(record.startMs);
-      if (!text || !Number.isFinite(startMs)) {
-        return null;
-      }
-      return {
-        segmentIndex:
-          typeof record.segmentIndex === "number" ? record.segmentIndex : index,
-        startMs,
-        endMs: Number.isFinite(Number(record.endMs))
-          ? Number(record.endMs)
-          : startMs,
-        text,
-        speakerLabel:
-          typeof record.speakerLabel === "string" ? record.speakerLabel : null,
-      };
-    })
-    .filter((item): item is AsrProofreadSegment => item !== null);
-}
-
-function formatTimestamp(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSec / 60);
-  const seconds = totalSec % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  /** 当前播放位置（毫秒），用于高亮对应段落。 */
+  readonly activePlaybackMs?: number;
 }
 
 /** 校对模式只读视图（`asr_raw_json` · §4.3.4）。 */
 export function ProofreadTranscriptView({
   asrRawJson,
   onSeek,
+  activePlaybackMs = 0,
 }: ProofreadTranscriptViewProps) {
   const segments = parseAsrSegments(asrRawJson);
+  const activeIndex = findActiveSegmentIndex(segments, activePlaybackMs);
 
   if (segments.length === 0) {
     return (
@@ -68,22 +29,44 @@ export function ProofreadTranscriptView({
     );
   }
 
+  function handleSeek(startMs: number) {
+    onSeek(startMs);
+    toast.message(`已跳转到 ${formatTranscriptTimestamp(startMs)}`, {
+      description:
+        segments.length <= 1
+          ? "当前任务仅有单段 ASR 结果，全文对应 00:00 起点"
+          : undefined,
+    });
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      {segments.map((segment) => {
-        const label = formatTimestamp(segment.startMs);
+      {segments.length === 1 ? (
+        <p className="text-xs text-muted-foreground">
+          当前为单段 ASR 源稿（无句级时间戳）；点击段落将跳转到{" "}
+          {formatTranscriptTimestamp(segments[0]!.startMs)}
+        </p>
+      ) : null}
+      {segments.map((segment, index) => {
+        const label = formatTranscriptTimestamp(segment.startMs);
         const speaker = segment.speakerLabel?.trim();
         const accessibleName = speaker
           ? `${speaker} ${label}：${segment.text}`
           : `${label}：${segment.text}`;
+        const isActive = activeIndex === index;
         return (
           <button
             key={`${segment.segmentIndex}-${segment.startMs}`}
             type="button"
-            className="transcript-proofread-segment"
+            className={
+              isActive
+                ? "transcript-proofread-segment transcript-proofread-segment--active"
+                : "transcript-proofread-segment"
+            }
             data-start-ms={segment.startMs}
             aria-label={accessibleName}
-            onClick={() => onSeek(segment.startMs)}
+            aria-current={isActive ? "true" : undefined}
+            onClick={() => handleSeek(segment.startMs)}
           >
             <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="tabular-nums">{label}</span>

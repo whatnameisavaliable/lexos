@@ -25,7 +25,18 @@ async function openSignedExport(
     window.open(result.signedUrl, "_blank", "noopener,noreferrer");
     toast.success(`${label}导出已开始下载`);
   } catch (err) {
-    toast.error(toApiClientError(err).message);
+    const apiErr = toApiClientError(err);
+    const lower = apiErr.message.toLowerCase();
+    const isTransientNetwork =
+      lower.includes("failed to fetch") ||
+      lower.includes("econnreset") ||
+      lower.includes("socket hang up") ||
+      lower.includes("无法连接 bff/api");
+    toast.error(
+      isTransientNetwork
+        ? "API 服务尚未就绪或正在重启，请等待终端出现「API listening」后重试"
+        : apiErr.message,
+    );
   }
 }
 
@@ -38,9 +49,14 @@ export function ExportMenu({ taskId }: ExportMenuProps) {
     action: () => Promise<{ signedUrl: string }>,
   ) {
     setBusy(true);
+    const toastId = `export-${label}`;
+    const loadingHint =
+      label === "PDF" ? `正在生成 ${label}…（可能需要 1–2 分钟）` : `正在生成 ${label}…`;
+    toast.loading(loadingHint, { id: toastId });
     try {
       await openSignedExport(action, label);
     } finally {
+      toast.dismiss(toastId);
       setBusy(false);
     }
   }

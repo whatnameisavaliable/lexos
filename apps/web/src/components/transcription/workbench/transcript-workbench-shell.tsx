@@ -18,7 +18,7 @@ import { TaskStatusBadge } from "../task-status-badge";
 import { formatDurationSec } from "../format-duration";
 import {
   AudioPlayerPanel,
-  type AudioPlayerHandle,
+  type AudioPlayerControls,
 } from "./audio-player-panel";
 import { DiarizationDegradedAlert } from "./diarization-degraded-alert";
 import { ExportMenu } from "./export-menu";
@@ -72,7 +72,7 @@ function viewTitle(view: WorkbenchView): string {
 
 /** 转写工作台 Grid 布局（`ui_design.md` §4.3.1：左音频 · 右文稿）。 */
 export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellProps) {
-  const audioRef = useRef<AudioPlayerHandle>(null);
+  const audioControlsRef = useRef<AudioPlayerControls | null>(null);
   const [task, setTask] = useState<TranscriptionTaskDetail | null>(null);
   const [transcript, setTranscript] = useState<TranscriptionTranscriptDetail | null>(
     null,
@@ -81,6 +81,18 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
   const [draftPolishedText, setDraftPolishedText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activePlaybackMs, setActivePlaybackMs] = useState(0);
+
+  const handleAudioControlsReady = useCallback(
+    (controls: AudioPlayerControls | null) => {
+      audioControlsRef.current = controls;
+    },
+    [],
+  );
+
+  const handleSeek = useCallback((ms: number) => {
+    audioControlsRef.current?.seek(ms);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -193,7 +205,11 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
             <CardTitle className="text-base">音频</CardTitle>
           </CardHeader>
           <CardContent className="flex min-h-0 flex-1 flex-col">
-            <AudioPlayerPanel ref={audioRef} taskId={taskId} />
+            <AudioPlayerPanel
+              taskId={taskId}
+              onControlsReady={handleAudioControlsReady}
+              onTimeUpdate={setActivePlaybackMs}
+            />
           </CardContent>
         </Card>
 
@@ -212,7 +228,8 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
               {view === "proofread" ? (
                 <ProofreadTranscriptView
                   asrRawJson={transcript.asrRawJson}
-                  onSeek={(ms) => audioRef.current?.seek(ms)}
+                  onSeek={handleSeek}
+                  activePlaybackMs={activePlaybackMs}
                 />
               ) : null}
               {view === "edit" ? (

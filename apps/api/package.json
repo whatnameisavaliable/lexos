@@ -8,15 +8,17 @@
     "build": "tsc -p tsconfig.json",
     "start": "tsx src/index.ts",
     "predev": "npm run build -w @lexos/shared",
-    "dev": "node ../../scripts/kill-listen-port.mjs 4000 && tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/noto-sans-sc": "^5.2.9",
     "@lexos/shared": "*",
     "@supabase/supabase-js": "^2.106.2",
     "docx": "^9.7.1",
     "pdfkit": "^0.18.0",
     "pg": "^8.16.0",
+    "wawoff2": "^2.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

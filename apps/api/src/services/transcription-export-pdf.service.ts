@@ -7,6 +7,7 @@ import {
   buildExportObjectKey,
   EXPORT_CONTENT_TYPES,
 } from "../lib/transcription-export-key.js";
+import { resolveTranscriptExportSections } from "../lib/export-transcript-text.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
 import type { TranscriptionTranscriptRepository } from "../repositories/transcription-transcript.repository.js";
@@ -49,11 +50,14 @@ export class TranscriptionExportPdfService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Transcript not found");
     }
 
-    const buffer = await this.exportAdapter.generate({
-      title: task.title,
-      polishedText: transcript.polishedText,
-      summaryText: transcript.summaryText,
-    });
+    const buffer = await this.exportAdapter.generate(
+      resolveTranscriptExportSections({
+        title: task.title,
+        polishedText: transcript.polishedText,
+        summaryText: transcript.summaryText,
+        asrRawJson: transcript.asrRawJson,
+      }),
+    );
 
     const ownerId = task.createdBy;
     const objectKey = buildExportObjectKey(ownerId, taskId, "pdf");

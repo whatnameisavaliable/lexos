@@ -20,7 +20,7 @@ export class DocxExportAdapter implements ExportAdapter {
       }),
     ];
 
-    if (input.summaryText?.trim()) {
+    if (input.summaryText) {
       children.push(
         new Paragraph({
           text: "摘要",
@@ -30,7 +30,7 @@ export class DocxExportAdapter implements ExportAdapter {
       );
     }
 
-    if (input.polishedText?.trim()) {
+    if (input.polishedText) {
       children.push(
         new Paragraph({
           text: "正文",

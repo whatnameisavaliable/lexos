@@ -8,7 +8,7 @@ import type {
 } from "@lexos/shared";
 import type { PaginationMeta } from "@lexos/shared/api";
 import { setCachedTranscriptVersion } from "./transcript-if-match";
-import { apiFetch } from "./api-client";
+import { apiFetch, ApiClientError } from "./api-client";
 
 /** 签名下载/导出 URL 响应。 */
 export interface SignedDownloadUrlResult {
@@ -204,31 +204,66 @@ export async function getPlaybackDownloadUrl(
   }
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientExportError(err: unknown): boolean {
+  if (err instanceof ApiClientError) {
+    if (err.status === 502 || err.status === 503 || err.status === 504) {
+      return true;
+    }
+    const lower = err.message.toLowerCase();
+    return (
+      lower.includes("failed to fetch") ||
+      lower.includes("econnreset") ||
+      lower.includes("socket hang up") ||
+      lower.includes("无法连接 bff/api") ||
+      lower.includes("api 返回了 html")
+    );
+  }
+  return err instanceof TypeError;
+}
+
+async function postExport(path: string): Promise<SignedDownloadUrlResult> {
+  const maxAttempts = 4;
+  let lastErr: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const res = await apiFetch<SignedDownloadUrlResult>(path, { method: "POST" });
+      return res.data;
+    } catch (err) {
+      lastErr = err;
+      if (!isTransientExportError(err) || attempt >= maxAttempts) {
+        break;
+      }
+      await sleep(1500 * attempt);
+    }
+  }
+
+  throw lastErr;
+}
+
 /** `POST /api/transcription/tasks/:id/export/docx` */
 export async function exportDocx(taskId: string): Promise<SignedDownloadUrlResult> {
-  const res = await apiFetch<SignedDownloadUrlResult>(
+  return postExport(
     `/transcription/tasks/${encodeURIComponent(taskId)}/export/docx`,
-    { method: "POST" },
   );
-  return res.data;
 }
 
 /** `POST /api/transcription/tasks/:id/export/pdf` */
 export async function exportPdf(taskId: string): Promise<SignedDownloadUrlResult> {
-  const res = await apiFetch<SignedDownloadUrlResult>(
+  return postExport(
     `/transcription/tasks/${encodeURIComponent(taskId)}/export/pdf`,
-    { method: "POST" },
   );
-  return res.data;
 }
 
 /** `POST /api/transcription/tasks/:id/export/txt` */
 export async function exportTxt(taskId: string): Promise<SignedDownloadUrlResult> {
-  const res = await apiFetch<SignedDownloadUrlResult>(
+  return postExport(
     `/transcription/tasks/${encodeURIComponent(taskId)}/export/txt`,
-    { method: "POST" },
   );
-  return res.data;
 }
 
 /** `DELETE /api/transcription/tasks/:id` */

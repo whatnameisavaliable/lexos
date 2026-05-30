@@ -11,6 +11,7 @@ import { AiAdapterFactory } from "./adapters/ai/ai-adapter.factory.js";
 import { SupabaseAuthAdapter } from "./adapters/auth/supabase-auth.adapter.js";
 import { AuthChangePasswordController } from "./controllers/auth-change-password.controller.js";
 import { AuthLoginController } from "./controllers/auth-login.controller.js";
+import { AuthRefreshController } from "./controllers/auth-refresh.controller.js";
 import { AuthLogoutController } from "./controllers/auth-logout.controller.js";
 import { AuthSessionController } from "./controllers/auth-session.controller.js";
 import { ProfileGetController } from "./controllers/profile-get.controller.js";
@@ -27,6 +28,7 @@ import { ProfileRepository } from "./repositories/profile.repository.js";
 import { handleHealthRoute } from "./routes/health.routes.js";
 import { AuthChangePasswordService } from "./services/auth-change-password.service.js";
 import { AuthLoginService } from "./services/auth-login.service.js";
+import { AuthRefreshService } from "./services/auth-refresh.service.js";
 import { AuthLogoutService } from "./services/auth-logout.service.js";
 import { AuthSessionService } from "./services/auth-session.service.js";
 import { ProfileService } from "./services/profile.service.js";
@@ -82,7 +84,11 @@ import { AiPromptsPublishController } from "./controllers/ai-prompts-publish.con
 import { AiPromptsDeleteController } from "./controllers/ai-prompts-delete.controller.js";
 import { AiInvocationLogsListController } from "./controllers/ai-invocation-logs-list.controller.js";
 import { SupabaseStorageAdapter } from "./adapters/storage/supabase-storage.adapter.js";
+import { DocxExportAdapter } from "./adapters/export/docx-export.adapter.js";
+import { PdfExportAdapter } from "./adapters/export/pdf-export.adapter.js";
+import { TxtExportAdapter } from "./adapters/export/txt-export.adapter.js";
 import { TranscriptionTaskRepository } from "./repositories/transcription-task.repository.js";
+import { TranscriptionTranscriptRepository } from "./repositories/transcription-transcript.repository.js";
 import { TranscriptionTaskWriteRepository } from "./repositories/transcription-task-write.repository.js";
 import { UploadSessionRepository } from "./repositories/upload-session.repository.js";
 import { OutboxRepository } from "./repositories/outbox.repository.js";
@@ -91,10 +97,24 @@ import { TranscriptionUploadInitService } from "./services/transcription-upload-
 import { TranscriptionUploadCompleteService } from "./services/transcription-upload-complete.service.js";
 import { TranscriptionTaskListService } from "./services/transcription-task-list.service.js";
 import { TranscriptionTaskGetService } from "./services/transcription-task-get.service.js";
+import { TranscriptionTranscriptGetService } from "./services/transcription-transcript-get.service.js";
+import { TranscriptionTranscriptPatchService } from "./services/transcription-transcript-patch.service.js";
+import { TranscriptionTaskDownloadService } from "./services/transcription-task-download.service.js";
+import { TranscriptionExportDocxService } from "./services/transcription-export-docx.service.js";
+import { TranscriptionExportPdfService } from "./services/transcription-export-pdf.service.js";
+import { TranscriptionExportTxtService } from "./services/transcription-export-txt.service.js";
+import { TranscriptionTaskDeleteService } from "./services/transcription-task-delete.service.js";
 import { TranscriptionUploadsInitController } from "./controllers/transcription-uploads-init.controller.js";
 import { TranscriptionUploadsCompleteController } from "./controllers/transcription-uploads-complete.controller.js";
 import { TranscriptionTasksListController } from "./controllers/transcription-tasks-list.controller.js";
 import { TranscriptionTasksGetController } from "./controllers/transcription-tasks-get.controller.js";
+import { TranscriptionTranscriptGetController } from "./controllers/transcription-transcript-get.controller.js";
+import { TranscriptionTranscriptPatchController } from "./controllers/transcription-transcript-patch.controller.js";
+import { TranscriptionTaskDownloadController } from "./controllers/transcription-task-download.controller.js";
+import { TranscriptionTaskExportDocxController } from "./controllers/transcription-task-export-docx.controller.js";
+import { TranscriptionTaskExportPdfController } from "./controllers/transcription-task-export-pdf.controller.js";
+import { TranscriptionTaskExportTxtController } from "./controllers/transcription-task-export-txt.controller.js";
+import { TranscriptionTaskDeleteController } from "./controllers/transcription-task-delete.controller.js";
 import { handleTranscriptionUploadsRoute } from "./routes/transcription-uploads.routes.js";
 import { handleTranscriptionTasksRoute } from "./routes/transcription-tasks.routes.js";
 import { loadStorageRuntimeEnvFromProcess } from "@lexos/shared/config";
@@ -126,6 +146,10 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     auditLogRepository,
   );
   const authLogoutService = new AuthLogoutService(authAdapter, auditLogRepository);
+  const authRefreshService = new AuthRefreshService(
+    authAdapter,
+    profileRepository,
+  );
   const authSessionService = new AuthSessionService();
   const authChangePasswordService = new AuthChangePasswordService(
     authAdapter,
@@ -206,6 +230,9 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const storageEnv = loadStorageRuntimeEnvFromProcess();
   const storageAdapter = new SupabaseStorageAdapter(supabaseEnv, storageEnv);
   const transcriptionTaskRepository = new TranscriptionTaskRepository(supabaseEnv);
+  const transcriptionTranscriptRepository = new TranscriptionTranscriptRepository(
+    supabaseEnv,
+  );
   const transcriptionTaskWriteRepository =
     new TranscriptionTaskWriteRepository();
   const uploadSessionRepository = new UploadSessionRepository(supabaseEnv);
@@ -216,6 +243,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     uploadSessionRepository,
     storageAdapter,
     auditLogRepository,
+    storageEnv.storageBucketMedia,
   );
   const transcriptionUploadCompleteService =
     new TranscriptionUploadCompleteService(
@@ -233,6 +261,48 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const transcriptionTaskGetService = new TranscriptionTaskGetService(
     transcriptionTaskRepository,
   );
+  const transcriptionTranscriptGetService = new TranscriptionTranscriptGetService(
+    transcriptionTaskRepository,
+    transcriptionTranscriptRepository,
+  );
+  const transcriptionTranscriptPatchService =
+    new TranscriptionTranscriptPatchService(
+      transcriptionTaskRepository,
+      transcriptionTranscriptRepository,
+    );
+  const transcriptionTaskDownloadService = new TranscriptionTaskDownloadService(
+    transcriptionTaskRepository,
+    storageAdapter,
+    auditLogRepository,
+  );
+  const docxExportAdapter = new DocxExportAdapter();
+  const pdfExportAdapter = new PdfExportAdapter();
+  const txtExportAdapter = new TxtExportAdapter();
+  const transcriptionExportDocxService = new TranscriptionExportDocxService(
+    transcriptionTaskRepository,
+    transcriptionTranscriptRepository,
+    docxExportAdapter,
+    storageAdapter,
+    auditLogRepository,
+  );
+  const transcriptionExportPdfService = new TranscriptionExportPdfService(
+    transcriptionTaskRepository,
+    transcriptionTranscriptRepository,
+    pdfExportAdapter,
+    storageAdapter,
+    auditLogRepository,
+  );
+  const transcriptionExportTxtService = new TranscriptionExportTxtService(
+    transcriptionTaskRepository,
+    transcriptionTranscriptRepository,
+    txtExportAdapter,
+    storageAdapter,
+    auditLogRepository,
+  );
+  const transcriptionTaskDeleteService = new TranscriptionTaskDeleteService(
+    transcriptionTaskRepository,
+    auditLogRepository,
+  );
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
   const requireAdmin = requireRoles("admin");
@@ -240,6 +310,10 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
 
   const loginController = new AuthLoginController(
     authLoginService,
+    env.requestIdHeader,
+  );
+  const refreshController = new AuthRefreshController(
+    authRefreshService,
     env.requestIdHeader,
   );
   const logoutController = new AuthLogoutController(
@@ -364,6 +438,40 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTaskGetService,
     env.requestIdHeader,
   );
+  const transcriptionTranscriptGetController =
+    new TranscriptionTranscriptGetController(
+      transcriptionTranscriptGetService,
+      env.requestIdHeader,
+    );
+  const transcriptionTranscriptPatchController =
+    new TranscriptionTranscriptPatchController(
+      transcriptionTranscriptPatchService,
+      env.requestIdHeader,
+    );
+  const transcriptionTaskDownloadController =
+    new TranscriptionTaskDownloadController(
+      transcriptionTaskDownloadService,
+      env.requestIdHeader,
+    );
+  const transcriptionTaskExportDocxController =
+    new TranscriptionTaskExportDocxController(
+      transcriptionExportDocxService,
+      env.requestIdHeader,
+    );
+  const transcriptionTaskExportPdfController =
+    new TranscriptionTaskExportPdfController(
+      transcriptionExportPdfService,
+      env.requestIdHeader,
+    );
+  const transcriptionTaskExportTxtController =
+    new TranscriptionTaskExportTxtController(
+      transcriptionExportTxtService,
+      env.requestIdHeader,
+    );
+  const transcriptionTaskDeleteController = new TranscriptionTaskDeleteController(
+    transcriptionTaskDeleteService,
+    env.requestIdHeader,
+  );
 
   const healthController = new HealthController(
     new HealthCheckService(new PostgresHealthRepository(env.supabaseDbUrl)),
@@ -414,6 +522,11 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
       method: "POST",
       path: "/api/auth/login",
       handler: (req, res) => loginController.handle(req, res),
+    },
+    {
+      method: "POST",
+      path: "/api/auth/refresh",
+      handler: (req, res) => refreshController.handle(req, res),
     },
     {
       method: "POST",
@@ -506,6 +619,13 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
                 {
                   list: transcriptionTasksListController,
                   get: transcriptionTasksGetController,
+                  getTranscript: transcriptionTranscriptGetController,
+                  patchTranscript: transcriptionTranscriptPatchController,
+                  download: transcriptionTaskDownloadController,
+                  exportDocx: transcriptionTaskExportDocxController,
+                  exportPdf: transcriptionTaskExportPdfController,
+                  exportTxt: transcriptionTaskExportTxtController,
+                  delete: transcriptionTaskDeleteController,
                 },
               );
             }

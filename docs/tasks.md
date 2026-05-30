@@ -927,13 +927,13 @@
 
 ### M6-E 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `GET /api/transcription/tasks/:id/transcript` → `transcription-transcript.routes.ts` + `transcript-get.controller.ts` + `transcript-get.controller.test.ts`
-- [ ] 注册 `PATCH /api/transcription/tasks/:id/transcript` → `transcript-patch.controller.ts` + `transcript-patch.controller.test.ts`（校验 `If-Match` 头）
-- [ ] 注册 `GET /api/transcription/tasks/:id/download` → `task-download.controller.ts` + `task-download.controller.test.ts`（query `type=audio|source`）
-- [ ] 注册 `POST /api/transcription/tasks/:id/export/docx` → `task-export-docx.controller.ts` + `task-export-docx.controller.test.ts`
-- [ ] 注册 `POST /api/transcription/tasks/:id/export/pdf` → `task-export-pdf.controller.ts` + `task-export-pdf.controller.test.ts`
-- [ ] 注册 `POST /api/transcription/tasks/:id/export/txt` → `task-export-txt.controller.ts` + `task-export-txt.controller.test.ts`
-- [ ] 注册 `DELETE /api/transcription/tasks/:id` → `task-delete.controller.ts` + `task-delete.controller.test.ts`
+- [x] 注册 `GET /api/transcription/tasks/:id/transcript` → `transcription-transcript.routes.ts` + `transcript-get.controller.ts` + `transcript-get.controller.test.ts`
+- [x] 注册 `PATCH /api/transcription/tasks/:id/transcript` → `transcript-patch.controller.ts` + `transcript-patch.controller.test.ts`（校验 `If-Match` 头）
+- [x] 注册 `GET /api/transcription/tasks/:id/download` → `task-download.controller.ts` + `task-download.controller.test.ts`（query `type=audio|source`）
+- [x] 注册 `POST /api/transcription/tasks/:id/export/docx` → `task-export-docx.controller.ts` + `task-export-docx.controller.test.ts`
+- [x] 注册 `POST /api/transcription/tasks/:id/export/pdf` → `task-export-pdf.controller.ts` + `task-export-pdf.controller.test.ts`
+- [x] 注册 `POST /api/transcription/tasks/:id/export/txt` → `task-export-txt.controller.ts` + `task-export-txt.controller.test.ts`
+- [x] 注册 `DELETE /api/transcription/tasks/:id` → `task-delete.controller.ts` + `task-delete.controller.test.ts`
 
 ---
 

@@ -18,6 +18,10 @@ export interface WorkerRuntimeEnvConfig extends OutboxRuntimeEnvConfig {
   readonly ffmpegMaxConcurrent: number;
   /** FFmpeg 单任务超时（毫秒）；默认 3_600_000。 */
   readonly ffmpegTimeoutMs: number;
+  /** ASR 物理切片时长（秒）；默认 900。 */
+  readonly asrSegmentDurationSec: number;
+  /** ASR 单切片最大体积（MB）；默认 20。 */
+  readonly asrMaxChunkSizeMb: number;
 }
 
 const DEFAULT_FFMPEG_PATH = "ffmpeg";
@@ -26,6 +30,8 @@ const DEFAULT_ASR_RATE_LIMIT_MAX = 50;
 const DEFAULT_WORKER_TMP_DIR = "/tmp/lexos";
 const DEFAULT_FFMPEG_MAX_CONCURRENT = 2;
 const DEFAULT_FFMPEG_TIMEOUT_MS = 3_600_000;
+const DEFAULT_ASR_SEGMENT_DURATION_SEC = 900;
+const DEFAULT_ASR_MAX_CHUNK_SIZE_MB = 20;
 
 /**
  * 从 `process.env` 加载 U3 Worker 配置；校验 DB 连接串与 FFmpeg 路径配置项存在。
@@ -71,6 +77,14 @@ export function loadWorkerRuntimeEnvFromProcess(): WorkerRuntimeEnvConfig {
     ffmpegTimeoutMs: parsePositiveInt(
       process.env.FFMPEG_TIMEOUT_MS,
       DEFAULT_FFMPEG_TIMEOUT_MS,
+    ),
+    asrSegmentDurationSec: parsePositiveInt(
+      process.env.ASR_SEGMENT_DURATION_SEC,
+      DEFAULT_ASR_SEGMENT_DURATION_SEC,
+    ),
+    asrMaxChunkSizeMb: parsePositiveInt(
+      process.env.ASR_MAX_CHUNK_SIZE_MB,
+      DEFAULT_ASR_MAX_CHUNK_SIZE_MB,
     ),
   };
 }

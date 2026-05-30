@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { TranscriptionTaskSummary } from "@lexos/shared";
 import {
   Table,
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { TaskStatusBadge } from "./task-status-badge";
 import { formatDurationSec } from "./format-duration";
 
@@ -40,7 +42,16 @@ export function TranscriptionTasksTable({
         {items.map((task) => (
           <TableRow key={task.id} className="h-10 text-sm">
             <TableCell className="font-medium max-w-[240px] truncate">
-              {task.title}
+              {task.status === "completed" ? (
+                <Link
+                  href={`/transcription/${task.id}`}
+                  className="text-primary hover:underline"
+                >
+                  {task.title}
+                </Link>
+              ) : (
+                task.title
+              )}
             </TableCell>
             <TableCell className="text-center">
               <TaskStatusBadge status={task.status} />
@@ -51,7 +62,15 @@ export function TranscriptionTasksTable({
             <TableCell>
               {dateFormatter.format(new Date(task.createdAt))}
             </TableCell>
-            <TableCell className="text-right text-muted-foreground">—</TableCell>
+            <TableCell className="text-right">
+              {task.status === "completed" ? (
+                <Button variant="link" size="sm" className="h-auto px-0" asChild>
+                  <Link href={`/transcription/${task.id}`}>打开工作台</Link>
+                </Button>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

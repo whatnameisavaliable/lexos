@@ -7,7 +7,35 @@ import type {
   TranscriptionUploadInitResponse,
 } from "@lexos/shared";
 import type { PaginationMeta } from "@lexos/shared/api";
+import { setCachedTranscriptVersion } from "./transcript-if-match";
 import { apiFetch } from "./api-client";
+
+/** 签名下载/导出 URL 响应。 */
+export interface SignedDownloadUrlResult {
+  readonly signedUrl: string;
+  readonly expiresInSec: number;
+  readonly objectKey: string;
+  readonly bucket: string;
+}
+
+/** PATCH 文稿成功响应。 */
+export interface TranscriptPatchResult {
+  readonly taskId: string;
+  readonly polishedText: string;
+  readonly version: number;
+  readonly updatedAt: string;
+}
+
+/** `GET /api/transcription/tasks/:id/transcript` 文稿详情。 */
+export interface TranscriptionTranscriptDetail {
+  readonly taskId: string;
+  readonly asrRawJson: unknown | null;
+  readonly polishedText: string | null;
+  readonly summaryText: string | null;
+  readonly version: number;
+  readonly diarizationDegraded: boolean;
+  readonly updatedAt: string;
+}
 
 /** `GET /api/transcription/tasks/:id` 详情。 */
 export interface TranscriptionTaskDetail {
@@ -23,6 +51,7 @@ export interface TranscriptionTaskDetail {
   readonly isMp4: boolean;
   readonly asrQueueTier: "express" | "batch" | null;
   readonly idempotencyKey: string | null;
+  readonly diarizationDegraded?: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -112,6 +141,88 @@ export async function getTask(taskId: string): Promise<TranscriptionTaskDetail> 
   const res = await apiFetch<TranscriptionTaskDetail>(
     `/transcription/tasks/${encodeURIComponent(taskId)}`,
     { method: "GET" },
+  );
+  return res.data;
+}
+
+/** `GET /api/transcription/tasks/:id/transcript` */
+export async function getTranscript(
+  taskId: string,
+): Promise<TranscriptionTranscriptDetail> {
+  const res = await apiFetch<TranscriptionTranscriptDetail>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/transcript`,
+    { method: "GET" },
+  );
+  setCachedTranscriptVersion(taskId, res.data.version);
+  return res.data;
+}
+
+/** `PATCH /api/transcription/tasks/:id/transcript` */
+export async function patchTranscript(
+  taskId: string,
+  polishedText: string,
+  expectedVersion: number,
+): Promise<TranscriptPatchResult> {
+  const res = await apiFetch<TranscriptPatchResult>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/transcript`,
+    {
+      method: "PATCH",
+      headers: {
+        "If-Match": String(expectedVersion),
+      },
+      body: JSON.stringify({ polishedText }),
+    },
+  );
+  setCachedTranscriptVersion(taskId, res.data.version);
+  return res.data;
+}
+
+export type TranscriptionDownloadType = "audio" | "source";
+
+/** `GET /api/transcription/tasks/:id/download` */
+export async function getDownloadUrl(
+  taskId: string,
+  type: TranscriptionDownloadType = "audio",
+): Promise<SignedDownloadUrlResult> {
+  const res = await apiFetch<SignedDownloadUrlResult>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/download?type=${type}`,
+    { method: "GET" },
+  );
+  return res.data;
+}
+
+/** `POST /api/transcription/tasks/:id/export/docx` */
+export async function exportDocx(taskId: string): Promise<SignedDownloadUrlResult> {
+  const res = await apiFetch<SignedDownloadUrlResult>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/export/docx`,
+    { method: "POST" },
+  );
+  return res.data;
+}
+
+/** `POST /api/transcription/tasks/:id/export/pdf` */
+export async function exportPdf(taskId: string): Promise<SignedDownloadUrlResult> {
+  const res = await apiFetch<SignedDownloadUrlResult>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/export/pdf`,
+    { method: "POST" },
+  );
+  return res.data;
+}
+
+/** `POST /api/transcription/tasks/:id/export/txt` */
+export async function exportTxt(taskId: string): Promise<SignedDownloadUrlResult> {
+  const res = await apiFetch<SignedDownloadUrlResult>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}/export/txt`,
+    { method: "POST" },
+  );
+  return res.data;
+}
+
+/** `DELETE /api/transcription/tasks/:id` */
+export async function deleteTask(taskId: string): Promise<TranscriptionTaskDetail> {
+  const res = await apiFetch<TranscriptionTaskDetail>(
+    `/transcription/tasks/${encodeURIComponent(taskId)}`,
+    { method: "DELETE" },
   );
   return res.data;
 }

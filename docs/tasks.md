@@ -891,10 +891,10 @@
 
 ### M6-B Repository（单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/transcription-transcript.repository.ts`：`findByTaskId`、`updatePolishedText(taskId, text, expectedVersion)`（`WHERE version=` 乐观锁）
-- [ ] 新增 `apps/api/src/repositories/transcription-transcript.repository.test.ts`：版本冲突返回 0 行更新
-- [ ] 扩展 `transcription-task.repository.ts`：`softDelete(taskId)`、`findDetailForUser`（含 `diarization_degraded`）
-- [ ] 新增 `apps/api/src/repositories/transcription-segment.repository.ts`：`listByTaskId`（校对模式只读展示，若 UI 需分段列表）
+- [x] 新增 `apps/api/src/repositories/transcription-transcript.repository.ts`：`findByTaskId`、`updatePolishedText(taskId, text, expectedVersion)`（`WHERE version=` 乐观锁）
+- [x] 新增 `apps/api/src/repositories/transcription-transcript.repository.test.ts`：版本冲突返回 0 行更新
+- [x] 扩展 `transcription-task.repository.ts`：`softDelete(taskId)`、`findDetailForUser`（含 `diarization_degraded`）
+- [x] 新增 `apps/api/src/repositories/transcription-segment.repository.ts`：`listByTaskId`（校对模式只读展示，若 UI 需分段列表）
 
 ---
 

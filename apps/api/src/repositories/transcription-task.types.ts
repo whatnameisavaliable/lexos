@@ -1,5 +1,9 @@
 import type { TranscriptionTaskStatus } from "@lexos/shared";
-import type { TranscriptionTaskSummary } from "@lexos/shared";
+import type {
+  TranscriptionTaskDetail,
+  TranscriptionTaskSummary,
+  TranscriptSummaryEmbedded,
+} from "@lexos/shared";
 
 /** Supabase `transcription_tasks` 行（查询子集）。 */
 export interface TranscriptionTaskRowDb {
@@ -15,6 +19,8 @@ export interface TranscriptionTaskRowDb {
   readonly is_mp4: boolean;
   readonly asr_queue_tier: "express" | "batch" | null;
   readonly idempotency_key: string | null;
+  readonly diarization_degraded: boolean;
+  readonly deleted_at: string | null;
   readonly created_at: string;
   readonly updated_at: string;
 }
@@ -33,12 +39,16 @@ export interface TranscriptionTaskRecord {
   readonly isMp4: boolean;
   readonly asrQueueTier: "express" | "batch" | null;
   readonly idempotencyKey: string | null;
+  readonly diarizationDegraded: boolean;
+  readonly deletedAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
 
 /** `createUploading` 入参。 */
 export interface CreateUploadingTaskInput {
+  /** 须与 JWT `auth.uid()` 一致（RLS `tasks_insert`）。 */
+  readonly createdBy: string;
   readonly title: string;
   readonly sourceMime: string;
   /** 计划对象键（`{uid}/{task_id}/{fileName}`），complete 前占位。 */
@@ -63,7 +73,10 @@ export interface TranscriptionTaskListResult {
 }
 
 export const TRANSCRIPTION_TASK_SELECT =
-  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, asr_queue_tier, idempotency_key, created_at, updated_at";
+  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, asr_queue_tier, idempotency_key, diarization_degraded, deleted_at, created_at, updated_at";
+
+export const TRANSCRIPTION_TASK_DETAIL_SELECT =
+  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, diarization_degraded, created_at";
 
 export const TRANSCRIPTION_TASK_LIST_SELECT =
   "id, title, status, duration_sec, size_bytes, created_at";
@@ -87,6 +100,8 @@ export function mapTranscriptionTaskRow(
     isMp4: row.is_mp4,
     asrQueueTier: row.asr_queue_tier,
     idempotencyKey: row.idempotency_key,
+    diarizationDegraded: row.diarization_degraded,
+    deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -131,5 +146,54 @@ export function decodeTaskListCursor(
   return {
     createdAt: cursor.slice(0, separator),
     id: cursor.slice(separator + 1),
+  };
+}
+
+/**
+ * 映射任务详情（含内嵌文稿摘要）。
+ */
+export function mapTranscriptionTaskDetail(
+  task: Pick<
+    TranscriptionTaskRowDb,
+    | "id"
+    | "title"
+    | "status"
+    | "duration_sec"
+    | "size_bytes"
+    | "created_at"
+    | "diarization_degraded"
+    | "audio_storage_key"
+    | "source_storage_key"
+    | "is_mp4"
+  >,
+  transcript: TranscriptSummaryEmbedded | null,
+): TranscriptionTaskDetail {
+  return {
+    id: task.id,
+    title: task.title,
+    status: task.status,
+    durationSec: task.duration_sec,
+    sizeBytes: Number(task.size_bytes),
+    createdAt: task.created_at,
+    diarizationDegraded: task.diarization_degraded,
+    audioStorageKey: task.audio_storage_key,
+    sourceStorageKey: task.source_storage_key,
+    isMp4: task.is_mp4,
+    transcript,
+  };
+}
+
+/**
+ * 映射内嵌文稿摘要。
+ */
+export function mapTranscriptSummaryEmbedded(row: {
+  version: number;
+  summary_text: string | null;
+  updated_at: string;
+}): TranscriptSummaryEmbedded {
+  return {
+    version: row.version,
+    summaryText: row.summary_text,
+    updatedAt: row.updated_at,
   };
 }

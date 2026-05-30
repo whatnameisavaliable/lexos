@@ -3,11 +3,15 @@ import type { SupabaseEnvConfig } from "@lexos/shared/config";
 import {
   decodeTaskListCursor,
   encodeTaskListCursor,
+  mapTranscriptionTaskDetail,
   mapTranscriptionTaskRow,
   mapTranscriptionTaskSummary,
+  mapTranscriptSummaryEmbedded,
+  TRANSCRIPTION_TASK_DETAIL_SELECT,
   TRANSCRIPTION_TASK_LIST_SELECT,
   TRANSCRIPTION_TASK_SELECT,
   type CreateUploadingTaskInput,
+  type TranscriptionTaskDetail,
   type TranscriptionTaskListParams,
   type TranscriptionTaskListResult,
   type TranscriptionTaskRecord,
@@ -35,6 +39,7 @@ export class TranscriptionTaskRepository {
   ): Promise<TranscriptionTaskRecord> {
     const client = this.userClient(accessToken);
     const payload: Record<string, unknown> = {
+      created_by: input.createdBy,
       title: input.title,
       status: "uploading",
       source_mime: input.sourceMime,
@@ -126,6 +131,92 @@ export class TranscriptionTaskRepository {
 
     if (error) {
       throw new Error(`transcription_tasks.findById failed: ${error.message}`);
+    }
+    return data ? mapTranscriptionTaskRow(data as TranscriptionTaskRowDb) : null;
+  }
+
+  /**
+   * 查询任务详情（含 `diarization_degraded` 与内嵌文稿摘要）。
+   */
+  async findDetailForUser(
+    accessToken: string,
+    taskId: string,
+  ): Promise<TranscriptionTaskDetail | null> {
+    const client = this.userClient(accessToken);
+    const { data: taskData, error: taskError } = await client
+      .from("transcription_tasks")
+      .select(TRANSCRIPTION_TASK_DETAIL_SELECT)
+      .eq("id", taskId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (taskError) {
+      throw new Error(
+        `transcription_tasks.findDetailForUser failed: ${taskError.message}`,
+      );
+    }
+    if (!taskData) {
+      return null;
+    }
+
+    const { data: transcriptData, error: transcriptError } = await client
+      .from("transcription_transcripts")
+      .select("version, summary_text, updated_at")
+      .eq("task_id", taskId)
+      .maybeSingle();
+
+    if (transcriptError) {
+      throw new Error(
+        `transcription_transcripts.findDetailForUser failed: ${transcriptError.message}`,
+      );
+    }
+
+    const transcript = transcriptData
+      ? mapTranscriptSummaryEmbedded(
+          transcriptData as {
+            version: number;
+            summary_text: string | null;
+            updated_at: string;
+          },
+        )
+      : null;
+
+    return mapTranscriptionTaskDetail(
+      taskData as Pick<
+        TranscriptionTaskRowDb,
+        | "id"
+        | "title"
+        | "status"
+        | "duration_sec"
+        | "size_bytes"
+        | "created_at"
+        | "diarization_degraded"
+        | "audio_storage_key"
+        | "source_storage_key"
+        | "is_mp4"
+      >,
+      transcript,
+    );
+  }
+
+  /**
+   * 软删除任务（设置 `deleted_at`；RLS 限制本人或 admin）。
+   */
+  async softDelete(
+    accessToken: string,
+    taskId: string,
+  ): Promise<TranscriptionTaskRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("transcription_tasks")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", taskId)
+      .is("deleted_at", null)
+      .select(TRANSCRIPTION_TASK_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`transcription_tasks.softDelete failed: ${error.message}`);
     }
     return data ? mapTranscriptionTaskRow(data as TranscriptionTaskRowDb) : null;
   }

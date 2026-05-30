@@ -83,6 +83,8 @@ describe("TranscriptionTaskRepository", () => {
         is_mp4: false,
         asr_queue_tier: null,
         idempotency_key: null,
+        diarization_degraded: false,
+        deleted_at: null,
         created_at: "2024-01-01T00:00:00.000Z",
         updated_at: "2024-01-01T00:00:00.000Z",
       },

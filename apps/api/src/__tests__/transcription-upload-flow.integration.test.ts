@@ -339,8 +339,13 @@ describe("transcription upload flow (integration)", () => {
       const { OutboxPollerService } = await import(
         "../../../../workers/pipeline/src/services/outbox-poller.service.js"
       );
+      const { createWorkerDbPool } = await import(
+        "../../../../workers/pipeline/src/infra/worker-db-pool.js"
+      );
 
-      const poller = new OutboxPollerService(loadOutboxRuntimeEnvFromProcess());
+      const outboxEnv = loadOutboxRuntimeEnvFromProcess();
+      const dbPool = createWorkerDbPool(outboxEnv);
+      const poller = new OutboxPollerService(outboxEnv, dbPool.getPool());
 
       try {
         const { storage, taskRepository, initService, completeService } =
@@ -394,6 +399,7 @@ describe("transcription upload flow (integration)", () => {
         }
       } finally {
         await poller.stop();
+        await dbPool.end();
         await cleanup();
       }
     },

@@ -10,7 +10,6 @@ const mockClient = {
 
 const mockPool = {
   connect: vi.fn(async () => mockClient),
-  end: vi.fn(),
 };
 
 vi.mock("pg", () => ({
@@ -75,9 +74,11 @@ describe("OutboxPollerService", () => {
 
   it("processes stage and marks published on success", async () => {
     mockProcessStage.mockResolvedValue(undefined);
-    const poller = new OutboxPollerService(env, {
-      processStage: mockProcessStage,
-    });
+    const poller = new OutboxPollerService(
+      env,
+      mockPool as never,
+      { processStage: mockProcessStage },
+    );
 
     const count = await poller.pollOnce();
 
@@ -95,6 +96,7 @@ describe("OutboxPollerService", () => {
     const alertHook = vi.fn();
     const poller = new OutboxPollerService(
       env,
+      mockPool as never,
       { processStage: mockProcessStage },
       alertHook,
     );
@@ -111,7 +113,7 @@ describe("OutboxPollerService", () => {
   });
 
   it("skips events when no stage processor registered", async () => {
-    const poller = new OutboxPollerService(env);
+    const poller = new OutboxPollerService(env, mockPool as never);
 
     const count = await poller.pollOnce();
 

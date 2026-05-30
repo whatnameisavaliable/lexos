@@ -1,6 +1,12 @@
 /** 流水线首阶段名（`architecture.md` §3.2.1.3 · `database.md` v1.4）。 */
-export const PIPELINE_STAGE_MEDIA_EXTRACT = "media.extract" as const;
-export const PIPELINE_STAGE_MEDIA_PREPROCESS = "media.preprocess" as const;
+export {
+  PIPELINE_STAGE_MEDIA_EXTRACT,
+  PIPELINE_STAGE_MEDIA_PREPROCESS,
+} from "../constants/pipeline-stages.js";
+import {
+  PIPELINE_STAGE_MEDIA_EXTRACT,
+  PIPELINE_STAGE_MEDIA_PREPROCESS,
+} from "../constants/pipeline-stages.js";
 
 /** @deprecated M5-K 前保留；请使用 `PIPELINE_STAGE_*`。 */
 export const PIPELINE_QUEUE_MEDIA_EXTRACT = PIPELINE_STAGE_MEDIA_EXTRACT;

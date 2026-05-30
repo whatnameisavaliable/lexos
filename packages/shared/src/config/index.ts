@@ -45,6 +45,10 @@ export {
   type OutboxRuntimeEnvConfig,
 } from "./outbox-runtime-env.js";
 export {
+  loadWorkerRuntimeEnvFromProcess,
+  type WorkerRuntimeEnvConfig,
+} from "./worker-runtime-env.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

@@ -742,13 +742,13 @@
 
 ### M5-A Worker 进程骨架（`workers/pipeline`）
 
-- [ ] 新增 `workers/pipeline/package.json` 与 `workers/pipeline/src/index.ts`：加载 `.env`；校验 `WORKER_DB_URL`（或 `SUPABASE_DB_URL`）、`FFMPEG_PATH`；**不**校验 `REDIS_URL`
-- [ ] 新增 `workers/pipeline/src/health/ffmpeg-healthcheck.ts`：启动前 `ffmpeg -version`（§4.4.1）
-- [ ] 新增 `packages/shared/src/constants/pipeline-stages.ts`：五阶段常量（`media.extract`、`media.preprocess`、`asr`、`llm`、`drive.archive`）
-- [ ] 新增 `workers/pipeline/src/infra/worker-concurrency.ts`：`p-limit(WORKER_MAX_CONCURRENCY)` 默认 **5**
-- [ ] 新增 `workers/pipeline/src/infra/asr-rate-limiter.ts`：进程内令牌桶或 DB 计数（`ASR_RATE_LIMIT_MAX`/60s）
-- [ ] 新增 `workers/pipeline/src/infra/worker-db-pool.ts`：`pg.Pool` 连接 `WORKER_DB_URL`
-- [ ] 在根 `package.json` 增加脚本：`worker:pipeline`
+- [x] 新增 `workers/pipeline/package.json` 与 `workers/pipeline/src/index.ts`：加载 `.env`；校验 `WORKER_DB_URL`（或 `SUPABASE_DB_URL`）、`FFMPEG_PATH`；**不**校验 `REDIS_URL`
+- [x] 新增 `workers/pipeline/src/health/ffmpeg-healthcheck.ts`：启动前 `ffmpeg -version`（§4.4.1）
+- [x] 新增 `packages/shared/src/constants/pipeline-stages.ts`：五阶段常量（`media.extract`、`media.preprocess`、`asr`、`llm`、`drive.archive`）
+- [x] 新增 `workers/pipeline/src/infra/worker-concurrency.ts`：`p-limit(WORKER_MAX_CONCURRENCY)` 默认 **5**
+- [x] 新增 `workers/pipeline/src/infra/asr-rate-limiter.ts`：进程内令牌桶或 DB 计数（`ASR_RATE_LIMIT_MAX`/60s）
+- [x] 新增 `workers/pipeline/src/infra/worker-db-pool.ts`：`pg.Pool` 连接 `WORKER_DB_URL`
+- [x] 在根 `package.json` 增加脚本：`worker:pipeline`
 
 ---
 

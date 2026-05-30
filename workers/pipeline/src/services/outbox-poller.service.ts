@@ -1,4 +1,4 @@
-import pg from "pg";
+import type { Pool } from "pg";
 import type { OutboxRuntimeEnvConfig } from "@lexos/shared/config";
 import { OutboxEventRepository } from "../repositories/outbox-event.repository.js";
 import {
@@ -11,7 +11,6 @@ import type { OutboxStageProcessor } from "./outbox-stage-processor.js";
  * 轮询 `outbox_events` 并按 `payload.stage` 分发 Handler（`architecture.md` §3.7.3 · v1.3 无 Redis）。
  */
 export class OutboxPollerService {
-  private readonly pool: pg.Pool;
   private readonly repository = new OutboxEventRepository();
   private readonly failureHandler: OutboxFailureHandler;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -19,14 +18,10 @@ export class OutboxPollerService {
 
   constructor(
     private readonly env: OutboxRuntimeEnvConfig,
+    private readonly pool: Pool,
     private readonly stageProcessor?: OutboxStageProcessor,
     alertHook?: OutboxMaxAttemptsAlertHook,
   ) {
-    this.pool = new pg.Pool({
-      connectionString: env.outboxDbUrl,
-      max: 5,
-      application_name: "lexos-pipeline-worker",
-    });
     this.failureHandler = new OutboxFailureHandler(
       env.supabaseUrl,
       env.supabaseServiceRoleKey,
@@ -45,13 +40,12 @@ export class OutboxPollerService {
     }, this.env.outboxPollIntervalMs);
   }
 
-  /** 停止轮询并释放连接。 */
+  /** 停止轮询（连接池由 `WorkerDbPool` 统一管理）。 */
   async stop(): Promise<void> {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
-    await this.pool.end();
   }
 
   /**

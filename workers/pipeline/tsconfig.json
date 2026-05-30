@@ -9,6 +9,6 @@
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["index.ts", "src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts"]
 }

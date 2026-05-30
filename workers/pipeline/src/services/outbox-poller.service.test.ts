@@ -84,6 +84,7 @@ describe("OutboxPollerService", () => {
 
     expect(count).toBe(1);
     expect(mockProcessStage).toHaveBeenCalledWith(
+      mockClient,
       expect.objectContaining({ id: "evt-1" }),
       expect.objectContaining({ taskId: "task-1", stage: PIPELINE_STAGE_MEDIA_PREPROCESS }),
     );

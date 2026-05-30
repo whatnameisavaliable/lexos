@@ -5,6 +5,7 @@ import type { TranscriptionTaskStatus } from "@lexos/shared";
 export interface WorkerTaskRow {
   readonly id: string;
   readonly createdBy: string;
+  readonly title: string;
   readonly status: TranscriptionTaskStatus;
   readonly sourceStorageKey: string;
   readonly audioStorageKey: string | null;
@@ -16,6 +17,7 @@ export interface WorkerTaskRow {
 interface WorkerTaskRowDb {
   readonly id: string;
   readonly created_by: string;
+  readonly title: string;
   readonly status: TranscriptionTaskStatus;
   readonly source_storage_key: string;
   readonly audio_storage_key: string | null;
@@ -34,7 +36,7 @@ export class WorkerTaskRepository {
     taskId: string,
   ): Promise<WorkerTaskRow | null> {
     const result = await client.query<WorkerTaskRowDb>(
-      `SELECT id, created_by, status, source_storage_key, audio_storage_key,
+      `SELECT id, created_by, title, status, source_storage_key, audio_storage_key,
               is_mp4, duration_sec, size_bytes::text
        FROM public.transcription_tasks
        WHERE id = $1::uuid
@@ -83,6 +85,67 @@ export class WorkerTaskRepository {
     }
   }
 
+  /** 标记任务失败并迁移至 `failed`。 */
+  async failTask(
+    client: PoolClient,
+    taskId: string,
+    fromStatus: TranscriptionTaskStatus,
+    errorCode: string,
+    errorMessage: string,
+  ): Promise<void> {
+    await client.query(
+      `UPDATE public.transcription_tasks
+       SET error_code = $2,
+           error_message = $3,
+           updated_at = now()
+       WHERE id = $1::uuid`,
+      [taskId, errorCode, errorMessage],
+    );
+    const transitioned = await this.transitionTaskStatus(
+      client,
+      taskId,
+      fromStatus,
+      "failed",
+    );
+    if (!transitioned) {
+      throw new Error(
+        `transition_task_status failed: ${fromStatus} -> failed for ${taskId}`,
+      );
+    }
+  }
+
+  /** 更新 Diarization 降级标记。 */
+  async updateDiarizationDegraded(
+    client: PoolClient,
+    taskId: string,
+    degraded: boolean,
+  ): Promise<void> {
+    await client.query(
+      `UPDATE public.transcription_tasks
+       SET diarization_degraded = $2,
+           last_progress_at = now(),
+           updated_at = now()
+       WHERE id = $1::uuid`,
+      [taskId, degraded],
+    );
+  }
+
+  /** 回写归档目录 id。 */
+  async setArchiveFolderId(
+    client: PoolClient,
+    taskId: string,
+    folderId: string,
+  ): Promise<void> {
+    await client.query(
+      `UPDATE public.transcription_tasks
+       SET archive_folder_id = $2::uuid,
+           last_progress_at = now(),
+           updated_at = now()
+       WHERE id = $1::uuid`,
+      [taskId, folderId],
+    );
+  }
+
   /** 标记任务失败。 */
   async markFailed(
     client: PoolClient,
@@ -105,6 +168,7 @@ function mapTaskRow(row: WorkerTaskRowDb): WorkerTaskRow {
   return {
     id: row.id,
     createdBy: row.created_by,
+    title: row.title,
     status: row.status,
     sourceStorageKey: row.source_storage_key,
     audioStorageKey: row.audio_storage_key,

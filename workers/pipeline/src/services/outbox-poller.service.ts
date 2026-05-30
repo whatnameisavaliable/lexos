@@ -72,8 +72,7 @@ export class OutboxPollerService {
           }
           try {
             const payload = this.repository.parsePipelinePayload(event.payload);
-            await this.stageProcessor.processStage(event, payload);
-            await this.repository.markPublished(client, event.id);
+            await this.stageProcessor.processStage(client, event, payload);
             processed += 1;
           } catch (error) {
             const message =

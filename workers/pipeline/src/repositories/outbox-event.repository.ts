@@ -1,5 +1,5 @@
 import type { PoolClient } from "pg";
-import { parseTranscriptionQueuedOutboxPayload } from "@lexos/shared";
+import { parsePipelineStageOutboxPayload } from "@lexos/shared";
 
 /** 待发布的 Outbox 行。 */
 export interface OutboxEventRow {
@@ -84,7 +84,7 @@ export class OutboxEventRepository {
 
   /** 解析 Outbox JSON 载荷。 */
   parsePipelinePayload(payload: unknown) {
-    return parseTranscriptionQueuedOutboxPayload(payload);
+    return parsePipelineStageOutboxPayload(payload);
   }
 }
 

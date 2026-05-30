@@ -16,6 +16,7 @@ import { createAsrRateLimiter } from "./infra/asr-rate-limiter.js";
 import { getWorkerConcurrencyLimiter } from "./infra/worker-concurrency.js";
 import { createWorkerDbPool } from "./infra/worker-db-pool.js";
 import { OutboxPollerService } from "./services/outbox-poller.service.js";
+import { createPipelineStageProcessor } from "./bootstrap/create-pipeline-deps.js";
 
 const repoRoot = resolveRepoRoot();
 loadEnvFiles(repoRoot, [".env", ".env.development"]);
@@ -24,8 +25,9 @@ const env = loadWorkerRuntimeEnvFromProcess();
 const dbPool = createWorkerDbPool(env);
 const taskConcurrency = getWorkerConcurrencyLimiter(env.workerMaxConcurrency);
 const asrRateLimiter = createAsrRateLimiter(env.asrRateLimitMax);
+const stageProcessor = createPipelineStageProcessor(env);
 
-const poller = new OutboxPollerService(env, dbPool.getPool());
+const poller = new OutboxPollerService(env, dbPool.getPool(), stageProcessor);
 
 async function bootstrap(): Promise<void> {
   const ffmpegVersion = await assertFfmpegAvailable(env.ffmpegPath);

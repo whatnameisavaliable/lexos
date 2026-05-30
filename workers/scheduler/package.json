@@ -1,8 +1,8 @@
 {
-  "name": "@lexos/worker-pipeline",
+  "name": "@lexos/worker-scheduler",
   "version": "0.1.0",
   "private": true,
-  "description": "LexOS U3 Pipeline Worker (Postgres Outbox, FFmpeg, ASR, LLM)",
+  "description": "LexOS Stalled task compensation cron",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@lexos/shared": "*",
+    "@lexos/worker-pipeline": "*",
     "@supabase/supabase-js": "^2.106.2",
-    "p-limit": "^3.1.0",
     "pg": "^8.16.0"
   },
   "devDependencies": {

@@ -124,4 +124,51 @@ export class MediaPreprocessService {
       throw new MediaPreprocessError(message);
     }
   }
+
+  /**
+   * 读取已预处理切片（`media.preprocess` 完成后供 `asr` 使用）。
+   */
+  async loadPreparedSegments(
+    taskId: string,
+  ): Promise<readonly PreprocessSegmentFile[]> {
+    const taskTempDir = path.join(this.env.workerTmpDir, taskId);
+    try {
+      const files = (await readdir(taskTempDir))
+        .filter((name) => name.startsWith("segment_") && name.endsWith(".mp3"))
+        .sort();
+
+      if (files.length === 0) {
+        throw new MediaPreprocessError("prepared segments not found");
+      }
+
+      const maxBytes = this.env.asrMaxChunkSizeMb * 1024 * 1024;
+      const segments: PreprocessSegmentFile[] = [];
+      for (let index = 0; index < files.length; index += 1) {
+        const fileName = files[index]!;
+        const localPath = path.join(taskTempDir, fileName);
+        const fileStat = await stat(localPath);
+        if (fileStat.size > maxBytes) {
+          throw new MediaPreprocessError(
+            `segment ${fileName} exceeds ASR_MAX_CHUNK_SIZE_MB`,
+          );
+        }
+        const startMs = index * this.env.asrSegmentDurationSec * 1000;
+        const endMs = startMs + this.env.asrSegmentDurationSec * 1000;
+        segments.push({
+          segmentIndex: index,
+          localPath,
+          startMs,
+          endMs,
+          chunkSizeBytes: fileStat.size,
+        });
+      }
+      return segments;
+    } catch (error) {
+      if (error instanceof MediaPreprocessError) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      throw new MediaPreprocessError(message);
+    }
+  }
 }

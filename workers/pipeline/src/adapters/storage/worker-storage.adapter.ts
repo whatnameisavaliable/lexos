@@ -1,5 +1,5 @@
-import { createWriteStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -53,5 +53,28 @@ export class WorkerStorageAdapter {
     const readable = data.stream();
     const writable = createWriteStream(localPath);
     await pipeline(readable, writable);
+  }
+
+  /**
+   * 上传本地文件至 Storage（抽音结果等）。
+   */
+  async uploadFile(localPath: string, storageKey: string): Promise<void> {
+    const fileStat = await stat(localPath);
+    if (!fileStat.isFile()) {
+      throw new Error(`Storage upload source is not a file: ${localPath}`);
+    }
+
+    const readable = createReadStream(localPath);
+    const { error } = await this.client.storage
+      .from(this.bucket)
+      .upload(storageKey, readable, {
+        upsert: true,
+        contentType: "audio/mpeg",
+      });
+    if (error) {
+      throw new Error(
+        `Storage upload failed for ${storageKey}: ${error.message}`,
+      );
+    }
   }
 }

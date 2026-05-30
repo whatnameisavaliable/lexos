@@ -39,21 +39,16 @@ export class WorkerOutboxRepository {
     return id;
   }
 
-  /** 标记当前 Outbox 事件已发布。 */
+  /** 标记当前 Outbox 事件已发布（幂等）。 */
   async markPublished(
     client: import("pg").PoolClient,
     eventId: string,
   ): Promise<void> {
-    const result = await client.query(
+    await client.query(
       `UPDATE public.outbox_events
-       SET published_at = now()
-       WHERE id = $1::uuid AND published_at IS NULL`,
+       SET published_at = COALESCE(published_at, now())
+       WHERE id = $1::uuid`,
       [eventId],
     );
-    if (result.rowCount !== 1) {
-      throw new Error(
-        `outbox_events.markPublished unexpected rowCount for ${eventId}`,
-      );
-    }
   }
 }

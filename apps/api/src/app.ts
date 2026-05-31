@@ -49,6 +49,20 @@ import { AdminUsersStatusController } from "./controllers/admin-users-status.con
 import { AdminUsersResetPasswordController } from "./controllers/admin-users-reset-password.controller.js";
 import { handleAdminUsersRoute } from "./routes/admin-users.routes.js";
 import { handleAdminAiRoute } from "./routes/admin-ai.routes.js";
+import { handleAdminAuditRoute } from "./routes/admin-audit.routes.js";
+import { handleAdminSettingsRoute } from "./routes/admin-settings.routes.js";
+import { AuditLogReadRepository } from "./repositories/audit-log-read.repository.js";
+import { SystemSettingsRepository } from "./repositories/system-settings.repository.js";
+import { AuditLogListService } from "./services/audit-log-list.service.js";
+import { AuditLogGetService } from "./services/audit-log-get.service.js";
+import { SystemSettingsListService } from "./services/system-settings-list.service.js";
+import { SystemSettingsGetService } from "./services/system-settings-get.service.js";
+import { SystemSettingsUpsertService } from "./services/system-settings-upsert.service.js";
+import { AuditLogsListController } from "./controllers/audit-logs-list.controller.js";
+import { AuditLogGetController } from "./controllers/audit-log-get.controller.js";
+import { SettingsListController } from "./controllers/settings-list.controller.js";
+import { SettingsGetController } from "./controllers/settings-get.controller.js";
+import { SettingsUpsertController } from "./controllers/settings-upsert.controller.js";
 import { AiModelRepository } from "./repositories/ai-model.repository.js";
 import { AiFeatureMappingRepository } from "./repositories/ai-feature-mapping.repository.js";
 import { AiPromptRepository } from "./repositories/ai-prompt.repository.js";
@@ -122,6 +136,7 @@ import { loadStorageRuntimeEnvFromProcess } from "@lexos/shared/config";
 import { DriveNodeRepository } from "./repositories/drive-node.repository.js";
 import { DriveSearchRepository } from "./repositories/drive-search.repository.js";
 import { DriveRootService } from "./services/drive-root.service.js";
+import { DriveArchiveBackfillService } from "./services/drive-archive-backfill.service.js";
 import { DriveNodesListService } from "./services/drive-nodes-list.service.js";
 import { DriveNodeGetService } from "./services/drive-node-get.service.js";
 import { DriveFolderCreateService } from "./services/drive-folder-create.service.js";
@@ -246,6 +261,20 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     aiInvocationLogRepository,
   );
 
+  const auditLogReadRepository = new AuditLogReadRepository(supabaseEnv);
+  const systemSettingsRepository = new SystemSettingsRepository(supabaseEnv);
+  const auditLogListService = new AuditLogListService(auditLogReadRepository);
+  const auditLogGetService = new AuditLogGetService(auditLogReadRepository);
+  const systemSettingsListService = new SystemSettingsListService(
+    systemSettingsRepository,
+  );
+  const systemSettingsGetService = new SystemSettingsGetService(
+    systemSettingsRepository,
+  );
+  const systemSettingsUpsertService = new SystemSettingsUpsertService(
+    systemSettingsRepository,
+  );
+
   const storageEnv = loadStorageRuntimeEnvFromProcess();
   const storageAdapter = new SupabaseStorageAdapter(supabaseEnv, storageEnv);
   const transcriptionTaskRepository = new TranscriptionTaskRepository(supabaseEnv);
@@ -326,7 +355,16 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const driveNodeRepository = new DriveNodeRepository(supabaseEnv);
   const driveSearchRepository = new DriveSearchRepository(env.supabaseDbUrl);
   const driveRootService = new DriveRootService(driveNodeRepository);
-  const driveNodesListService = new DriveNodesListService(driveNodeRepository);
+  const driveArchiveBackfillService = new DriveArchiveBackfillService(
+    driveNodeRepository,
+    transcriptionTaskRepository,
+    transcriptionTranscriptRepository,
+    storageAdapter,
+  );
+  const driveNodesListService = new DriveNodesListService(
+    driveNodeRepository,
+    driveArchiveBackfillService,
+  );
   const driveNodeGetService = new DriveNodeGetService(driveNodeRepository);
   const driveFolderCreateService = new DriveFolderCreateService(driveNodeRepository);
   const driveNodeUpdateService = new DriveNodeUpdateService(driveNodeRepository);
@@ -456,6 +494,26 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const aiInvocationLogsListController = new AiInvocationLogsListController(
     aiInvocationLogListService,
+    env.requestIdHeader,
+  );
+  const auditLogsListController = new AuditLogsListController(
+    auditLogListService,
+    env.requestIdHeader,
+  );
+  const auditLogGetController = new AuditLogGetController(
+    auditLogGetService,
+    env.requestIdHeader,
+  );
+  const settingsListController = new SettingsListController(
+    systemSettingsListService,
+    env.requestIdHeader,
+  );
+  const settingsGetController = new SettingsGetController(
+    systemSettingsGetService,
+    env.requestIdHeader,
+  );
+  const settingsUpsertController = new SettingsUpsertController(
+    systemSettingsUpsertService,
     env.requestIdHeader,
   );
   const transcriptionUploadsInitController =
@@ -741,6 +799,49 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               driveRes.statusCode = 404;
               driveRes.setHeader("content-type", "application/json; charset=utf-8");
               driveRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/admin/audit")) {
+          let handled = false;
+          await protectedAdminRoute(async (adminReq, adminRes) => {
+            handled = await handleAdminAuditRoute(adminReq, adminRes, path, {
+              logsList: auditLogsListController,
+              logGet: auditLogGetController,
+            });
+            if (!handled) {
+              adminRes.statusCode = 404;
+              adminRes.setHeader("content-type", "application/json; charset=utf-8");
+              adminRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/admin/settings")) {
+          let handled = false;
+          await protectedAdminRoute(async (adminReq, adminRes) => {
+            handled = await handleAdminSettingsRoute(adminReq, adminRes, path, {
+              list: settingsListController,
+              get: settingsGetController,
+              upsert: settingsUpsertController,
+            });
+            if (!handled) {
+              adminRes.statusCode = 404;
+              adminRes.setHeader("content-type", "application/json; charset=utf-8");
+              adminRes.end(
                 JSON.stringify({
                   success: false,
                   error: { code: "RESOURCE_NOT_FOUND" },

@@ -1171,12 +1171,12 @@
 
 ### M8-E 路由与 Controller（每条 HTTP 路由独立任务）
 
-- [ ] 注册 `GET /api/admin/audit/logs` → `admin-audit.routes.ts` + `audit-logs-list.controller.ts` + `audit-logs-list.controller.test.ts`
-- [ ] 注册 `GET /api/admin/audit/logs/:id` → `audit-log-get.controller.ts` + `audit-log-get.controller.test.ts`
-- [ ] 注册 `GET /api/admin/settings` → `admin-settings.routes.ts` + `settings-list.controller.ts` + `settings-list.controller.test.ts`
-- [ ] 注册 `GET /api/admin/settings/:key` → `settings-get.controller.ts` + `settings-get.controller.test.ts`
-- [ ] 注册 `PUT /api/admin/settings/:key` → `settings-upsert.controller.ts` + `settings-upsert.controller.test.ts`
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/admin/audit` 与 `/api/admin/settings`；`requireRoles('admin')`
+- [x] 注册 `GET /api/admin/audit/logs` → `admin-audit.routes.ts` + `audit-logs-list.controller.ts` + `audit-logs-list.controller.test.ts`
+- [x] 注册 `GET /api/admin/audit/logs/:id` → `audit-log-get.controller.ts` + `audit-log-get.controller.test.ts`
+- [x] 注册 `GET /api/admin/settings` → `admin-settings.routes.ts` + `settings-list.controller.ts` + `settings-list.controller.test.ts`
+- [x] 注册 `GET /api/admin/settings/:key` → `settings-get.controller.ts` + `settings-get.controller.test.ts`
+- [x] 注册 `PUT /api/admin/settings/:key` → `settings-upsert.controller.ts` + `settings-upsert.controller.test.ts`
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/admin/audit` 与 `/api/admin/settings`；`requireRoles('admin')`
 
 ---
 

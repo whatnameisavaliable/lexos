@@ -88,7 +88,33 @@ npm run build -w @lexos/web
 
 ---
 
-## 6. 相关文档
+## 7. 私有化替代矩阵验收表
+
+对照 `architecture.md` §4.4 逐行验收。部署完成后由运维/产品在「验收」列勾选。
+
+| 能力 | 开发期（云） | 私有化交付 | 代码耦合要求 | 验收 |
+|------|--------------|------------|--------------|:----:|
+| Auth | Supabase Auth | GoTrue 自建或 Supabase 内网实例 | 仅经 `AuthAdapter`；`AUTH_VIRTUAL_EMAIL_DOMAIN` 可配置 | ☐ |
+| Postgres | Supabase DB | 自建 PostgreSQL 15+ | 标准 SQL + RLS；无 Supabase 专有扩展（除 `auth.uid()`） | ☐ |
+| Storage | Supabase Storage | MinIO / SeaweedFS（S3 API） | `StorageAdapter` 抽象签名上传/下载 | ☐ |
+| Realtime | 可选 | **默认关闭** | `REALTIME_ENABLED=false`；不写入核心业务路径 | ☐ |
+| 异步调度 | Postgres Outbox | 同左（无额外组件） | U3 轮询 `outbox_events`；**禁止** Redis | ☐ |
+| 验证码 | Turnstile/Geetest | `CAPTCHA_PROVIDER=none` + IP 白名单 | `CaptchaAdapter` 可空实现；`LOGIN_IP_ALLOWLIST` 已配置 | ☐ |
+| ASR/LLM | 公网 API | 内网 HTTP 端点 | `AiAdapterFactory` + DB `base_url` / `ai_model_credentials` | ☐ |
+
+**附加验收项**（§4.4.1–§4.4.2）：
+
+| 检查项 | 说明 | 验收 |
+|--------|------|:----:|
+| `/health` Postgres | `GET /health` → `checks.postgres.ok === true` | ☐ |
+| `/health` Storage | `checks.storage.media.ok` 与 `checks.storage.exports.ok` 均为 `true` | ☐ |
+| Worker FFmpeg | 启动日志或 Worker health 含 FFmpeg 版本 | ☐ |
+| 无 Redis 依赖 | 进程清单与 `.env.production` 均不含 `REDIS_URL` | ☐ |
+| 无硬编码域名 | 源码扫描 `npm run test:compliance` 通过 | ☐ |
+
+---
+
+## 8. 相关文档
 
 - 环境变量：`.env.production.example`
 - 架构与私有化矩阵：`architecture.md` §4.4

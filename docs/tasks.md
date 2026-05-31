@@ -1280,18 +1280,18 @@
 
 ### M9-D 私有化就绪脚本（单文件一项）
 
-- [ ] 新增 `scripts/privatization-readiness-check.mjs`：校验 `CAPTCHA_PROVIDER=none` 时 `LOGIN_IP_ALLOWLIST` 已配置（§4.2.3）
-- [ ] 同上脚本：校验 `FFMPEG_PATH`、`WORKER_MAX_CONCURRENCY`、`AI_CREDENTIALS_ENCRYPTION_KEY` 在 production 模板中已声明（**不**要求 `REDIS_URL`）
-- [ ] 同上脚本：校验 `REALTIME_ENABLED` 未默认开启（§3.4.3）
-- [ ] 根 `package.json` 脚本：`check:privatization`
+- [x] 新增 `scripts/privatization-readiness-check.mjs`：校验 `CAPTCHA_PROVIDER=none` 时 `LOGIN_IP_ALLOWLIST` 已配置（§4.2.3）
+- [x] 同上脚本：校验 `FFMPEG_PATH`、`WORKER_MAX_CONCURRENCY`、`AI_CREDENTIALS_ENCRYPTION_KEY` 在 production 模板中已声明（**不**要求 `REDIS_URL`）
+- [x] 同上脚本：校验 `REALTIME_ENABLED` 未默认开启（§3.4.3）
+- [x] 根 `package.json` 脚本：`check:privatization`
 
 ---
 
 ### M9-E 轻量性能冒烟（单文件一项）
 
-- [ ] 新增 `scripts/load/smoke-auth-session.mjs`：对 `POST /api/auth/login` + `GET /api/auth/session` 并发 10 VU、30s；断言错误率 <1%（PRD §5.1 QPS≤10）
-- [ ] 新增 `scripts/load/smoke-profile.mjs`：对已登录会话压测 `GET /api/profile`（同上阈值）
-- [ ] 文档化运行方式写入 `docs/DEPLOYMENT.md`「性能冒烟」小节（非 CI 必跑项【待确认】）
+- [x] 新增 `scripts/load/smoke-auth-session.mjs`：对 `POST /api/auth/login` + `GET /api/auth/session` 并发 10 VU、30s；断言错误率 <1%（PRD §5.1 QPS≤10）
+- [x] 新增 `scripts/load/smoke-profile.mjs`：对已登录会话压测 `GET /api/profile`（同上阈值）
+- [x] 文档化运行方式写入 `docs/DEPLOYMENT.md`「性能冒烟」小节（非 CI 必跑项【待确认】）
 
 ---
 

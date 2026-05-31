@@ -114,7 +114,28 @@ npm run build -w @lexos/web
 
 ---
 
-## 8. 相关文档
+## 8. 性能冒烟
+
+轻量 API 压测（PRD §5.1 · QPS≤10），**非 CI 必跑项**【待确认】；在预发/私有化环境手动执行。
+
+**前置**：U2 API 已启动；`.env.development` 或 `.env.production` 已配置 `API_URL`、测试账号口令。
+
+```bash
+# 登录 + 会话（10 VU · 30s · 错误率 < 1%）
+API_URL=http://localhost:4000 \
+SMOKE_USERNAME=admin \
+SMOKE_PASSWORD=your-password \
+node scripts/load/smoke-auth-session.mjs
+
+# 已登录 profile 读取
+node scripts/load/smoke-profile.mjs
+```
+
+退出码 `0` = 通过；`1` = 错误率 ≥ 1% 或前置登录失败。
+
+---
+
+## 9. 相关文档
 
 - 环境变量：`.env.production.example`
 - 架构与私有化矩阵：`architecture.md` §4.4

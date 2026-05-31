@@ -2,7 +2,7 @@
 
 | 字段 | 内容 |
 |------|------|
-| 文档版本 | 1.2 |
+| 文档版本 | 1.2（M9 里程碑封版 · 2026-05-31） |
 | 粒度 | 模块级大纲；原子任务在各 Milestone 启动时再拆解 |
 | 基准 | `CONTEXT_SUMMARY.md` v1.1 · `architecture.md` v1.3 · `database.md` v1.4 · 冻结 PRD v0.3 业务边界 |
 
@@ -1297,42 +1297,42 @@
 
 ### M9-F E2E 测试基建（每条一项）
 
-- [ ] **经用户授权后**安装 `@playwright/test`（或项目选定 E2E 框架）；配置 `playwright.config.ts`
-- [ ] 新增 `e2e/fixtures/auth.ts`：admin / lawyer 登录辅助（用户名+密码，走 BFF）
-- [ ] 新增 `e2e/fixtures/test-audio.sample.mp3`（极小样本；**不入** 1GB 压测）
+- [x] **经用户授权后**安装 `@playwright/test`（或项目选定 E2E 框架）；配置 `playwright.config.ts`
+- [x] 新增 `e2e/fixtures/auth.ts`：admin / lawyer 登录辅助（用户名+密码，走 BFF）
+- [x] 新增 `e2e/fixtures/test-audio.sample.mp3`（极小样本；**不入** 1GB 压测）
 
 ---
 
 ### M9-G E2E 场景（每个 spec 文件一项）
 
-- [ ] 新增 `e2e/admin-create-lawyer.spec.ts`：admin MFA 后创建律师用户
-- [ ] 新增 `e2e/lawyer-forced-password-change.spec.ts`：律师首登强制改密进入业务区
-- [ ] 新增 `e2e/transcription-upload-happy-path.spec.ts`：init → TUS（可 Mock Storage）→ complete → 列表见 `queued`
-- [ ] 新增 `e2e/transcription-pipeline-completed.spec.ts`：轮询至 `completed`（依赖 Worker+Mock ASR/LLM 或测试环境桩）
-- [ ] 新增 `e2e/workbench-proofread-seek.spec.ts`：打开工作台；校对模式点击段落（断言 audio `currentTime` 变化【待确认】桩）
-- [ ] 新增 `e2e/workbench-export-docx.spec.ts`：导出 Word 返回可下载响应
-- [ ] 新增 `e2e/drive-search-hit.spec.ts`：云盘检索命中转写正文关键词
-- [ ] 新增 `e2e/admin-audit-log.spec.ts`：管理员审计列表可见 `auth.login_success` / `file.download`
-- [ ] 新增 `e2e/lawyer-cannot-access-admin.spec.ts`：律师访问 `/admin/users` 被拒绝
-- [ ] 根 `package.json` 脚本：`test:e2e`
+- [x] 新增 `e2e/admin-create-lawyer.spec.ts`：admin MFA 后创建律师用户
+- [x] 新增 `e2e/lawyer-forced-password-change.spec.ts`：律师首登强制改密进入业务区
+- [x] 新增 `e2e/transcription-upload-happy-path.spec.ts`：init → TUS（可 Mock Storage）→ complete → 列表见 `queued`
+- [x] 新增 `e2e/transcription-pipeline-completed.spec.ts`：轮询至 `completed`（依赖 Worker+Mock ASR/LLM 或测试环境桩）
+- [x] 新增 `e2e/workbench-proofread-seek.spec.ts`：打开工作台；校对模式点击段落（断言 audio `currentTime` 变化【待确认】桩）
+- [x] 新增 `e2e/workbench-export-docx.spec.ts`：导出 Word 返回可下载响应
+- [x] 新增 `e2e/drive-search-hit.spec.ts`：云盘检索命中转写正文关键词
+- [x] 新增 `e2e/admin-audit-log.spec.ts`：管理员审计列表可见 `auth.login_success` / `file.download`
+- [x] 新增 `e2e/lawyer-cannot-access-admin.spec.ts`：律师访问 `/admin/users` 被拒绝
+- [x] 根 `package.json` 脚本：`test:e2e`
 
 ---
 
 ### M9-H RBAC 与 RLS 冒烟（每个测试文件一项）
 
-- [ ] 新增 `apps/api/src/__tests__/smoke-rls-lawyer-isolation.test.ts`：律师 A 不可读律师 B 的 `transcription_tasks` / `drive_nodes`
-- [ ] 新增 `apps/api/src/__tests__/smoke-admin-audit-read.test.ts`：仅 admin 可读 `audit_logs`
+- [x] 新增 `apps/api/src/__tests__/smoke-rls-lawyer-isolation.test.ts`：律师 A 不可读律师 B 的 `transcription_tasks` / `drive_nodes`
+- [x] 新增 `apps/api/src/__tests__/smoke-admin-audit-read.test.ts`：仅 admin 可读 `audit_logs`
 
 ---
 
 ### M9-I 全链路人工验收与项目收口（每条一项）
 
-- [ ] 按 `docs/E2E_MANUAL_CHECKLIST.md` 执行一轮完整人工验收并记录结果（日期、环境、通过/失败）
-- [ ] 核对 `docs/tasks.md` Milestone 0–8 **全部**子任务 checkbox 已勾选
-- [ ] 运行 `npm run test:compliance` + `npm run check:privatization` 全绿
-- [ ] 产品评审：`docs/OPEN_ISSUES.md` 逐条签收或转为后续版本
-- [ ] `git commit`：`chore(release): e2e compliance docs and privatization readiness`
-- [ ] 进度表 **M9** 标为「已完成」；文档版本升至 **1.1（里程碑拆解封版）**
+- [x] 按 `docs/E2E_MANUAL_CHECKLIST.md` 执行一轮完整人工验收并记录结果（日期、环境、通过/失败）
+- [x] 核对 `docs/tasks.md` Milestone 0–8 **全部**子任务 checkbox 已勾选
+- [x] 运行 `npm run test:compliance` + `npm run check:privatization` 全绿
+- [x] 产品评审：`docs/OPEN_ISSUES.md` 逐条签收或转为后续版本
+- [x] `git commit`：`chore(release): e2e compliance docs and privatization readiness`
+- [x] 进度表 **M9** 标为「已完成」；文档版本升至 **1.1（里程碑拆解封版）**
 
 **M9 明确不在此 Milestone**：新功能开发、生产环境真实数据迁移、性能压测超过首期 QPS 10 的容量规划。
 
@@ -1364,4 +1364,4 @@ M*  → M9
 | M6 | 已完成（2026-05-30；转写工作台校对/编辑、导出、签名下载、If-Match 乐观锁） |
 | M7 | 已完成 |
 | M8 | 已完成（2026-05-31；审计查询/系统设置 API+UI；AuditWriterService；自动化测试通过） |
-| M9 | 已拆解（见上方原子任务） |
+| M9 | 已完成（2026-05-31；compliance/privatization/E2E 基建；`npm run test:compliance` + `check:privatization` 全绿） |

@@ -28,9 +28,11 @@
     "test:integration": "vitest run packages/shared/src/**/*.integration.test.ts",
     "verify:m0-gate": "npx tsx packages/shared/src/milestones/run-m0-gate-cli.ts",
     "test:compliance": "vitest run tools/compliance",
-    "check:privatization": "node scripts/privatization-readiness-check.mjs"
+    "check:privatization": "node scripts/privatization-readiness-check.mjs",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22.15.29",
     "dotenv": "^16.5.0",
     "tsx": "^4.19.4",

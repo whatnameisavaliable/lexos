@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { AsrRateLimiter } from "../infra/asr-rate-limiter.js";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { AsrSegmentRunnerService } from "./asr-segment-runner.service.js";
 
 describe("AsrSegmentRunnerService", () => {
@@ -25,7 +26,7 @@ describe("AsrSegmentRunnerService", () => {
       new AsrRateLimiter(1000),
     );
 
-    const result = await service.run({} as never, "task-1", [
+    const result = await service.run(createMockPool(), "task-1", [
       { segmentIndex: 0, localPath: "/tmp/0.mp3", startMs: 0, endMs: 1, chunkSizeBytes: 1 },
       { segmentIndex: 1, localPath: "/tmp/1.mp3", startMs: 1, endMs: 2, chunkSizeBytes: 1 },
       { segmentIndex: 2, localPath: "/tmp/2.mp3", startMs: 2, endMs: 3, chunkSizeBytes: 1 },

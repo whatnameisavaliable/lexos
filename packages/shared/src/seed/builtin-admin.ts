@@ -93,6 +93,16 @@ export async function seedBuiltinAdmin(
     }
     userId = data.user.id;
     createdAuthUser = true;
+  } else {
+    const { error: passwordError } = await client.auth.admin.updateUserById(
+      userId,
+      { password: config.authInitialPassword },
+    );
+    if (passwordError) {
+      throw new Error(
+        `auth.admin.updateUserById(password) failed: ${passwordError.message}`,
+      );
+    }
   }
 
   const profile = buildBuiltinAdminProfile(userId, true);

@@ -1,6 +1,7 @@
-import type { PoolClient } from "pg";
+import type { Pool } from "pg";
 import type { AiFeatureKey } from "@lexos/shared";
 import type { WorkerAiClient } from "../adapters/ai/worker-ai-client.port.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import {
   WorkerAiRepository,
   toWorkerAiCredentials,
@@ -9,7 +10,7 @@ import {
 
 /** AI 编排调用入参。 */
 export interface AiOrchestrationInvokeInput {
-  readonly client: PoolClient;
+  readonly pool: Pool;
   readonly taskId: string;
   readonly featureKey: AiFeatureKey;
   readonly idempotencyKey: string;
@@ -29,6 +30,7 @@ export interface AiOrchestrationInvokeResult {
 
 /**
  * AI 编排：功能映射 → 主模型 → fallback 一次；写 `ai_invocation_logs`。
+ * 外部 HTTP 调用期间不占用 Postgres 连接。
  */
 export class AiOrchestrationService {
   constructor(
@@ -45,13 +47,15 @@ export class AiOrchestrationService {
 
     try {
       const result = await this.callModel(primary, input);
-      await this.logSuccess(input, {
-        modelId: primary.modelUuid,
-        isFallback: false,
-        latencyMs: result.latencyMs,
-        inputTokens: result.inputTokens,
-        outputTokens: result.outputTokens,
-      });
+      await withPgClient(input.pool, (client) =>
+        this.logSuccess({ ...input, client }, {
+          modelId: primary.modelUuid,
+          isFallback: false,
+          latencyMs: result.latencyMs,
+          inputTokens: result.inputTokens,
+          outputTokens: result.outputTokens,
+        }),
+      );
       return {
         text: result.text,
         modelId: primary.modelUuid,
@@ -62,18 +66,22 @@ export class AiOrchestrationService {
       };
     } catch (primaryError) {
       if (!fallback) {
-        await this.logFailure(input, primary.modelUuid, false, primaryError);
+        await withPgClient(input.pool, (client) =>
+          this.logFailure({ ...input, client }, primary.modelUuid, false, primaryError),
+        );
         throw primaryError;
       }
       try {
         const result = await this.callModel(fallback, input);
-        await this.logSuccess(input, {
-          modelId: fallback.modelUuid,
-          isFallback: true,
-          latencyMs: result.latencyMs,
-          inputTokens: result.inputTokens,
-          outputTokens: result.outputTokens,
-        });
+        await withPgClient(input.pool, (client) =>
+          this.logSuccess({ ...input, client }, {
+            modelId: fallback.modelUuid,
+            isFallback: true,
+            latencyMs: result.latencyMs,
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+          }),
+        );
         return {
           text: result.text,
           modelId: fallback.modelUuid,
@@ -83,7 +91,14 @@ export class AiOrchestrationService {
           latencyMs: result.latencyMs,
         };
       } catch (fallbackError) {
-        await this.logFailure(input, fallback.modelUuid, true, fallbackError);
+        await withPgClient(input.pool, (client) =>
+          this.logFailure(
+            { ...input, client },
+            fallback.modelUuid,
+            true,
+            fallbackError,
+          ),
+        );
         throw fallbackError;
       }
     }
@@ -130,8 +145,13 @@ export class AiOrchestrationService {
   }
 
   private async logSuccess(
-    input: AiOrchestrationInvokeInput,
-    meta: Omit<AiInvocationLogInput, keyof AiOrchestrationInvokeInput | "outcome" | "errorCode" | "idempotencyKey">,
+    input: AiOrchestrationInvokeInput & {
+      readonly client: import("pg").PoolClient;
+    },
+    meta: Omit<
+      AiInvocationLogInput,
+      "taskId" | "featureKey" | "outcome" | "errorCode" | "idempotencyKey"
+    >,
   ): Promise<void> {
     await this.aiRepository.insertInvocationLog(input.client, {
       taskId: input.taskId,
@@ -147,7 +167,9 @@ export class AiOrchestrationService {
   }
 
   private async logFailure(
-    input: AiOrchestrationInvokeInput,
+    input: AiOrchestrationInvokeInput & {
+      readonly client: import("pg").PoolClient;
+    },
     modelId: string,
     isFallback: boolean,
     error: unknown,

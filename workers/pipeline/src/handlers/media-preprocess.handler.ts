@@ -1,6 +1,7 @@
 import { ErrorCode } from "@lexos/shared/api";
 import { PIPELINE_STAGE_MEDIA_PREPROCESS } from "@lexos/shared";
 import { buildNextStageOutboxRow } from "../domain/worker-outbox.factory.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import type { StageHandler, StageHandlerContext } from "./stage-handler.js";
 import type { MediaPreprocessService } from "../services/media-preprocess.service.js";
 import type { WorkerTaskRepository } from "../repositories/worker-task.repository.js";
@@ -17,24 +18,27 @@ export class MediaPreprocessHandler implements StageHandler {
   ) {}
 
   async handle(context: StageHandlerContext): Promise<void> {
-    const { client, event, payload } = context;
-    const task = await this.taskRepository.findById(client, payload.taskId);
-    if (!task) {
-      throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
-    }
+    const { pool, event, payload } = context;
 
-    if (task.status === "queued") {
-      await this.taskRepository.transitionTaskStatus(
-        client,
-        payload.taskId,
-        "queued",
-        "preprocessing",
-      );
-    } else if (task.status !== "preprocessing") {
-      throw new Error(
-        `unexpected task status for media.preprocess: ${task.status}`,
-      );
-    }
+    const task = await withPgClient(pool, async (client) => {
+      const row = await this.taskRepository.findById(client, payload.taskId);
+      if (!row) {
+        throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
+      }
+      if (row.status === "queued") {
+        await this.taskRepository.transitionTaskStatus(
+          client,
+          payload.taskId,
+          "queued",
+          "preprocessing",
+        );
+      } else if (row.status !== "preprocessing") {
+        throw new Error(
+          `unexpected task status for media.preprocess: ${row.status}`,
+        );
+      }
+      return row;
+    });
 
     const storageKey = task.audioStorageKey ?? task.sourceStorageKey;
     await this.mediaPreprocess.preprocess({
@@ -42,17 +46,19 @@ export class MediaPreprocessHandler implements StageHandler {
       storageKey,
     });
 
-    await this.transactionService.completeStage(client, {
-      outboxEventId: event.id,
-      taskId: payload.taskId,
-      fromStatus: "preprocessing",
-      toStatus: "asr_running",
-      nextOutbox: buildNextStageOutboxRow({
-        currentStage: PIPELINE_STAGE_MEDIA_PREPROCESS,
+    await withPgClient(pool, (client) =>
+      this.transactionService.completeStage(client, {
+        outboxEventId: event.id,
         taskId: payload.taskId,
-        createdBy: payload.createdBy,
-        isMp4: payload.isMp4,
+        fromStatus: "preprocessing",
+        toStatus: "asr_running",
+        nextOutbox: buildNextStageOutboxRow({
+          currentStage: PIPELINE_STAGE_MEDIA_PREPROCESS,
+          taskId: payload.taskId,
+          createdBy: payload.createdBy,
+          isMp4: payload.isMp4,
+        }),
       }),
-    });
+    );
   }
 }

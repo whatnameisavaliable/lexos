@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   FfmpegRunner,
   assertFfmpegArgsAllowed,
+  isSafeFfmpegPathOrFileArg,
   type SpawnFn,
 } from "./ffmpeg.runner.js";
 
@@ -29,10 +30,24 @@ function mockSpawn(exitCode: number, stderr = ""): SpawnFn {
 }
 
 describe("FfmpegRunner", () => {
-  it("rejects disallowed ffmpeg arguments", () => {
+  it("rejects shell injection in ffmpeg arguments", () => {
     expect(() =>
       assertFfmpegArgsAllowed(["-i", "input.mp4", "$(malicious)"]),
     ).toThrow(/Disallowed ffmpeg argument/);
+    expect(isSafeFfmpegPathOrFileArg("$(malicious)")).toBe(false);
+  });
+
+  it("allows ffmpeg segment output template paths on Windows", () => {
+    const segmentPath =
+      "D:\\tmp\\lexos\\task-1\\segment_%03d.mp3";
+    expect(isSafeFfmpegPathOrFileArg(segmentPath)).toBe(true);
+    expect(() =>
+      assertFfmpegArgsAllowed([
+        "-i",
+        "D:\\tmp\\lexos\\task-1\\source_audio",
+        segmentPath,
+      ]),
+    ).not.toThrow();
   });
 
   it("runs ffmpeg with exit code 0", async () => {

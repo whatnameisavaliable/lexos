@@ -20,6 +20,9 @@ export type SpawnFn = (
   args: readonly string[],
 ) => ChildProcessWithoutNullStreams;
 
+const SHELL_METACHAR_RE = /[\0\r\n;|&`$<>]/;
+const COMMAND_SUBSTITUTION = /\$\(/;
+
 /**
  * FFmpeg 子进程执行器（参数白名单 · 超时 · 并发限制）。
  */
@@ -46,13 +49,27 @@ export class FfmpegRunner {
   }
 }
 
+/** 非开关参数是否为安全的路径/文件名（允许 `%03d`、Windows 盘符等）。 */
+export function isSafeFfmpegPathOrFileArg(arg: string): boolean {
+  if (arg.length === 0 || arg.length > 4096) {
+    return false;
+  }
+  if (SHELL_METACHAR_RE.test(arg)) {
+    return false;
+  }
+  if (COMMAND_SUBSTITUTION.test(arg)) {
+    return false;
+  }
+  return true;
+}
+
 /** 校验 FFmpeg 参数不在白名单时抛出。 */
 export function assertFfmpegArgsAllowed(args: readonly string[]): void {
   for (const arg of args) {
     if (arg.startsWith("-")) {
       continue;
     }
-    if (/^[A-Za-z0-9_./:\\-]+$/.test(arg)) {
+    if (isSafeFfmpegPathOrFileArg(arg)) {
       continue;
     }
     throw new Error(`Disallowed ffmpeg argument: ${arg}`);

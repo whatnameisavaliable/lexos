@@ -6,7 +6,7 @@ import {
 } from "../constants/audit-required-events.js";
 
 const actionFilterSchema = z.enum(
-  AUDIT_ACTION_VALUES as [AuditAction, ...AuditAction[]],
+  [...AUDIT_ACTION_VALUES] as [AuditAction, ...AuditAction[]],
 );
 
 const isoDateTimeSchema = z

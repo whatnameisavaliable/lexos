@@ -1,34 +1,112 @@
-# 项目架构与 AI 行为准则
+# LexOS — Cursor 全局系统提示词（冻结基准）
 
-本项目采用 **Next.js (React) + Node.js + Supabase** 架构。以下规则为本项目中 AI 助手所有行为的最高准则，须完整遵守。
+## 0. 全局上下文基准（CRITICAL）
+
+在回答任何关于项目结构、业务逻辑的问题，或开始编写任何功能代码前，**必须**首选静默读取 `docs/CONTEXT_SUMMARY.md`。
+
+**严禁**在未读取 `docs/CONTEXT_SUMMARY.md` 的情况下假设系统架构、API 路由、数据库表名/字段、RLS 规则、队列名称或前端交互流程。
+
+若摘要与下述完整规范冲突，**必须以** `docs/prd.md`（v0.3）、`docs/architecture.md`（v1.3）、`docs/database.md`（v1.4）、`docs/ui_design.md`（v1.1）**正文为准**。
 
 ---
 
-# 核心执行准则
+## 1. 强制基准对齐
 
-1. **文档强制读取**：每次新建对话或开发新功能前，必须优先读取 `/.cursor/docs/` 目录下的 4 个核心架构文档，确保上下文同步。
+1.1 任何代码修改前，**必须**按序执行：
 
-2. **强制反问机制**：在进行功能设计或代码编写前，若发现需求模糊、缺少边界条件或架构存在技术冲突，必须停止生成代码，并以列表形式向用户提问，待确认后方可继续。
+1. 静默读取 `docs/CONTEXT_SUMMARY.md`；
+2. 读取当前子模块对应的完整规范（后端 → `architecture.md` + `database.md`；前端 → `ui_design.md`；需求边界 → `prd.md`）。
 
-3. **架构变更熔断与级联风险评估**：当需要修改基础架构或数据库时，严禁直接修改代码或文档。必须先输出结构化的《影响评估报告》，在获得明确同意后方可执行。
+1.2 **严禁**实现 PRD「Out of Scope」或架构/数据库已废除能力（含：Python VAD 微服务、浏览器 ffmpeg.wasm、多租户、前端直连 Supabase 写业务表、经 API 上传文件二进制流）。
 
-4. **数据库安全与权限隔离**：涉及 Supabase 数据库表结构的修改必须生成标准的 SQL 迁移脚本（Migration）。在业务代码查询时，严禁使用 `Service Role Key` 绕过权限，必须强制依赖 RLS (Row Level Security) 确保多租户数据隔离（除特殊后台 Job 外）。
+1.3 后端**必须**遵守分层：`Route → Controller → Service → Repository | Adapter`；状态迁移**必须**经 `transition_task_status` 数据库函数；任何需要触发 U3 异步处理的状态变更（如任务入队），**必须**与业务更新在**同一数据库事务**中写入 `outbox_events` 表，由 **U3 Pipeline Worker** 轮询消费（`FOR UPDATE SKIP LOCKED`）；**严禁**在 U2 Service 层同步执行 FFmpeg/ASR/LLM；**严禁**引入 Redis/BullMQ 作为新业务依赖（`architecture.md` v1.3）；跨用户管理操作**必须**经 `AdminRepository`（service_role）且写审计。
 
-5. **死锁解决与防呆机制**：当同一模块的调试报错达到 3 次时，立即触发死锁解决机制。严禁继续盲目生成修补代码。必须优先输出当前理解的系统调用栈和数据流向图（纯文本形式），待用户确认逻辑理解无误后，再探讨修复方案。
+---
 
-6. **环境驱动与无硬编码**：绝对禁止在代码中硬编码任何凭证、API 密钥、数据库连接串。大语言模型 (LLM) 和向量模型 (Embedding) 的配置（包括模型名称、本地/云端 API Endpoint）必须从 `.env` 动态读取，严禁在业务逻辑中写死。
+## 2. 前端强制红线
 
-7. **强制类型安全与测试防御**：所有前端和后端代码必须使用严谨的 TypeScript 编写，杜绝滥用 `any`。每次开发核心业务模块时，必须同步生成对应的自动化测试用例（如 Jest/Vitest），确保核心逻辑的分支覆盖率。
+2.1 开发视图层、页面、布局、交互前，**必须**读取 `docs/ui_design.md`。
 
-8. **架构可视化呈现规范**：如需在文档中展示系统架构、时间轴或矛盾矩阵等图表，严禁使用 Mermaid 语法。必须强制输出高质量的 HTML 和 CSS（如 CSS Grid/Flexbox）代码来实现可视化，确保文档打印与渲染的绝对稳定。注意：内部提示词或代码注释中严禁出现特定品牌标识，品牌标识仅限于最终交付给客户的可视化文档中出现。
+2.2 可复用 UI 组件**必须**优先通过 Shadcn CLI 引入：
 
-9. **精准上下文锚定**：在响应需求时，必须主动要求用户通过 @ 指令提供必要的文件上下文（如 @01_PRD_AND_UI.md 或相关的具体代码文件）。严禁在没有明确文件引用的情况下盲目推测现有代码结构。
+```bash
+npx shadcn@latest add <component>
+```
 
-10. **本地容器化优先原则**：本项目最终目标为离线本地部署。所有外部依赖（包含 Supabase 实例、PostgreSQL pgvector 扩展、本地 AI 模型推理服务等）必须具备 Docker 化部署能力。严禁引入仅依赖公有云且无法本地替代的第三方闭源强依赖。
+**严禁**手写基础组件（`Button`、`Input`、`Label`、`Select`、`Checkbox`、`Switch`、`Dialog`、`AlertDialog`、`Table`、`Form` 等）替代 `components/ui/*`。
 
-11. **RAG 与 AI 调用规范**：涉及公有 API（如 Gemini API）或本地模型调用时，必须支持流式输出 (Server-Sent Events/Streaming)。RAG 向量存储必须严格使用 Supabase 的 pgvector 扩展，严禁引入额外的向量数据库组件增加系统复杂度。
+2.3 页面宏观骨架**必须**使用 **CSS Grid**（`AppShell`：sidebar / header / main）。
 
-12. **强制使用 Supabase CLI**：所有数据库表结构变动，严禁手动创建 SQL 文件。必须强制输出 `supabase db push的执行命令，并将生成的 SQL 代码写入对应的时间戳文件中。
+2.4 组件内部微观排版**必须**使用 **Flexbox**。
 
-13. **本地 AI 接口标准化**：调用本地大语言模型时，默认所有本地服务（如 Ollama）均对外暴露完全兼容 OpenAI API 规范的 Endpoint，严禁使用非标准 SDK 构建调用逻辑。
-14. **UI开发**：ui使用ShadcnUI组件库开发。对应行业审美的要求，保持简洁的企业级应用。同时满足浏览器和手机，pad等移动端的显示优化。
+2.5 时间线、矛盾矩阵、对照表、打印/PDF 预览等**必须**使用语义化 **HTML + CSS Grid/Flexbox**。
+
+2.6 **严禁**使用 Mermaid、`@mermaid-js/*` 或依赖运行时重绘的图表库渲染上述视图。
+
+2.7 列表**必须**分页 API（默认 50 条）；**严禁**长列表虚拟滚动直连全表。
+
+2.8 TUS 上传**必须**遵循 BFF 时序：`uploads/init` → TUS（仅使用返回的 `storage_key_prefix`）→ `uploads/complete`；**严禁**前端自拼 Storage 路径。
+
+2.9 上传进行中**必须**实现 `beforeunload` 与 SPA 路由离开 `AlertDialog`（见 `ui_design.md` §6.3.4）。
+
+2.10 转写工作台**必须**区分「校对模式」（只读 `asr_raw_json`）与「编辑模式」（仅编辑 `polished_text`）；**严禁**在可编辑富文本中破坏 `asr_raw_json` 时间戳结构。
+
+2.11 **严禁**在浏览器持有可对业务表执行 INSERT/UPDATE/DELETE 的 Supabase 客户端。
+
+2.12 **严禁**擅自执行 `npm install`、`yarn add`、`pnpm add` 等引入未经规范明确允许的第三方 UI/图表/富文本库。富文本编辑器**必须**选用轻量级无头框架（TipTap 或 Slate），样式**必须**由 Tailwind 自定义以匹配 Shadcn 风格。确需引入新依赖时，**必须**先暂停编码并向用户请求授权。
+
+2.13 所有发起异步 API 请求的组件或页面，**必须**实现完整的防御性状态闭环：骨架屏（Skeleton）或 Loading、空状态（Empty State）、错误边界（Error Boundary）或错误 Toast。**严禁**假设网络请求永远成功并直接读取 `data`。
+
+---
+
+## 3. 测试驱动强制要求
+
+3.1 每一次 **Service** 或 **Controller** 层的新增、修改、删除，**必须**同步新增或更新配套的自动化测试（单元测试和/或集成测试，与项目既有测试框架一致）。
+
+3.2 **严禁**提交仅含生产代码、不含对应测试变更的 Service/Controller PR（除非该变更纯重构且测试已全覆盖，须在提交说明中注明）。
+
+3.3 测试**必须**覆盖：鉴权失败、RLS 边界（律师仅本人数据）、状态机非法迁移、关键错误码映射。
+
+---
+
+## 4. 环境变量与硬编码封杀
+
+4.1 **绝对禁止**在源代码、配置默认值、注释示例中硬编码：API Key、密码、连接串、私钥、`service_role` 密钥、第三方 Token。
+
+4.2 所有可变端点、凭证、阈值**必须且只能**从环境变量（`.env.development` / `.env.production`）或数据库凭证表（`ai_model_credentials`，经加密字段）读取。
+
+4.3 **严禁**将 `.env` 或含秘密值的文件提交至 Git；仅可提交 `.env.example`（无真实秘密）。
+
+4.4 **严禁**在日志、错误响应 `message`、`audit_logs.metadata` 中输出密钥或完整密文。
+
+---
+
+## 5. 任务完成与 Git 提交
+
+5.1 项目使用 `tasks.md` 拆解开发任务时，每完成其中**一个**子任务，**必须**：
+
+1. 运行该子任务相关的自动化测试；
+2. 若测试**连续失败超过 2 次**，**必须**立即停止自动修复，向用户汇报错误并请求人工介入；
+3. 测试通过后，执行 `git commit` 提交变更；Commit Message **必须**符合约定式提交规范（如 `feat(transcription): ...`、`fix(auth): ...`）；
+4. 确认工作区已提交（`git status` 无未提交的相关变更）。
+
+5.2 在当前子任务测试通过且**成功**执行 `git commit` 之前，**严禁**开始 `tasks.md` 中的下一个子任务。
+
+5.3 **严禁**在未获用户明确指令时执行 `git push`、`git push --force` 或修改 git 用户配置。
+
+---
+
+## 6. 技术栈速记（不可偏离）
+
+- 运行时：Node.js（U2 API + U3 Worker，TypeScript）
+- 数据：PostgreSQL 15+ / Supabase（RLS 强制）
+- 异步：Postgres **Outbox** + 单 U3 Worker（`WORKER_MAX_CONCURRENCY` 默认 5）；**无 Redis**
+- 媒体：TUS → Storage；FFmpeg 仅在 U3；切片仅存 Worker 本地临时目录
+- AI：Adapter 调用公有/内网 ASR、LLM HTTP API（无 Python VAD）
+- 前端：Next.js（或等价）+ Tailwind + Shadcn UI
+
+---
+
+## 7. 违规处理原则
+
+若用户指令与上述冻结基准或 `docs/CONTEXT_SUMMARY.md` 冲突，**必须**指出冲突并请求修订规范或 PRD；**严禁**擅自降低安全或架构约束以实现指令。

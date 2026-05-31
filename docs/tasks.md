@@ -1260,10 +1260,10 @@
 
 ### M9-B `/health` 与就绪探针（每条探测一项）
 
-- [ ] 扩展 `GET /health`：探测 Postgres `SELECT 1`（`apps/api`）
-- [ ] 同上：探测 Storage `media`/`exports` 桶 HEAD（**不**探测 Redis，v1.3）
-- [ ] 新增 `workers/pipeline/src/health/worker-health.ts`：报告 `ffmpeg -version` 解析结果（Worker 独立 `/health` 或启动日志）
-- [ ] 新增 `apps/api/src/__tests__/health.integration.test.ts`：Mock 依赖；断言 JSON 结构含各子系统 `status`
+- [x] 扩展 `GET /health`：探测 Postgres `SELECT 1`（`apps/api`）
+- [x] 同上：探测 Storage `media`/`exports` 桶 HEAD（**不**探测 Redis，v1.3）
+- [x] 新增 `workers/pipeline/src/health/worker-health.ts`：报告 `ffmpeg -version` 解析结果（Worker 独立 `/health` 或启动日志）
+- [x] 新增 `apps/api/src/__tests__/health.integration.test.ts`：Mock 依赖；断言 JSON 结构含各子系统 `status`
 
 ---
 

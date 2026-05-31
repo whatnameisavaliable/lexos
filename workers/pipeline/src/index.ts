@@ -6,22 +6,43 @@
  *
  * 与 API 同机启动：`npm run worker:pipeline`（另开终端）。
  */
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
+  describeDatabaseEndpoint,
   loadEnvFiles,
   loadWorkerRuntimeEnvFromProcess,
   resolveRepoRoot,
 } from "@lexos/shared/config";
-import { assertFfmpegAvailable } from "./health/ffmpeg-healthcheck.js";
+import {
+  formatWorkerHealthLogLine,
+  runWorkerHealthCheck,
+} from "./health/worker-health.js";
+import { isSafeFfmpegPathOrFileArg } from "./adapters/ffmpeg/ffmpeg.runner.js";
+import { assertWorkerDatabaseReachable } from "./infra/assert-worker-database.js";
 import { createAsrRateLimiter } from "./infra/asr-rate-limiter.js";
 import { getWorkerConcurrencyLimiter } from "./infra/worker-concurrency.js";
 import { createWorkerDbPool } from "./infra/worker-db-pool.js";
 import { OutboxPollerService } from "./services/outbox-poller.service.js";
 import { createPipelineStageProcessor } from "./bootstrap/create-pipeline-deps.js";
 
-const repoRoot = resolveRepoRoot();
+/** 优先从 worker 包位置定位 monorepo 根目录（npm -w 时 cwd 常为 workers/pipeline）。 */
+function resolvePipelineRepoRoot(): string {
+  const fromModule = resolveRepoRoot(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", ".."),
+  );
+  if (fs.existsSync(path.join(fromModule, ".env.development"))) {
+    return fromModule;
+  }
+  return resolveRepoRoot();
+}
+
+const repoRoot = resolvePipelineRepoRoot();
 loadEnvFiles(repoRoot, [".env", ".env.development"]);
 
 const env = loadWorkerRuntimeEnvFromProcess();
+const dbEndpoint = describeDatabaseEndpoint(env.outboxDbUrl);
 const dbPool = createWorkerDbPool(env);
 const taskConcurrency = getWorkerConcurrencyLimiter(env.workerMaxConcurrency);
 const asrRateLimiter = createAsrRateLimiter(env.asrRateLimitMax);
@@ -30,8 +51,36 @@ const stageProcessor = createPipelineStageProcessor(env);
 const poller = new OutboxPollerService(env, dbPool.getPool(), stageProcessor);
 
 async function bootstrap(): Promise<void> {
-  const ffmpegVersion = await assertFfmpegAvailable(env.ffmpegPath);
+  const healthReport = await runWorkerHealthCheck(env.ffmpegPath);
+  console.info(formatWorkerHealthLogLine(healthReport));
+  if (healthReport.status !== "ok") {
+    throw new Error(
+      `Worker health check failed: ${healthReport.checks.ffmpeg.errorMessage ?? "unknown"}`,
+    );
+  }
+  const ffmpegVersion = healthReport.checks.ffmpeg.versionLine ?? "unknown";
   console.info(`[pipeline-worker] ffmpeg ok: ${ffmpegVersion}`);
+  const segmentTemplateProbe = path.join(
+    env.workerTmpDir,
+    "probe",
+    "segment_%03d.mp3",
+  );
+  if (!isSafeFfmpegPathOrFileArg(segmentTemplateProbe)) {
+    throw new Error(
+      `FFmpeg path validation rejects segment templates: ${segmentTemplateProbe}`,
+    );
+  }
+  console.info(
+    "[pipeline-worker] ffmpeg path validation ok (segment_%03d allowed)",
+  );
+  console.info(`[pipeline-worker] database ${dbEndpoint}`);
+  if (env.outboxDbUrl.includes(":6543")) {
+    console.warn(
+      "[pipeline-worker] using transaction pooler :6543 — set WORKER_DB_URL to Session pooler :5432 in .env.development to avoid disconnects during FFmpeg",
+    );
+  }
+  await assertWorkerDatabaseReachable(dbPool.getPool());
+  console.info("[pipeline-worker] database ok");
   console.info(
     `[pipeline-worker] concurrency=${env.workerMaxConcurrency}, asrRateLimit=${env.asrRateLimitMax}/min`,
   );

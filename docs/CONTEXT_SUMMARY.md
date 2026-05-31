@@ -2,9 +2,9 @@
 
 | 字段 | 内容 |
 |------|------|
-| 版本 | 1.0 |
+| 版本 | 1.1 |
 | 用途 | 后续开发极简上下文；**不可替代**完整规范 |
-| 冻结基准 | `prd.md` v0.3 · `architecture.md` v1.2 · `database.md` v1.3 · `ui_design.md` v1.1 |
+| 冻结基准 | `prd.md` v0.3 · `architecture.md` v1.3 · `database.md` v1.4 · `ui_design.md` v1.1 |
 
 ---
 
@@ -12,8 +12,8 @@
 
 - **LexOS**：单律所私有化律所协作平台；Node.js + Supabase（Postgres/Auth/Storage）。
 - **核心**：AI 语音转写（ASR + LLM 润色/摘要）、个人云盘、RBAC、审计、AI 配置后台。
-- **规模**：活跃用户 50～100；日均转写约 10；轻量 API 峰值 QPS ≤ 10。
-- **非目标**：多租户 SaaS、案件全流程、浏览器 ffmpeg.wasm、Python VAD 微服务、向量检索（首期）、用户自助找回密码。
+- **规模**：活跃用户 50～100；日均转写约 10；**同时转写 ≤ 5**；轻量 API 峰值 QPS ≤ 10。
+- **非目标**：多租户 SaaS、案件全流程、浏览器 ffmpeg.wasm、Python VAD 微服务、向量检索（首期）、用户自助找回密码、**Redis/BullMQ**（v1.3 起）。
 
 ---
 
@@ -22,10 +22,12 @@
 | ID | 组件 | 职责 |
 |----|------|------|
 | U1 | Web | 会话、Router Guard、TUS 直传（经 BFF init） |
-| U2 | API (Node) | HTTP、鉴权、CRUD、Outbox、审计 |
-| U3 | Worker (Node) | BullMQ、FFmpeg 抽音/物理切片、ASR/LLM 编排 |
+| U2 | API (Node) | HTTP、鉴权、CRUD、Outbox 生产、审计 |
+| U3 | Worker (Node) | **单进程**轮询 Outbox；FFmpeg 抽音/物理切片；ASR/LLM 编排 |
 | U5 | Supabase | Auth、Postgres+RLS、Storage |
 | U6 | Adapter | ASR/LLM HTTP（TS，无独立 Python 服务） |
+
+**不部署**：Redis、独立 Python VAD、`outbox-dispatcher`（M4 遗留，合并入 U3）。
 
 ---
 
@@ -64,11 +66,11 @@
 | 上传 | TUS 直传 Storage；**禁止** Node 收文件流 |
 | MP4 | 服务端 FFmpeg 抽音；禁止浏览器 wasm |
 | 切片 | U3 FFmpeg 物理切片（约 15min/片，<20MB）；**不落** Storage |
-| ASR 队列 | `duration_sec ≤ 1800` → `transcription.asr.express`，否则 `.batch` |
+| Worker 并发 | 同时处理 ≤ **5** 个任务（`WORKER_MAX_CONCURRENCY`） |
 
 **状态枚举**：`uploading` → `queued` → `extracting`（MP4）→ `preprocessing` → `asr_running` → `llm_running` → `completed` | `failed`
 
-**状态迁移**：仅 `transition_task_status(from, to)`；Worker 抢任务 `FOR UPDATE SKIP LOCKED`。
+**状态迁移**：仅 `transition_task_status(from, to)`；Worker 抢 Outbox `FOR UPDATE SKIP LOCKED`。
 
 **Stalled**：`last_progress_at` 超 2h 可回滚 `queued` 或 `failed`（`retry_count`）。
 
@@ -76,15 +78,19 @@
 
 ---
 
-## 6. 流水线（U3）
+## 6. 流水线（U3 · Postgres Outbox）
 
 1. BFF `uploads/init` → `upload_sessions` + task `uploading`
 2. TUS 直传至 `{uid}/{task_id}/` 前缀
-3. `uploads/complete` → `queued` + **Outbox** → BullMQ
-4. `media.extract`（MP4）→ `media.preprocess`（重采样+切片至 `/tmp/lexos/{task_id}/`）
-5. `transcription.asr.express|batch`（并发 3，全局限流 50/min）
-6. `transcription.llm`（兜底模型 1 次）
-7. `drive.archive` → 云盘 `YYYY-MM-DD/任务名/`
+3. `uploads/complete` → `queued` + **Outbox**（`payload.stage = media.extract|media.preprocess`）
+4. U3 轮询 Outbox → 按 `stage` 顺序执行：
+   - `media.extract`（MP4）→ `media.preprocess`（重采样+切片至 `/tmp/lexos/{task_id}/`）
+   - `asr`（单任务切片并发 3，全局限流 50/min 进程内）
+   - `llm`（兜底模型 1 次）
+   - `drive.archive` → 云盘 `YYYY-MM-DD/任务名/`
+5. 每阶段成功 → `published_at = now()`；下一阶段插入新 Outbox 行（同事务）
+
+**禁止**：Redis、BullMQ、`queue.add()`、U2 同步跑 FFmpeg/ASR。
 
 ---
 
@@ -118,7 +124,7 @@
 Route → Controller → Service → Repository | Adapter
 ```
 
-- Worker：`Job Handler → Service → Repository | Adapter`
+- U3：`Outbox Poller → Stage Handler → Service → Repository | Adapter`
 - **禁止**：`Route→Repository`、`Controller→Adapter`（测试除外）、主进程跑 FFmpeg/ASR
 - 管理员跨用户：仅 `AdminRepository`（service_role）+ `role===admin` + 审计
 - Worker 写库：经 `transition_task_status`；禁止裸 `UPDATE status`
@@ -138,7 +144,7 @@ workers/pipeline/  packages/shared/  supabase/migrations/
 `id`(=auth.users), `username` UNIQUE, `display_name`, `role`, `contact`, `status`, `requires_password_change`, `mfa_enabled`, timestamps
 
 ### `transcription_tasks`
-`id`, `created_by`, `title`, `status`, `source_mime`, `source_storage_key`, `audio_storage_key`, `duration_sec`, `size_bytes`, `is_mp4`, `diarization_degraded`, `asr_queue_tier`, `last_progress_at`, `retry_count`, `archive_folder_id`, `idempotency_key`, `deleted_at`, timestamps
+`id`, `created_by`, `title`, `status`, `source_mime`, `source_storage_key`, `audio_storage_key`, `duration_sec`, `size_bytes`, `is_mp4`, `diarization_degraded`, `last_progress_at`, `retry_count`, `archive_folder_id`, `idempotency_key`, `deleted_at`, timestamps（`asr_queue_tier` 遗留可空）
 
 ### `transcription_segments`
 `task_id`, `segment_index`, `start_ms`, `end_ms`, `chunk_size_bytes`, `asr_text`, `speaker_label`, `status`；`storage_key` 首期 NULL
@@ -153,7 +159,7 @@ workers/pipeline/  packages/shared/  supabase/migrations/
 `task_id`, `owner_id`, `storage_key_prefix`, `expected_max_bytes`, `expires_at`, `completed_at`
 
 ### `outbox_events` / `pipeline_job_runs`
-Outbox 事务投递；Job 幂等 `UNIQUE(queue_name, bull_job_id, attempt)`
+Outbox 事务触发 U3；阶段幂等 `UNIQUE(stage, outbox_event_id, attempt)`（目标 schema；已部署库可能仍为 `bull_job_id`）
 
 ### `ai_model_credentials` / `ai_feature_model_mappings` / `ai_prompt_templates`
 管理员专用；API Key 密文；Prompt 禁止硬编码
@@ -194,14 +200,14 @@ append-only + 哈希链；`metadata` 含 `client_timestamp`（浏览器事件）
 NODE_ENV, APP_URL, API_URL
 SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DB_URL
 STORAGE_BUCKET_MEDIA, STORAGE_BUCKET_EXPORTS, STORAGE_SIGNED_URL_TTL_SEC
-REDIS_URL, OUTBOX_*, FFMPEG_*, WORKER_TMP_DIR, WORKER_CONCURRENCY
-BULLMQ_RATE_LIMIT_MAX, ASR_API_CONCURRENCY, ASR_EXPRESS_MAX_DURATION_SEC
+WORKER_DB_URL, WORKER_POLL_INTERVAL_MS, OUTBOX_MAX_ATTEMPTS, WORKER_MAX_CONCURRENCY
+FFMPEG_*, WORKER_TMP_DIR, ASR_RATE_LIMIT_MAX, ASR_API_CONCURRENCY
 ASR_PROVIDER_TYPE, ASR_MAX_CHUNK_SIZE_MB, ASR_SEGMENT_DURATION_SEC
 AUTH_VIRTUAL_EMAIL_DOMAIN, AUTH_INITIAL_PASSWORD, CAPTCHA_*, MFA_REQUIRED_ROLES
 AI_*_TIMEOUT_MS, STALLED_TASK_*
 ```
 
-凭证以 `ai_model_credentials` 表为准；`.env` 不得入 Git。
+凭证以 `ai_model_credentials` 表为准；`.env` 不得入 Git。**不必配置** `REDIS_URL`（v1.3）。
 
 ---
 
@@ -222,7 +228,7 @@ AI_*_TIMEOUT_MS, STALLED_TASK_*
 
 1. **本文** `docs/CONTEXT_SUMMARY.md`
 2. 子模块对应：`architecture.md` / `database.md` / `ui_design.md` / `prd.md`（按需章节）
-3. 涉及迁移：以 `database.md` v1.3 为准
+3. 涉及迁移：以 `database.md` v1.4 为准
 
 ---
 
@@ -231,7 +237,7 @@ AI_*_TIMEOUT_MS, STALLED_TASK_*
 | 文件 | 内容 |
 |------|------|
 | `docs/prd.md` | 需求、RBAC、业务流程 |
-| `docs/architecture.md` | 分层、队列、Outbox、API、安全 |
+| `docs/architecture.md` | 分层、Outbox 流水线、API、安全 |
 | `docs/database.md` | 表、RLS、触发器、SQL |
 | `docs/ui_design.md` | 组件、布局、页面交互 |
 | `docs/design-review-report.md` | 安全审查整改记录 |

@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import { PIPELINE_STAGE_LLM } from "@lexos/shared";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { LlmHandler } from "./llm.handler.js";
 
 describe("LlmHandler", () => {
   it("polishes and summarizes transcript", async () => {
-    const client = {
-      query: vi.fn().mockResolvedValue({
-        rows: [{ asr_raw_json: { segments: [{ text: "raw" }] } }],
-      }),
-    };
+    const pool = createMockPool();
+    pool.mockClient.query = vi.fn().mockResolvedValue({
+      rows: [{ asr_raw_json: { segments: [{ text: "raw" }] } }],
+    }) as never;
+
     const llmTranscript = { polish: vi.fn().mockResolvedValue("polished") };
     const llmSummary = { summarize: vi.fn().mockResolvedValue("summary") };
     const taskRepository = {
@@ -29,7 +30,7 @@ describe("LlmHandler", () => {
     );
 
     await handler.handle({
-      client: client as never,
+      pool,
       event: { id: "evt-4" } as never,
       payload: {
         stage: PIPELINE_STAGE_LLM,
@@ -39,13 +40,9 @@ describe("LlmHandler", () => {
       },
     });
 
-    expect(llmTranscript.polish).toHaveBeenCalledWith(
-      client,
-      "task-1",
-      "raw",
-    );
+    expect(llmTranscript.polish).toHaveBeenCalledWith(pool, "task-1", "raw");
     expect(transcriptRepository.upsertTranscript).toHaveBeenCalledWith(
-      client,
+      expect.anything(),
       expect.objectContaining({
         polishedText: "polished",
         summaryText: "summary",

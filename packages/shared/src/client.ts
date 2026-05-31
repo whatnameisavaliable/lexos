@@ -3,6 +3,7 @@
  */
 export * from "./api/index.js";
 export * from "./dto/auth-login.dto.js";
+export * from "./dto/auth-refresh.dto.js";
 export * from "./dto/auth-change-password.dto.js";
 export * from "./dto/profile-update.dto.js";
 export {
@@ -63,3 +64,38 @@ export {
   TRANSCRIPTION_TASK_STATUS_VALUES,
   type TranscriptionTaskStatus,
 } from "./enums/transcription-task-status.js";
+export {
+  DRIVE_NODE_TYPE_VALUES,
+  type DriveNodeType,
+} from "./enums/drive-node-type.js";
+export {
+  parseDriveFolderCreateBody,
+  type DriveFolderCreateBody,
+} from "./dto/drive-folder-create.dto.js";
+export {
+  parseDriveNodeUpdateBody,
+  type DriveNodeUpdateBody,
+} from "./dto/drive-node-update.dto.js";
+export {
+  parseDriveNodesListQuery,
+  type DriveNodesListQuery,
+} from "./dto/drive-nodes-list-query.dto.js";
+export {
+  parseDriveSearchQuery,
+  type DriveSearchQuery,
+} from "./dto/drive-search-query.dto.js";
+export type { DriveNodeSummary } from "./types/drive-node-summary.js";
+export {
+  AUDIT_ACTION_VALUES,
+  isAuditAction,
+  type AuditAction,
+} from "./constants/audit-required-events.js";
+export type { AuditLogItem } from "./types/audit-log-item.js";
+export {
+  parseAuditLogsQuery,
+  type AuditLogsQuery,
+} from "./dto/audit-logs-query.dto.js";
+export {
+  parseSystemSettingUpsert,
+  type SystemSettingUpsert,
+} from "./dto/system-setting-upsert.dto.js";

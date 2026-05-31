@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { AiFeatureKey } from "@lexos/shared";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { AiOrchestrationService } from "./ai-orchestration.service.js";
 
 describe("AiOrchestrationService", () => {
   it("uses primary model on success", async () => {
+    const pool = createMockPool();
     const aiRepository = {
       resolveModelsForFeature: vi.fn().mockResolvedValue({
         primary: {
@@ -30,7 +32,7 @@ describe("AiOrchestrationService", () => {
     );
 
     const result = await service.invoke({
-      client: {} as never,
+      pool,
       taskId: "task-1",
       featureKey: AiFeatureKey.ASR_PHYSICAL,
       idempotencyKey: "idem-1",
@@ -43,6 +45,7 @@ describe("AiOrchestrationService", () => {
   });
 
   it("falls back once when primary fails", async () => {
+    const pool = createMockPool();
     const aiRepository = {
       resolveModelsForFeature: vi.fn().mockResolvedValue({
         primary: {
@@ -78,7 +81,7 @@ describe("AiOrchestrationService", () => {
     );
 
     const result = await service.invoke({
-      client: {} as never,
+      pool,
       taskId: "task-1",
       featureKey: AiFeatureKey.ASR_PHYSICAL,
       idempotencyKey: "idem-2",

@@ -16,6 +16,12 @@ const newPasswordSchema = z
 
 const currentPasswordSchema = z.string().min(1).max(NEW_PASSWORD_MAX_LENGTH);
 
+/** 空字符串视为未提供（前端隐藏字段常留 `""`）。 */
+const optionalCurrentPasswordSchema = z.preprocess(
+  (val) => (val === "" || val === null || val === undefined ? undefined : val),
+  currentPasswordSchema.optional(),
+);
+
 /**
  * `POST /api/auth/change-password` 请求体（PRD §2.5.4、§3.2）。
  *
@@ -23,7 +29,7 @@ const currentPasswordSchema = z.string().min(1).max(NEW_PASSWORD_MAX_LENGTH);
  * 场景下可省略，由 {@link AuthContext.requiresPasswordChange} 分支校验。
  */
 export const authChangePasswordBodySchema = z.object({
-  currentPassword: currentPasswordSchema.optional(),
+  currentPassword: optionalCurrentPasswordSchema,
   newPassword: newPasswordSchema,
 });
 

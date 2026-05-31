@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { PIPELINE_STAGE_MEDIA_PREPROCESS } from "@lexos/shared";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { MediaPreprocessHandler } from "./media-preprocess.handler.js";
 
 describe("MediaPreprocessHandler", () => {
@@ -26,7 +27,7 @@ describe("MediaPreprocessHandler", () => {
     );
 
     await handler.handle({
-      client: {} as never,
+      pool: createMockPool(),
       event: { id: "evt-2" } as never,
       payload: {
         stage: PIPELINE_STAGE_MEDIA_PREPROCESS,

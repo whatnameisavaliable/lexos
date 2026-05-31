@@ -1,6 +1,31 @@
 import pg from "pg";
 import type { WorkerRuntimeEnvConfig } from "@lexos/shared/config";
 
+/** 为 Supabase 云库构建 `pg.Pool` 配置（强制 SSL · 适配 PgBouncer）。 */
+export function buildWorkerPgPoolConfig(
+  connectionString: string,
+): pg.PoolConfig {
+  const isRemoteSupabase =
+    connectionString.includes("supabase.co") ||
+    connectionString.includes("supabase.com");
+
+  const usesTransactionPooler =
+    isRemoteSupabase && connectionString.includes(":6543");
+
+  return {
+    connectionString,
+    max: usesTransactionPooler ? 3 : 5,
+    application_name: "lexos-pipeline-worker",
+    connectionTimeoutMillis: 15_000,
+    idleTimeoutMillis: 60_000,
+    keepAlive: true,
+    ...(usesTransactionPooler ? { prepare: false } : {}),
+    ...(isRemoteSupabase
+      ? { ssl: { rejectUnauthorized: false } }
+      : {}),
+  };
+}
+
 /** U3 Worker Postgres 连接池（`architecture.md` §3.5.4.2）。 */
 export class WorkerDbPool {
   private readonly pool: pg.Pool;
@@ -14,10 +39,11 @@ export class WorkerDbPool {
     poolFactory: (options: pg.PoolConfig) => pg.Pool = (options) =>
       new pg.Pool(options),
   ) {
-    this.pool = poolFactory({
-      connectionString: env.outboxDbUrl,
-      max: 10,
-      application_name: "lexos-pipeline-worker",
+    this.pool = poolFactory(buildWorkerPgPoolConfig(env.outboxDbUrl));
+    this.pool.setMaxListeners(20);
+    this.pool.on("error", (error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[pipeline-worker] pg pool idle error: ${message}`);
     });
   }
 

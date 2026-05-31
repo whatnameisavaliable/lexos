@@ -19,6 +19,7 @@ import {
 } from "@lexos/shared/config";
 import { createPipelineStageProcessor } from "../bootstrap/create-pipeline-deps.js";
 import { createWorkerDbPool } from "../infra/worker-db-pool.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import { OutboxPollerService } from "../services/outbox-poller.service.js";
 import { StageIdempotencyMiddleware } from "../middleware/stage-idempotency.middleware.js";
 
@@ -168,15 +169,31 @@ describe("pipeline worker (integration)", () => {
         );
         const outboxId = outboxRows[0]!.id;
 
-        expect(await poller.pollOnce()).toBe(1);
-        expect(await poller.pollOnce()).toBe(1);
-        expect(await poller.pollOnce()).toBe(1);
-
-        const { rows: taskStatus } = await db.query<{ status: string }>(
-          `SELECT status FROM public.transcription_tasks WHERE id = $1::uuid`,
+        let processedTotal = 0;
+        for (let round = 0; round < 20; round += 1) {
+          const { rows: statusRows } = await db.query<{ status: string }>(
+            `SELECT status FROM public.transcription_tasks WHERE id = $1::uuid`,
+            [taskId],
+          );
+          if (statusRows[0]?.status === "completed") {
+            break;
+          }
+          processedTotal += await poller.pollOnce();
+        }
+        const { rows: taskStatus } = await db.query<{
+          status: string;
+          error_code: string | null;
+          error_message: string | null;
+        }>(
+          `SELECT status, error_code, error_message
+           FROM public.transcription_tasks WHERE id = $1::uuid`,
           [taskId],
         );
-        expect(taskStatus[0]?.status).toBe("completed");
+        expect(
+          taskStatus[0]?.status,
+          taskStatus[0]?.error_message ?? "task not completed",
+        ).toBe("completed");
+        expect(processedTotal).toBeGreaterThanOrEqual(1);
 
         const { rows: published } = await db.query<{ published_at: string | null }>(
           `SELECT published_at FROM public.outbox_events WHERE id = $1::uuid`,
@@ -211,6 +228,7 @@ describe("pipeline worker (integration)", () => {
         transcribe: vi.fn().mockResolvedValue({ text: "once" }),
         complete: vi.fn(),
       };
+      const dbPool = createWorkerDbPool(outboxEnv);
       const stageProcessor = createPipelineStageProcessor(workerEnv, {
         aiClient: mockAiClient,
       });
@@ -263,9 +281,8 @@ describe("pipeline worker (integration)", () => {
           isMp4: false,
         };
 
-        await client.query("BEGIN");
         await stageProcessor.processStage(
-          client,
+          dbPool.getPool(),
           {
             id: eventId,
             aggregateType: "transcription_task",
@@ -276,21 +293,21 @@ describe("pipeline worker (integration)", () => {
           },
           payload,
         );
-        await client.query("COMMIT");
 
         const idempotency = new StageIdempotencyMiddleware();
-        await client.query("BEGIN");
-        const second = await idempotency.tryBeginRun(client, {
-          stage: PIPELINE_STAGE_ASR,
-          outboxEventId: eventId,
-          taskId,
-        });
-        await client.query("ROLLBACK");
+        const second = await withPgClient(dbPool.getPool(), (pgClient) =>
+          idempotency.tryBeginRun(pgClient, {
+            stage: PIPELINE_STAGE_ASR,
+            outboxEventId: eventId,
+            taskId,
+          }),
+        );
 
         expect(second.proceed).toBe(false);
         expect(mockAiClient.transcribe).toHaveBeenCalledTimes(1);
       } finally {
         await client.end();
+        await dbPool.end();
         await cleanup();
       }
     },

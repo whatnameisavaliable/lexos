@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { normalizeOpenAiCompatibleBaseUrl } from "@lexos/shared";
 import type {
   WorkerAiClient,
   WorkerAiCredentials,
@@ -17,7 +18,7 @@ export class FetchWorkerAiClient implements WorkerAiClient {
     options?: { readonly timeoutMs?: number },
   ): Promise<WorkerAsrResult> {
     const started = Date.now();
-    const baseUrl = normalizeBaseUrl(credentials.baseUrl);
+    const baseUrl = normalizeOpenAiCompatibleBaseUrl(credentials.baseUrl);
     const audioBytes = await readFile(localAudioPath);
     const form = new FormData();
     form.append(
@@ -39,7 +40,10 @@ export class FetchWorkerAiClient implements WorkerAiClient {
     );
 
     if (!response.ok) {
-      throw new Error(`ASR HTTP ${response.status}`);
+      const detail = await readErrorBody(response);
+      throw new Error(
+        `ASR HTTP ${response.status} (${baseUrl}/audio/transcriptions): ${detail}`,
+      );
     }
 
     const body = (await response.json()) as { text?: string };
@@ -56,7 +60,7 @@ export class FetchWorkerAiClient implements WorkerAiClient {
     options?: { readonly timeoutMs?: number },
   ): Promise<WorkerLlmResult> {
     const started = Date.now();
-    const baseUrl = normalizeBaseUrl(credentials.baseUrl);
+    const baseUrl = normalizeOpenAiCompatibleBaseUrl(credentials.baseUrl);
     const response = await fetchWithTimeout(
       `${baseUrl}/chat/completions`,
       {
@@ -94,9 +98,14 @@ export class FetchWorkerAiClient implements WorkerAiClient {
   }
 }
 
-function normalizeBaseUrl(baseUrl: string | null): string {
-  const value = (baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
-  return value.endsWith("/v1") ? value : `${value}/v1`;
+
+async function readErrorBody(response: Response): Promise<string> {
+  try {
+    const text = await response.text();
+    return text.slice(0, 300);
+  } catch {
+    return response.statusText;
+  }
 }
 
 async function fetchWithTimeout(

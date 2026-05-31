@@ -1,6 +1,7 @@
 import { ErrorCode } from "@lexos/shared/api";
 import { PIPELINE_STAGE_LLM } from "@lexos/shared";
 import { buildNextStageOutboxRow } from "../domain/worker-outbox.factory.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import type { StageHandler, StageHandlerContext } from "./stage-handler.js";
 import type { LlmTranscriptService } from "../services/llm-transcript.service.js";
 import type { LlmSummaryService } from "../services/llm-summary.service.js";
@@ -21,42 +22,48 @@ export class LlmHandler implements StageHandler {
   ) {}
 
   async handle(context: StageHandlerContext): Promise<void> {
-    const { client, event, payload } = context;
-    const task = await this.taskRepository.findById(client, payload.taskId);
-    if (!task) {
-      throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
-    }
-    if (task.status !== "llm_running") {
-      throw new Error(`unexpected task status for llm: ${task.status}`);
-    }
+    const { pool, event, payload } = context;
 
-    const rawText = await this.loadAsrPlainText(client, payload.taskId);
+    await withPgClient(pool, async (client) => {
+      const task = await this.taskRepository.findById(client, payload.taskId);
+      if (!task) {
+        throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
+      }
+      if (task.status !== "llm_running") {
+        throw new Error(`unexpected task status for llm: ${task.status}`);
+      }
+    });
+
+    const rawText = await withPgClient(pool, (client) =>
+      this.loadAsrPlainText(client, payload.taskId),
+    );
     const polishedText = await this.llmTranscript.polish(
-      client,
+      pool,
       payload.taskId,
       rawText,
     );
     const summaryText = await this.llmSummary.summarize(
-      client,
+      pool,
       payload.taskId,
       polishedText,
     );
 
-    await this.transcriptRepository.upsertTranscript(client, {
-      taskId: payload.taskId,
-      polishedText,
-      summaryText,
-    });
-
-    await this.transactionService.completeStage(client, {
-      outboxEventId: event.id,
-      taskId: payload.taskId,
-      nextOutbox: buildNextStageOutboxRow({
-        currentStage: PIPELINE_STAGE_LLM,
+    await withPgClient(pool, async (client) => {
+      await this.transcriptRepository.upsertTranscript(client, {
         taskId: payload.taskId,
-        createdBy: payload.createdBy,
-        isMp4: payload.isMp4,
-      }),
+        polishedText,
+        summaryText,
+      });
+      await this.transactionService.completeStage(client, {
+        outboxEventId: event.id,
+        taskId: payload.taskId,
+        nextOutbox: buildNextStageOutboxRow({
+          currentStage: PIPELINE_STAGE_LLM,
+          taskId: payload.taskId,
+          createdBy: payload.createdBy,
+          isMp4: payload.isMp4,
+        }),
+      });
     });
   }
 

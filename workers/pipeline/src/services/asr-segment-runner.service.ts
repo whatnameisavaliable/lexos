@@ -1,7 +1,8 @@
 import pLimit from "p-limit";
-import type { PoolClient } from "pg";
+import type { Pool } from "pg";
 import { AiFeatureKey } from "@lexos/shared";
 import type { AsrRateLimiter } from "../infra/asr-rate-limiter.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import { WorkerAiRepository } from "../repositories/worker-ai.repository.js";
 import { WorkerSegmentRepository } from "../repositories/worker-segment.repository.js";
 import type { PreprocessSegmentFile } from "./media-preprocess.service.js";
@@ -40,7 +41,7 @@ export class AsrSegmentRunnerService {
   }
 
   async run(
-    client: PoolClient,
+    pool: Pool,
     taskId: string,
     segments: readonly PreprocessSegmentFile[],
   ): Promise<AsrSegmentRunnerResult> {
@@ -56,7 +57,7 @@ export class AsrSegmentRunnerService {
             "1",
           ]);
           const asr = await this.aiOrchestration.invoke({
-            client,
+            pool,
             taskId,
             featureKey: AiFeatureKey.ASR_PHYSICAL,
             idempotencyKey,
@@ -74,17 +75,18 @@ export class AsrSegmentRunnerService {
       ),
     );
 
-    await this.segmentRepository.upsertTaskSegments(
-      client,
-      taskId,
-      results.map((item) => ({
-        segmentIndex: item.segmentIndex,
-        startMs: item.startMs,
-        endMs: item.endMs,
-        asrText: item.text,
-        speakerLabel: item.speakerLabel,
-        status: "done",
-      })),
+    await withPgClient(pool, (client) =>
+      this.segmentRepository.upsertTaskSegments(
+        client,
+        taskId,
+        results.map((item) => ({
+          segmentIndex: item.segmentIndex,
+          startMs: item.startMs,
+          endMs: item.endMs,
+          text: item.text,
+          speakerLabel: item.speakerLabel,
+        })),
+      ),
     );
 
     return {

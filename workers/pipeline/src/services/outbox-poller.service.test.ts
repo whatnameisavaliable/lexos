@@ -6,6 +6,7 @@ import { OutboxPollerService } from "./outbox-poller.service.js";
 const mockClient = {
   query: vi.fn(),
   release: vi.fn(),
+  on: vi.fn(),
 };
 
 const mockPool = {
@@ -73,7 +74,7 @@ describe("OutboxPollerService", () => {
   });
 
   it("processes stage and marks published on success", async () => {
-    mockProcessStage.mockResolvedValue(undefined);
+    mockProcessStage.mockResolvedValue({ kind: "executed" });
     const poller = new OutboxPollerService(
       env,
       mockPool as never,
@@ -84,7 +85,7 @@ describe("OutboxPollerService", () => {
 
     expect(count).toBe(1);
     expect(mockProcessStage).toHaveBeenCalledWith(
-      mockClient,
+      mockPool,
       expect.objectContaining({ id: "evt-1" }),
       expect.objectContaining({ taskId: "task-1", stage: PIPELINE_STAGE_MEDIA_PREPROCESS }),
     );

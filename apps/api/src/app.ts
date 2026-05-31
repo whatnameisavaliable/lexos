@@ -35,6 +35,7 @@ import { AuthSessionService } from "./services/auth-session.service.js";
 import { ProfileService } from "./services/profile.service.js";
 import { HealthController } from "./controllers/health.controller.js";
 import { PostgresHealthRepository } from "./repositories/postgres-health.repository.js";
+import { StorageHealthRepository } from "./repositories/storage-health.repository.js";
 import { HealthCheckService } from "./services/health-check.service.js";
 import { AdminUserListService } from "./services/admin-user-list.service.js";
 import { AdminUserCreateService } from "./services/admin-user-create.service.js";
@@ -605,7 +606,10 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
 
   const healthController = new HealthController(
-    new HealthCheckService(new PostgresHealthRepository(env.supabaseDbUrl)),
+    new HealthCheckService(
+      new PostgresHealthRepository(env.supabaseDbUrl),
+      new StorageHealthRepository(supabaseEnv, storageEnv),
+    ),
   );
 
   const protectedRoute = (

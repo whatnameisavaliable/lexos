@@ -7,6 +7,17 @@ export interface CreateArchiveFolderInput {
   readonly title: string;
 }
 
+/** 归档文件引用入参。 */
+export interface EnsureArchiveFileRefInput {
+  readonly userId: string;
+  readonly folderId: string;
+  readonly taskId: string;
+  readonly name: string;
+  readonly storageKey: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number | null;
+}
+
 /**
  * Worker 云盘归档目录（`database.md` §7.2.2 · `YYYY-MM-DD/title/`）。
  */
@@ -92,6 +103,55 @@ export class WorkerDriveRepository {
       throw new Error("drive_nodes.insert folder failed");
     }
     return id;
+  }
+
+  /**
+   * 写入归档文件引用（幂等；`database.md` §6.3.1）。
+   */
+  async ensureArchiveFileRef(
+    client: PoolClient,
+    input: EnsureArchiveFileRefInput,
+  ): Promise<void> {
+    const existing = await client.query<{ id: string }>(
+      `SELECT id
+       FROM public.drive_nodes
+       WHERE created_by = $1::uuid
+         AND parent_id = $2::uuid
+         AND storage_key = $3
+         AND node_type = 'file'
+         AND deleted_at IS NULL
+       LIMIT 1`,
+      [input.userId, input.folderId, input.storageKey],
+    );
+    if (existing.rows[0]?.id) {
+      return;
+    }
+
+    const inserted = await client.query<{ id: string }>(
+      `INSERT INTO public.drive_nodes (
+         created_by,
+         parent_id,
+         node_type,
+         name,
+         storage_key,
+         mime_type,
+         size_bytes,
+         linked_task_id
+       ) VALUES ($1::uuid, $2::uuid, 'file', $3, $4, $5, $6, $7::uuid)
+       RETURNING id`,
+      [
+        input.userId,
+        input.folderId,
+        input.name,
+        input.storageKey,
+        input.mimeType,
+        input.sizeBytes,
+        input.taskId,
+      ],
+    );
+    if (!inserted.rows[0]?.id) {
+      throw new Error("drive_nodes.insert file failed");
+    }
   }
 }
 

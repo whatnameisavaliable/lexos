@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { PIPELINE_STAGE_DRIVE_ARCHIVE } from "@lexos/shared";
 import { DriveArchiveHandler } from "./drive-archive.handler.js";
 
@@ -6,12 +7,16 @@ describe("DriveArchiveHandler", () => {
   it("creates archive folder and completes task", async () => {
     const driveRepository = {
       createArchiveFolder: vi.fn().mockResolvedValue("folder-1"),
+      ensureArchiveFileRef: vi.fn().mockResolvedValue(undefined),
     };
     const taskRepository = {
       findById: vi.fn().mockResolvedValue({
         id: "task-1",
         status: "llm_running",
         title: "Case A",
+        audioStorageKey: "u1/task-1/audio.mp3",
+        sourceStorageKey: "u1/task-1/source.mp3",
+        sizeBytes: "4096",
       }),
       setArchiveFolderId: vi.fn().mockResolvedValue(undefined),
     };
@@ -33,7 +38,7 @@ describe("DriveArchiveHandler", () => {
     );
 
     await handler.handle({
-      client: {} as never,
+      pool: createMockPool(),
       event: { id: "evt-5" } as never,
       payload: {
         stage: PIPELINE_STAGE_DRIVE_ARCHIVE,

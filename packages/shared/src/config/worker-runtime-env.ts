@@ -1,4 +1,5 @@
 import { requireEnv } from "./env.js";
+import { assertUsableWorkerDatabaseUrl } from "./worker-database-url.js";
 import {
   loadOutboxRuntimeEnvFromProcess,
   type OutboxRuntimeEnvConfig,
@@ -44,6 +45,7 @@ export function loadWorkerRuntimeEnvFromProcess(): WorkerRuntimeEnvConfig {
     process.env.WORKER_DB_URL?.trim() ||
     process.env.OUTBOX_DB_URL?.trim() ||
     requireEnv("SUPABASE_DB_URL");
+  assertUsableWorkerDatabaseUrl(workerDbUrl);
 
   const ffmpegRaw = process.env.FFMPEG_PATH;
   let ffmpegPath: string;
@@ -62,7 +64,7 @@ export function loadWorkerRuntimeEnvFromProcess(): WorkerRuntimeEnvConfig {
     outboxDbUrl: workerDbUrl,
     ffmpegPath,
     workerMaxConcurrency: parsePositiveInt(
-      process.env.WORKER_MAX_CONCURRENCY,
+      process.env.WORKER_MAX_CONCURRENCY ?? process.env.WORKER_CONCURRENCY,
       DEFAULT_WORKER_MAX_CONCURRENCY,
     ),
     asrRateLimitMax: parsePositiveInt(

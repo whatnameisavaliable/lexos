@@ -1,10 +1,10 @@
-import type { PoolClient } from "pg";
+import type { Pool } from "pg";
 import type { PipelineStageOutboxPayload } from "@lexos/shared";
 import type { OutboxEventRow } from "../repositories/outbox-event.repository.js";
 
 /** 阶段 Handler 上下文。 */
 export interface StageHandlerContext {
-  readonly client: PoolClient;
+  readonly pool: Pool;
   readonly event: OutboxEventRow;
   readonly payload: PipelineStageOutboxPayload;
 }

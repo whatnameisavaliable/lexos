@@ -1,6 +1,7 @@
 import { ErrorCode } from "@lexos/shared/api";
 import { PIPELINE_STAGE_ASR } from "@lexos/shared";
 import { buildNextStageOutboxRow } from "../domain/worker-outbox.factory.js";
+import { withPgClient } from "../infra/with-pg-client.js";
 import type { StageHandler, StageHandlerContext } from "./stage-handler.js";
 import type { AsrSegmentRunnerService } from "../services/asr-segment-runner.service.js";
 import type { MediaPreprocessService } from "../services/media-preprocess.service.js";
@@ -21,43 +22,48 @@ export class AsrHandler implements StageHandler {
   ) {}
 
   async handle(context: StageHandlerContext): Promise<void> {
-    const { client, event, payload } = context;
-    const task = await this.taskRepository.findById(client, payload.taskId);
-    if (!task) {
-      throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
-    }
-    if (task.status !== "asr_running") {
-      throw new Error(`unexpected task status for asr: ${task.status}`);
-    }
+    const { pool, event, payload } = context;
+
+    await withPgClient(pool, async (client) => {
+      const task = await this.taskRepository.findById(client, payload.taskId);
+      if (!task) {
+        throw new Error(ErrorCode.RESOURCE_NOT_FOUND);
+      }
+      if (task.status !== "asr_running") {
+        throw new Error(`unexpected task status for asr: ${task.status}`);
+      }
+    });
 
     const segments = await this.mediaPreprocess.loadPreparedSegments(
       payload.taskId,
     );
 
-    const asrResult = await this.asrRunner.run(client, payload.taskId, segments);
-    await this.transcriptRepository.upsertTranscript(client, {
-      taskId: payload.taskId,
-      asrRawJson: asrResult.asrRawJson,
-    });
-    if (asrResult.diarizationDegraded) {
-      await this.taskRepository.updateDiarizationDegraded(
-        client,
-        payload.taskId,
-        true,
-      );
-    }
+    const asrResult = await this.asrRunner.run(pool, payload.taskId, segments);
 
-    await this.transactionService.completeStage(client, {
-      outboxEventId: event.id,
-      taskId: payload.taskId,
-      fromStatus: "asr_running",
-      toStatus: "llm_running",
-      nextOutbox: buildNextStageOutboxRow({
-        currentStage: PIPELINE_STAGE_ASR,
+    await withPgClient(pool, async (client) => {
+      await this.transcriptRepository.upsertTranscript(client, {
         taskId: payload.taskId,
-        createdBy: payload.createdBy,
-        isMp4: payload.isMp4,
-      }),
+        asrRawJson: asrResult.asrRawJson,
+      });
+      if (asrResult.diarizationDegraded) {
+        await this.taskRepository.updateDiarizationDegraded(
+          client,
+          payload.taskId,
+          true,
+        );
+      }
+      await this.transactionService.completeStage(client, {
+        outboxEventId: event.id,
+        taskId: payload.taskId,
+        fromStatus: "asr_running",
+        toStatus: "llm_running",
+        nextOutbox: buildNextStageOutboxRow({
+          currentStage: PIPELINE_STAGE_ASR,
+          taskId: payload.taskId,
+          createdBy: payload.createdBy,
+          isMp4: payload.isMp4,
+        }),
+      });
     });
   }
 }

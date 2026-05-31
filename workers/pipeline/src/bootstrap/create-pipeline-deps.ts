@@ -11,7 +11,7 @@ import {
   type WorkerRuntimeEnvConfig,
 } from "@lexos/shared/config";
 import { FfmpegRunner } from "../adapters/ffmpeg/ffmpeg.runner.js";
-import { FetchWorkerAiClient } from "../adapters/ai/fetch-worker-ai.client.js";
+import { RoutingWorkerAiClient } from "../adapters/ai/routing-worker-ai.client.js";
 import { WorkerAuditAdapter } from "../adapters/audit/worker-audit.adapter.js";
 import { WorkerStorageAdapter } from "../adapters/storage/worker-storage.adapter.js";
 import { AsrHandler } from "../handlers/asr.handler.js";
@@ -75,7 +75,8 @@ export function createPipelineStageProcessor(
   const mediaPreprocess = new MediaPreprocessService(env, ffmpeg, storage);
 
   const aiRepository = new WorkerAiRepository(env, aiEnv);
-  const aiClient = overrides.aiClient ?? new FetchWorkerAiClient();
+  const aiClient =
+    overrides.aiClient ?? new RoutingWorkerAiClient(storage);
   const aiOrchestration = new AiOrchestrationService(
     aiRepository,
     aiClient,

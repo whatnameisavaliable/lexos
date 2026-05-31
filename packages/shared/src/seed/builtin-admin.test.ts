@@ -88,16 +88,17 @@ describe("seedBuiltinAdmin", () => {
     );
   });
 
-  it("skips createUser when auth user already exists", async () => {
+  it("resets password when auth user already exists", async () => {
     const upsert = vi.fn().mockResolvedValue({ error: null });
     const createUser = vi.fn();
+    const updateUserById = vi.fn().mockResolvedValue({ error: null });
     const listUsers = vi.fn().mockResolvedValue({
       data: { users: [{ id: "existing", email: "admin@llexos.internal" }] },
       error: null,
     });
 
     const client = {
-      auth: { admin: { listUsers, createUser } },
+      auth: { admin: { listUsers, createUser, updateUserById } },
       from: vi.fn().mockReturnValue({ upsert }),
     };
 
@@ -109,5 +110,8 @@ describe("seedBuiltinAdmin", () => {
 
     expect(result.createdAuthUser).toBe(false);
     expect(createUser).not.toHaveBeenCalled();
+    expect(updateUserById).toHaveBeenCalledWith("existing", {
+      password: "initial-secret",
+    });
   });
 });

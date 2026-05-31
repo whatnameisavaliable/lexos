@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { PIPELINE_STAGE_ASR } from "@lexos/shared";
 import { AsrHandler } from "./asr.handler.js";
 
@@ -34,7 +35,7 @@ describe("AsrHandler", () => {
     );
 
     await handler.handle({
-      client: {} as never,
+      pool: createMockPool(),
       event: { id: "evt-3" } as never,
       payload: {
         stage: PIPELINE_STAGE_ASR,

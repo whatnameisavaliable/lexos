@@ -11,6 +11,12 @@ export interface TranscriptionUploadInitResponse {
    * TUS 上传 **必须** 仅在此前缀下创建对象。
    */
   readonly storageKeyPrefix: string;
+  /**
+   * 桶内完整对象键（已 ASCII 规范化文件名；TUS `objectName` 须与此一致）。
+   */
+  readonly storageObjectKey: string;
+  /** 媒体桶名（与 `STORAGE_BUCKET_MEDIA` 一致；供 TUS metadata，避免前端硬编码）。 */
+  readonly storageBucket: string;
   /** Supabase Storage Resumable Upload（TUS）端点 URL。 */
   readonly tusEndpoint: string;
   /**

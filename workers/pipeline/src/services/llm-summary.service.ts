@@ -1,4 +1,4 @@
-import type { PoolClient } from "pg";
+import type { Pool } from "pg";
 import { AiFeatureKey } from "@lexos/shared";
 import { WorkerAiRepository } from "../repositories/worker-ai.repository.js";
 import type { AiOrchestrationService } from "./ai-orchestration.service.js";
@@ -9,13 +9,9 @@ import type { AiOrchestrationService } from "./ai-orchestration.service.js";
 export class LlmSummaryService {
   constructor(private readonly aiOrchestration: AiOrchestrationService) {}
 
-  async summarize(
-    client: PoolClient,
-    taskId: string,
-    polishedText: string,
-  ): Promise<string> {
+  async summarize(pool: Pool, taskId: string, polishedText: string): Promise<string> {
     const result = await this.aiOrchestration.invoke({
-      client,
+      pool,
       taskId,
       featureKey: AiFeatureKey.LLM_LEGAL_SUMMARY,
       idempotencyKey: WorkerAiRepository.buildIdempotencyKey([

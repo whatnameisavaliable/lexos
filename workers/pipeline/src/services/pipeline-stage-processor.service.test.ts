@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { PIPELINE_STAGE_ASR } from "@lexos/shared";
+import { createMockPool } from "../test/pg-test-helpers.js";
 import { PipelineStageProcessorService } from "./pipeline-stage-processor.service.js";
 
 describe("PipelineStageProcessorService", () => {
@@ -22,8 +23,16 @@ describe("PipelineStageProcessorService", () => {
       stageErrorHandler as never,
     );
 
-    await processor.processStage(
-      {} as never,
+    const pool = createMockPool();
+    pool.mockClient.query = vi.fn().mockImplementation(async (sql: string) => {
+      if (sql.includes("SELECT status, error_message")) {
+        return { rows: [{ status: "completed", error_message: null }] };
+      }
+      return { rows: [], rowCount: 0 };
+    }) as never;
+
+    const outcome = await processor.processStage(
+      pool,
       { id: "evt-dup" } as never,
       {
         stage: PIPELINE_STAGE_ASR,
@@ -33,6 +42,7 @@ describe("PipelineStageProcessorService", () => {
       },
     );
 
+    expect(outcome).toEqual({ kind: "skipped_duplicate" });
     expect(handler.handle).not.toHaveBeenCalled();
     expect(outboxRepository.markPublished).toHaveBeenCalledWith(
       expect.anything(),

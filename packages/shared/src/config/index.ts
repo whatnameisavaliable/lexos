@@ -49,6 +49,11 @@ export {
   type WorkerRuntimeEnvConfig,
 } from "./worker-runtime-env.js";
 export {
+  assertUsableWorkerDatabaseUrl,
+  describeDatabaseEndpoint,
+  isPlaceholderDatabaseUrl,
+} from "./worker-database-url.js";
+export {
   assertSupabaseReachable,
   probeSupabaseRest,
   type SupabaseConnectivityResult,

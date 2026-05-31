@@ -31,12 +31,12 @@ describe("authChangePasswordBodySchema", () => {
     ).toThrow(ZodError);
   });
 
-  it("rejects empty currentPassword when provided", () => {
-    expect(() =>
-      parseAuthChangePasswordBody({
-        currentPassword: "",
-        newPassword: "long-enough",
-      }),
-    ).toThrow(ZodError);
+  it("treats empty currentPassword as omitted (forced-change form default)", () => {
+    const body = parseAuthChangePasswordBody({
+      currentPassword: "",
+      newPassword: "long-enough",
+    });
+    expect(body.currentPassword).toBeUndefined();
+    expect(hasCurrentPassword(body)).toBe(false);
   });
 });

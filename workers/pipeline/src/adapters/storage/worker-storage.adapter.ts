@@ -77,4 +77,32 @@ export class WorkerStorageAdapter {
       );
     }
   }
+
+  /** 生成临时可读 URL（供 DashScope 等需公网 file_url 的 ASR 使用）。 */
+  async createSignedDownloadUrl(
+    storageKey: string,
+    expiresInSec: number,
+  ): Promise<string> {
+    const { data, error } = await this.client.storage
+      .from(this.bucket)
+      .createSignedUrl(storageKey, expiresInSec);
+    if (error || !data?.signedUrl) {
+      throw new Error(
+        `Storage signed URL failed for ${storageKey}: ${error?.message ?? "empty"}`,
+      );
+    }
+    return data.signedUrl;
+  }
+
+  /** 删除临时对象（失败时忽略）。 */
+  async removeObject(storageKey: string): Promise<void> {
+    const { error } = await this.client.storage
+      .from(this.bucket)
+      .remove([storageKey]);
+    if (error) {
+      throw new Error(
+        `Storage remove failed for ${storageKey}: ${error.message}`,
+      );
+    }
+  }
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { AiModelPublic, AiProviderKind } from "@lexos/shared";
-import { AI_PROVIDER_KIND_VALUES } from "@lexos/shared";
+import type { AiModelPublic } from "@lexos/shared";
 import { createModel, updateModel } from "@/lib/admin-ai-api";
 import { toApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -15,15 +14,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+
+/**
+ * 新建凭证默认适配器（仅服务端路由用，不在 UI 暴露枚举）。
+ * 私有化网关多为 OpenAI 兼容协议；连通性测试走 `/models` 探活。
+ */
+const DEFAULT_ADAPTER_KIND = "openai_compatible" as const;
 
 interface AiModelFormDialogProps {
   readonly open: boolean;
@@ -41,7 +39,6 @@ export function AiModelFormDialog({
 }: AiModelFormDialogProps) {
   const isEdit = Boolean(model);
   const [name, setName] = useState("");
-  const [providerKind, setProviderKind] = useState<AiProviderKind>("openai_compatible");
   const [modelName, setModelName] = useState("");
   const [modelId, setModelId] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -54,7 +51,6 @@ export function AiModelFormDialog({
   useEffect(() => {
     if (!open) return;
     setName(model?.name ?? "");
-    setProviderKind(model?.providerKind ?? "openai_compatible");
     setModelName(model?.modelName ?? "");
     setModelId(model?.modelId ?? "");
     setApiKey("");
@@ -71,7 +67,6 @@ export function AiModelFormDialog({
       if (isEdit && model) {
         await updateModel(model.id, {
           name,
-          providerKind,
           modelName,
           modelId,
           ...(rotateKey && apiKey ? { apiKey } : {}),
@@ -83,7 +78,7 @@ export function AiModelFormDialog({
       } else {
         await createModel({
           name,
-          providerKind,
+          providerKind: DEFAULT_ADAPTER_KIND,
           modelName,
           modelId,
           apiKey,
@@ -108,35 +103,41 @@ export function AiModelFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "编辑模型" : "新建模型"}</DialogTitle>
+          <DialogTitle>{isEdit ? "编辑模型凭证" : "新建模型凭证"}</DialogTitle>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={(e) => void handleSubmit(e)}>
           <div className="grid gap-2">
-            <Label htmlFor="ai-name">名称</Label>
-            <Input id="ai-name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <Label htmlFor="ai-name">提供商 / 凭证名称</Label>
+            <Input
+              id="ai-name"
+              placeholder="如：DeepSeek 生产、律所内网网关"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              任意填写，仅用于列表展示；协议与端点由下方 Base URL 与模型 ID 决定。
+            </p>
           </div>
           <div className="grid gap-2">
-            <Label>提供商</Label>
-            <Select value={providerKind} onValueChange={(v) => setProviderKind(v as AiProviderKind)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_PROVIDER_KIND_VALUES.map((kind) => (
-                  <SelectItem key={kind} value={kind}>
-                    {kind}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="ai-model-name">模型名</Label>
-            <Input id="ai-model-name" value={modelName} onChange={(e) => setModelName(e.target.value)} required />
+            <Label htmlFor="ai-model-name">模型名称</Label>
+            <Input
+              id="ai-model-name"
+              placeholder="如：deepseek-chat"
+              value={modelName}
+              onChange={(e) => setModelName(e.target.value)}
+              required
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="ai-model-id">模型 ID</Label>
-            <Input id="ai-model-id" value={modelId} onChange={(e) => setModelId(e.target.value)} required />
+            <Input
+              id="ai-model-id"
+              placeholder="与厂商控制台中的 model 字段一致"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+              required
+            />
           </div>
           {isEdit ? (
             <div className="flex items-center gap-2">
@@ -160,8 +161,17 @@ export function AiModelFormDialog({
             <p className="text-sm text-muted-foreground">当前密钥：{model?.apiKeyMasked}</p>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="ai-base-url">Base URL（可选）</Label>
-            <Input id="ai-base-url" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
+            <Label htmlFor="ai-base-url">API Base URL</Label>
+            <Input
+              id="ai-base-url"
+              placeholder="DeepSeek: https://api.deepseek.com · Gemini: https://generativelanguage.googleapis.com/v1beta/openai"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              私有化或代理时填写。Google Gemini 请用
+              generativelanguage.googleapis.com/v1beta/openai，勿填 googleapis.com。
+            </p>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">

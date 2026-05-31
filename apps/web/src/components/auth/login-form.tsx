@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { authLoginBodySchema, type AuthLoginBody } from "@lexos/shared";
-import { getSession, login } from "@/lib/auth-api";
+import { login } from "@/lib/auth-api";
 import { toApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,8 +37,7 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
     try {
-      await login(values);
-      const session = await getSession();
+      const session = await login(values);
       if (session.requiresPasswordChange) {
         router.replace("/change-password");
       } else if (session.role === "admin") {
@@ -107,7 +106,7 @@ export function LoginForm() {
         </form>
       </Form>
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        忘记密码请联系系统管理员重置
+        忘记密码请联系系统管理员重置。管理员重置后请使用系统初始密码（AUTH_INITIAL_PASSWORD）登录，而非旧密码。
       </p>
     </div>
   );

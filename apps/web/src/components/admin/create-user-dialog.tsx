@@ -7,6 +7,7 @@ import { parseAdminUserCreateBody, type AdminUserCreateBody } from "@lexos/share
 import { applyZodErrors } from "@/lib/validation/apply-zod-errors";
 import { createUser } from "@/lib/admin-users-api";
 import { toApiClientError } from "@/lib/api-client";
+import { toast } from "sonner";
 import { ASSIGNABLE_ROLES, ROLE_LABELS } from "@/components/admin/role-labels";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,10 +73,15 @@ export function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
       return;
     }
     try {
-      await createUser(body);
+      const created = await createUser(body);
       setOpen(false);
       form.reset();
       onCreated();
+      toast.success(`已创建用户「${created.displayName}」`, {
+        description:
+          "请告知其使用系统初始密码（.env 中 AUTH_INITIAL_PASSWORD，与 PRD 示例 111111 一致）登录；首次登录将进入强制改密页。",
+        duration: 12_000,
+      });
     } catch (err) {
       setError(toApiClientError(err).message);
     } finally {
@@ -91,6 +97,9 @@ export function CreateUserDialog({ onCreated }: CreateUserDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>创建用户</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            初始密码由服务端环境变量 AUTH_INITIAL_PASSWORD 统一配置，创建后须首次登录改密。
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">

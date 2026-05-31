@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -37,22 +38,24 @@ export function DriveBreadcrumbNav({
         {segments.map((segment, index) => {
           const isLast = index === segments.length - 1;
           return (
-            <BreadcrumbItem key={segment.id}>
+            <Fragment key={segment.id}>
               {index > 0 ? <BreadcrumbSeparator /> : null}
-              {isLast ? (
-                <BreadcrumbPage>{segment.name}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <button
-                    type="button"
-                    className="hover:underline"
-                    onClick={() => onNavigate(segment.id)}
-                  >
-                    {segment.name}
-                  </button>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{segment.name}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <button
+                      type="button"
+                      className="hover:underline"
+                      onClick={() => onNavigate(segment.id)}
+                    >
+                      {segment.name}
+                    </button>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </Fragment>
           );
         })}
       </BreadcrumbList>

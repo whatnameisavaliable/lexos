@@ -208,7 +208,11 @@ export function AdminUsersPanel() {
         open={resetOpen}
         onOpenChange={setResetOpen}
         onDone={() => {
-          toast.success("密码已重置，用户须重新登录并改密");
+          toast.success("密码已重置", {
+            description:
+              "请使用 AUTH_INITIAL_PASSWORD（.env 配置的初始密码）登录，勿使用重置前的旧密码；登录后将进入强制改密页。",
+            duration: 12_000,
+          });
           refresh();
         }}
       />

@@ -96,8 +96,8 @@ export function AiModelsPanel() {
         <Table>
           <TableHeader>
             <TableRow className="h-10">
-              <TableHead>名称</TableHead>
-              <TableHead>Provider</TableHead>
+              <TableHead>提供商 / 名称</TableHead>
+              <TableHead>模型</TableHead>
               <TableHead>Model ID</TableHead>
               <TableHead className="text-center">启用</TableHead>
               <TableHead className="text-center">兜底</TableHead>
@@ -108,7 +108,7 @@ export function AiModelsPanel() {
             {items.map((model) => (
               <TableRow key={model.id} className="h-9 text-sm">
                 <TableCell>{model.name}</TableCell>
-                <TableCell>{model.providerKind}</TableCell>
+                <TableCell>{model.modelName}</TableCell>
                 <TableCell className="font-mono text-xs">{model.modelId}</TableCell>
                 <TableCell className="text-center">
                   {model.isEnabled ? (

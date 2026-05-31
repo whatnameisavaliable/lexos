@@ -56,7 +56,8 @@ export function ResetPasswordAlertDialog({
           <AlertDialogTitle>重置密码</AlertDialogTitle>
           <AlertDialogDescription>
             将把用户「{user?.displayName}」（{user?.username}
-            ）的密码重置为系统初始密码，并强制其在下次登录后修改密码；其所有已登录会话将被立即吊销。
+            ）的密码重置为系统初始密码（与 .env 中 AUTH_INITIAL_PASSWORD
+            一致，非其旧密码），并强制下次登录后改密；所有已登录会话将被吊销。重置后须用初始密码登录。
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error ? (

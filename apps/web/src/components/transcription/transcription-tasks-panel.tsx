@@ -15,8 +15,12 @@ const PAGE_LIMIT = "50";
 
 const TERMINAL_STATUSES = new Set(["completed", "failed"]);
 
+/** 列表轮询：仅处理中流水线状态；`uploading` 由上传弹窗完成时刷新，避免卡住任务导致整表闪烁。 */
 function hasActivePipelineTasks(items: readonly TranscriptionTaskSummary[]): boolean {
-  return items.some((item) => !TERMINAL_STATUSES.has(item.status));
+  return items.some(
+    (item) =>
+      !TERMINAL_STATUSES.has(item.status) && item.status !== "uploading",
+  );
 }
 
 export interface TranscriptionTasksPanelProps {
@@ -36,8 +40,10 @@ export function TranscriptionTasksPanel({
   const [cursorStack, setCursorStack] = useState<readonly string[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>();
 
-  const load = useCallback(async (opts?: { cursor?: string }) => {
-    setLoading(true);
+  const load = useCallback(async (opts?: { cursor?: string; silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const data = await listTasks({
@@ -48,9 +54,13 @@ export function TranscriptionTasksPanel({
       setNextCursor(data.meta.nextCursor);
     } catch (err) {
       setError(toApiClientError(err).message);
-      setItems([]);
+      if (!opts?.silent) {
+        setItems([]);
+      }
     } finally {
-      setLoading(false);
+      if (!opts?.silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -59,16 +69,16 @@ export function TranscriptionTasksPanel({
   }, [load, cursor]);
 
   useEffect(() => {
-    if (loading || error || !hasActivePipelineTasks(items)) {
+    if (error || !hasActivePipelineTasks(items)) {
       return;
     }
     const timer = setInterval(() => {
-      void load({ cursor });
+      void load({ cursor, silent: true });
     }, getTaskPollIntervalMs());
     return () => {
       clearInterval(timer);
     };
-  }, [loading, error, items, cursor, load]);
+  }, [error, items, cursor, load]);
 
   function refresh() {
     void load({ cursor });

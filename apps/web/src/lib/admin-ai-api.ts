@@ -185,6 +185,11 @@ export async function updatePrompt(
   return res.data;
 }
 
+/** `DELETE /api/admin/ai/prompts/:id` */
+export async function deletePrompt(promptId: string): Promise<void> {
+  await apiFetch<null>(`/admin/ai/prompts/${promptId}`, { method: "DELETE" });
+}
+
 /** `POST /api/admin/ai/prompts/:id/publish` */
 export async function publishPrompt(promptId: string): Promise<AiPromptData> {
   const res = await apiFetch<AiPromptData>(

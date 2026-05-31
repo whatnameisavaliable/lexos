@@ -5,6 +5,8 @@ import type { AiPromptData } from "@/lib/admin-ai-api";
 import { listPrompts } from "@/lib/admin-ai-api";
 import { toApiClientError } from "@/lib/api-client";
 import { AiPromptEditorDialog } from "@/components/admin/ai/ai-prompt-editor-dialog";
+import { DeletePromptAlertDialog } from "@/components/admin/ai/delete-prompt-alert-dialog";
+import { toast } from "sonner";
 import { AI_FEATURE_LABELS } from "@/components/admin/ai/feature-labels";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,8 @@ export function AiPromptsPanel() {
   const [error, setError] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<AiPromptData | null>(null);
+  const [deleting, setDeleting] = useState<AiPromptData | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -96,7 +100,7 @@ export function AiPromptsPanel() {
                     <Badge variant="outline">草稿</Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -107,6 +111,17 @@ export function AiPromptsPanel() {
                     }}
                   >
                     {prompt.isPublished ? "查看" : "编辑"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setDeleting(prompt);
+                      setDeleteOpen(true);
+                    }}
+                  >
+                    删除
                   </Button>
                 </TableCell>
               </TableRow>
@@ -120,6 +135,16 @@ export function AiPromptsPanel() {
         onOpenChange={setEditorOpen}
         prompt={editing}
         onSaved={() => void load()}
+      />
+
+      <DeletePromptAlertDialog
+        prompt={deleting}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDone={() => {
+          toast.success("Prompt 已删除");
+          void load();
+        }}
       />
     </div>
   );

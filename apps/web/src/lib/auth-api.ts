@@ -1,6 +1,6 @@
 import type { AuthLoginBody, AuthChangePasswordBody } from "@lexos/shared";
 import { apiFetch } from "./api-client";
-import { setAccessToken, clearAccessToken } from "./session";
+import { clearAccessToken, setSessionTokens } from "./session";
 
 /** 登录成功响应（U2 `AuthLoginService`）。 */
 export interface LoginResponseData {
@@ -8,6 +8,8 @@ export interface LoginResponseData {
   readonly refreshToken: string;
   readonly userId: string;
   readonly expiresAt?: number;
+  readonly role: "admin" | "lawyer";
+  readonly requiresPasswordChange: boolean;
 }
 
 /** 会话摘要（`GET /api/auth/session`）。 */
@@ -28,7 +30,7 @@ export async function login(body: AuthLoginBody): Promise<LoginResponseData> {
     method: "POST",
     body: JSON.stringify(body),
   });
-  setAccessToken(res.data.accessToken);
+  setSessionTokens(res.data.accessToken, res.data.refreshToken);
   return res.data;
 }
 
@@ -53,6 +55,7 @@ export async function getSession(): Promise<SessionResponseData> {
 export interface ChangePasswordResponseData {
   readonly ok: boolean;
   readonly accessToken: string;
+  readonly refreshToken?: string;
   readonly expiresAt?: number;
 }
 
@@ -68,7 +71,7 @@ export async function changePassword(
     },
   );
   if (res.data.accessToken) {
-    setAccessToken(res.data.accessToken);
+    setSessionTokens(res.data.accessToken, res.data.refreshToken);
   }
 }
 

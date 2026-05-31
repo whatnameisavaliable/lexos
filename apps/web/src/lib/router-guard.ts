@@ -31,7 +31,7 @@ export function resolveGuardRedirect(
     return "/unauthorized";
   }
 
-  if (pathname === "/login" || pathname === "/change-password") {
+  if (pathname === "/login") {
     return session.role === "admin" ? "/admin" : "/lawyer";
   }
 

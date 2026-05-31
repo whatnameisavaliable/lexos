@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import type { DriveNodeSummary } from "@lexos/shared";
 import {
   downloadDriveFile,
@@ -23,6 +24,9 @@ const PAGE_LIMIT = 50;
 export function DrivePagePanel() {
   const [rootId, setRootId] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentFolderLinkedTaskId, setCurrentFolderLinkedTaskId] = useState<
+    string | null
+  >(null);
   const [segments, setSegments] = useState<readonly DriveBreadcrumbSegment[]>(
     [],
   );
@@ -61,6 +65,14 @@ export function DrivePagePanel() {
         setItems(cursor ? (prev) => [...prev, ...data.items] : data.items);
         setNextCursor(data.meta.nextCursor);
         setCurrentFolderId(folderId);
+        if (!cursor) {
+          if (folderId === root) {
+            setCurrentFolderLinkedTaskId(null);
+          } else {
+            const folderNode = await getDriveNode(folderId);
+            setCurrentFolderLinkedTaskId(folderNode.linkedTaskId);
+          }
+        }
         await rebuildBreadcrumb(folderId, root);
       } catch (err) {
         setError(toApiClientError(err).message);
@@ -162,7 +174,18 @@ export function DrivePagePanel() {
 
       {!loading && items.length === 0 && !error ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm text-muted-foreground">当前文件夹为空</p>
+          <p className="text-sm text-muted-foreground">
+            {currentFolderLinkedTaskId
+              ? "正在加载归档文件，或该目录暂无文件"
+              : "当前文件夹为空"}
+          </p>
+          {currentFolderLinkedTaskId ? (
+            <Button variant="link" size="sm" className="h-auto px-0" asChild>
+              <Link href={`/transcription/${currentFolderLinkedTaskId}`}>
+                打开转写工作台（可下载录音）
+              </Link>
+            </Button>
+          ) : null}
           {currentFolderId ? (
             <CreateFolderDialog
               parentId={currentFolderId}

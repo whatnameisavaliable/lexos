@@ -6,12 +6,16 @@ import {
   type ApiSuccessResponse,
 } from "@lexos/shared/api";
 import type { ErrorCode } from "@lexos/shared/api";
-import { getAccessToken } from "./session";
+import { clearAccessToken, getAccessToken } from "./session";
+import { refreshSession } from "./refresh-session";
+import { buildClientAuditHeaders } from "./client-audit-headers";
 
 /** API 客户端可配置项。 */
 export interface ApiClientOptions {
   /** 相对 BFF 根路径，默认 `/api`。 */
   readonly baseUrl?: string;
+  /** 内部：401 后已尝试 refresh，避免无限重试。 */
+  readonly retriedAuth?: boolean;
 }
 
 /** 业务 API 失败（含 `error.code`）。 */
@@ -25,6 +29,15 @@ export class ApiClientError extends Error {
     super(message);
     this.name = "ApiClientError";
   }
+}
+
+const USER_FACING_ERROR_MESSAGES: Partial<Record<string, string>> = {
+  AUTH_UNAUTHORIZED: "登录已过期或无效，请重新登录后再试",
+  AUTH_PASSWORD_CHANGE_REQUIRED: "请先修改密码后再继续操作",
+};
+
+function localizeErrorMessage(code: string, message: string): string {
+  return USER_FACING_ERROR_MESSAGES[code] ?? message;
 }
 
 /**
@@ -43,6 +56,12 @@ export async function apiFetch<T>(
     headers.set("content-type", "application/json");
   }
 
+  for (const [key, value] of Object.entries(buildClientAuditHeaders())) {
+    if (!headers.has(key)) {
+      headers.set(key, value);
+    }
+  }
+
   const token = getAccessToken();
   if (token && !headers.has("authorization")) {
     headers.set("authorization", `Bearer ${token}`);
@@ -59,10 +78,18 @@ export async function apiFetch<T>(
   try {
     payload = (rawText ? JSON.parse(rawText) : {}) as ApiResponse<T>;
   } catch {
-    const hint =
-      response.status === 404 || response.status === 502 || response.status === 503
+    const trimmed = rawText.trimStart();
+    const isHtml =
+      trimmed.startsWith("<!DOCTYPE") ||
+      trimmed.startsWith("<html") ||
+      trimmed.startsWith("<HTML");
+    const hint = isHtml
+      ? "API 返回了 HTML 页面（可能未启动或已崩溃），请在新终端执行 npm run dev:api:restart 后重试"
+      : response.status === 404 || response.status === 502 || response.status === 503
         ? "无法连接 BFF/API，请先运行 npm run dev:api（端口 4000）"
-        : "服务端返回非 JSON 响应";
+        : trimmed.length > 0
+          ? `服务端返回非 JSON 响应（HTTP ${response.status}）`
+          : "服务端返回非 JSON 响应";
     throw new ApiClientError(
       "INTERNAL_ERROR",
       hint,
@@ -72,9 +99,23 @@ export async function apiFetch<T>(
   }
 
   if (isApiErrorResponse(payload)) {
+    if (
+      payload.error.code === "AUTH_UNAUTHORIZED" &&
+      !options.retriedAuth &&
+      !path.includes("/auth/login") &&
+      !path.includes("/auth/refresh")
+    ) {
+      try {
+        await refreshSession();
+        return apiFetch<T>(path, init, { ...options, retriedAuth: true });
+      } catch {
+        clearAccessToken();
+      }
+    }
+
     throw new ApiClientError(
       payload.error.code,
-      payload.error.message,
+      localizeErrorMessage(payload.error.code, payload.error.message),
       payload.error.requestId,
       response.status,
     );

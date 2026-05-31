@@ -1,5 +1,4 @@
 import type { TranscriptionUploadInitResponse } from "@lexos/shared";
-import { getPublicMediaStorageBucket } from "./public-env";
 
 /** TUS 客户端 `metadata` 字段（Supabase Resumable Upload）。 */
 export interface TusUploadMetadata {
@@ -9,23 +8,8 @@ export interface TusUploadMetadata {
 }
 
 /**
- * 由 BFF 返回的 `storageKeyPrefix` 与本地文件名拼接对象键。
- * **禁止**自行构造 `{other_user_id}/...` 前缀（`ui_design.md` §6.3.3）。
- */
-export function buildTusObjectName(
-  storageKeyPrefix: string,
-  fileName: string,
-): string {
-  const prefix = storageKeyPrefix.endsWith("/")
-    ? storageKeyPrefix
-    : `${storageKeyPrefix}/`;
-  const base =
-    fileName.replace(/\\/g, "/").split("/").pop()?.trim() ?? "upload";
-  return `${prefix}${base}`;
-}
-
-/**
  * 构建 `tus-js-client` 所需 endpoint / headers / metadata。
+ * 对象键必须使用 BFF 返回的 `storageObjectKey`（已规范化，禁止本地拼接中文路径）。
  */
 export function buildTusUploadOptions(
   init: TranscriptionUploadInitResponse,
@@ -39,8 +23,8 @@ export function buildTusUploadOptions(
     endpoint: init.tusEndpoint,
     headers: init.tusHeaders ?? {},
     metadata: {
-      bucketName: getPublicMediaStorageBucket(),
-      objectName: buildTusObjectName(init.storageKeyPrefix, file.name),
+      bucketName: init.storageBucket,
+      objectName: init.storageObjectKey,
       contentType: file.type || "application/octet-stream",
     },
   };

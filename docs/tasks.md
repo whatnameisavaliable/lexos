@@ -1200,29 +1200,29 @@
 
 ### M8-H 前端 · Shadcn 与页面（每条一项）
 
-- [ ] 执行 `npx shadcn@latest add calendar`（日期筛选，若未引入）
-- [ ] 执行 `npx shadcn@latest add popover`（日期范围选择器组合）
-- [ ] 执行 `npx shadcn@latest add sheet`（审计详情侧栏；若用 `Dialog` 替代则跳过）
-- [ ] 新增 `apps/web/src/lib/admin-audit-api.ts`：`listAuditLogs`、`getAuditLog`
-- [ ] 新增 `apps/web/src/lib/admin-settings-api.ts`：`listSettings`、`getSetting`、`upsertSetting`
-- [ ] 新增 `apps/web/src/lib/client-audit-headers.ts`：为 BFF 请求附加 `X-Client-Timestamp` / `X-Client-Timezone`
-- [ ] 在 `apps/web/src/lib/api-client.ts` 默认注入 `client-audit-headers`
-- [ ] 新增 `apps/web/src/app/(dashboard)/admin/audit/page.tsx`：审计只读表；列：时间、`client_timestamp`、action、操作者、目标、IP
-- [ ] 新增 `apps/web/src/components/admin/audit-logs-table.tsx`：高密度表 + 筛选表单（§6.5）
-- [ ] 新增 `apps/web/src/components/admin/audit-log-detail-drawer.tsx`：Shadcn `Sheet` 或 `Dialog` 展示 `metadata` JSON（掩码敏感字段）
-- [ ] 新增 `apps/web/src/app/(dashboard)/admin/settings/page.tsx`：系统键值列表 + 编辑
-- [ ] 新增 `apps/web/src/components/admin/system-setting-form.tsx`：JSON 编辑（首期可用 `Textarea` 校验 JSON）
-- [ ] 在 `menus.ts` 增加「审计日志」「系统设置」→ `/admin/audit`、`/admin/settings`
+- [x] 执行 `npx shadcn@latest add calendar`（日期筛选，若未引入）
+- [x] 执行 `npx shadcn@latest add popover`（日期范围选择器组合）
+- [x] 执行 `npx shadcn@latest add sheet`（审计详情侧栏；若用 `Dialog` 替代则跳过）
+- [x] 新增 `apps/web/src/lib/admin-audit-api.ts`：`listAuditLogs`、`getAuditLog`
+- [x] 新增 `apps/web/src/lib/admin-settings-api.ts`：`listSettings`、`getSetting`、`upsertSetting`
+- [x] 新增 `apps/web/src/lib/client-audit-headers.ts`：为 BFF 请求附加 `X-Client-Timestamp` / `X-Client-Timezone`
+- [x] 在 `apps/web/src/lib/api-client.ts` 默认注入 `client-audit-headers`
+- [x] 新增 `apps/web/src/app/(app)/admin/audit/page.tsx`：审计只读表；列：时间、`client_timestamp`、action、操作者、目标、IP
+- [x] 新增 `apps/web/src/components/admin/audit-logs-table.tsx`：高密度表 + 筛选表单（§6.5）
+- [x] 新增 `apps/web/src/components/admin/audit-log-detail-drawer.tsx`：Shadcn `Sheet` 或 `Dialog` 展示 `metadata` JSON（掩码敏感字段）
+- [x] 新增 `apps/web/src/app/(app)/admin/settings/page.tsx`：系统键值列表 + 编辑
+- [x] 新增 `apps/web/src/components/admin/system-setting-form.tsx`：JSON 编辑（首期可用 `Textarea` 校验 JSON）
+- [x] 在 `menus.ts` 增加「审计日志」「系统设置」→ `/admin/audit`、`/admin/settings`
 
 ---
 
 ### M8-I 端到端与 Milestone 8 完成门禁
 
-- [ ] 手工验收：管理员筛选 `auth.login_failure` 可见 `attempted_username`（掩码规则【待确认】）
-- [ ] 手工验收：修改系统配置后 `updated_by` 正确；律师无法访问 `/admin/audit`
-- [ ] 运行 M8 测试全绿；连续失败 >2 次停止汇报
-- [ ] `git commit`：`feat(admin): audit logs query system settings and audit writer`
-- [ ] 进度表 **M8** 标为「已完成」
+- [x] 手工验收：管理员筛选 `auth.login_failure` 可见 `attempted_username`（掩码规则【待确认】）
+- [x] 手工验收：修改系统配置后 `updated_by` 正确；律师无法访问 `/admin/audit`
+- [x] 运行 M8 测试全绿；连续失败 >2 次停止汇报
+- [x] `git commit`：`feat(admin): audit logs query system settings and audit writer`
+- [x] 进度表 **M8** 标为「已完成」
 
 **M8 明确不在此 Milestone**：SIEM 对接、审计日志冷归档 Cron（`database.md` §6.3.4【待确认】）、律师端审计只读。
 
@@ -1363,5 +1363,5 @@ M*  → M9
 | M5 | 已完成（2026-05-30；U3 Postgres Outbox 流水线 + Stalled Cron；`npm run worker:pipeline` / `scheduler:stalled`） |
 | M6 | 已完成（2026-05-30；转写工作台校对/编辑、导出、签名下载、If-Match 乐观锁） |
 | M7 | 已完成 |
-| M8 | 已拆解（见上方原子任务） |
+| M8 | 已完成（2026-05-31；审计查询/系统设置 API+UI；AuditWriterService；自动化测试通过） |
 | M9 | 已拆解（见上方原子任务） |

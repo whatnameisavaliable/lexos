@@ -7,10 +7,10 @@ describe("AdminUserUpdateService", () => {
     findUserById: vi.fn(),
     updateProfileFields: vi.fn(),
   };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
   const service = new AdminUserUpdateService(
     adminUserRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   const actor = {
@@ -47,12 +47,13 @@ describe("AdminUserUpdateService", () => {
       createdAt: "t",
       updatedAt: "t",
     });
-    auditLogRepository.append.mockResolvedValue("a1");
+    auditWriterService.write.mockResolvedValue("a1");
 
     const result = await service.update(actor, "u1", { displayName: "New" });
     expect(result.displayName).toBe("New");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "user.update" }),
+      expect.any(Object),
     );
   });
 

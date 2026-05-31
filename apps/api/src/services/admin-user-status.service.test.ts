@@ -9,12 +9,12 @@ describe("AdminUserStatusService", () => {
     countEnabledAdmins: vi.fn(),
     setUserStatus: vi.fn(),
   };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
 
   const service = new AdminUserStatusService(
     authAdapter as never,
     adminUserRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   const actor = {
@@ -51,13 +51,14 @@ describe("AdminUserStatusService", () => {
       createdAt: "t",
       updatedAt: "t",
     });
-    auditLogRepository.append.mockResolvedValue("a1");
+    auditWriterService.write.mockResolvedValue("a1");
 
     await service.setStatus(actor, "u1", { status: "disabled" });
 
     expect(authAdapter.adminSignOutGlobal).toHaveBeenCalledWith("u1");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "user.disable" }),
+      expect.any(Object),
     );
   });
 

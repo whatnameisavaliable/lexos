@@ -3,7 +3,7 @@ import { ErrorCode } from "@lexos/shared/api";
 import type { SignedDownloadUrlResult } from "../adapters/storage/storage.adapter.js";
 import type { SupabaseStorageAdapter } from "../adapters/storage/supabase-storage.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
 /** 下载类型：音频抽音或原始源文件。 */
@@ -21,7 +21,7 @@ export class TranscriptionTaskDownloadService {
   constructor(
     private readonly taskRepository: TranscriptionTaskRepository,
     private readonly storageAdapter: SupabaseStorageAdapter,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   /**
@@ -70,20 +70,16 @@ export class TranscriptionTaskDownloadService {
       ownerId,
     );
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.download",
       targetType: "transcription_task",
       targetId: taskId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         downloadType: effectiveType,
         requestedType: type,
         objectKey: signed.objectKey,
         bucket: signed.bucket,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return signed;
   }

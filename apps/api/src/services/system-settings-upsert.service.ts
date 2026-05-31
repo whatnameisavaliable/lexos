@@ -4,6 +4,10 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import { assertSystemSettingKeyAllowed } from "../lib/system-setting-key-guard.js";
 import type { SystemSettingsRepository } from "../repositories/system-settings.repository.js";
 import type { SystemSettingItem } from "../repositories/system-settings.types.js";
+import type {
+  AuditRequestMeta,
+  AuditWriterService,
+} from "./audit-writer.service.js";
 
 /**
  * `PUT /api/admin/settings/:key` — 创建或更新系统配置。
@@ -11,6 +15,7 @@ import type { SystemSettingItem } from "../repositories/system-settings.types.js
 export class SystemSettingsUpsertService {
   constructor(
     private readonly systemSettingsRepository: SystemSettingsRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   async upsert(
@@ -18,6 +23,7 @@ export class SystemSettingsUpsertService {
     actorId: string,
     key: string,
     body: SystemSettingUpsert,
+    meta: AuditRequestMeta = {},
   ): Promise<SystemSettingItem> {
     try {
       assertSystemSettingKeyAllowed(key);
@@ -32,11 +38,24 @@ export class SystemSettingsUpsertService {
       throw new AppHttpError(ErrorCode.VALIDATION_FAILED, "Invalid setting key");
     }
 
-    return this.systemSettingsRepository.upsert(
+    const item = await this.systemSettingsRepository.upsert(
       accessToken,
       key.trim(),
       body.value,
       actorId,
     );
+
+    await this.auditWriterService.write(
+      {
+        actorId,
+        action: "user.update",
+        targetType: "system_setting",
+        targetId: null,
+        metadata: { setting_key: item.key },
+      },
+      { ip: meta.ip, userAgent: meta.userAgent, client: meta.client },
+    );
+
+    return item;
   }
 }

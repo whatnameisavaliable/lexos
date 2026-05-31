@@ -6,8 +6,8 @@ describe("SupabaseAuthAdapter admin APIs", () => {
     createUser: vi.fn(),
     updateUserById: vi.fn(),
     deleteUser: vi.fn(),
-    signOut: vi.fn(),
   };
+  const rpc = vi.fn();
 
   const adapter = new SupabaseAuthAdapter(
     {
@@ -19,8 +19,10 @@ describe("SupabaseAuthAdapter admin APIs", () => {
   );
 
   (
-    adapter as unknown as { adminClient: { auth: { admin: typeof adminAuth } } }
-  ).adminClient = { auth: { admin: adminAuth } };
+    adapter as unknown as {
+      adminClient: { auth: { admin: typeof adminAuth }; rpc: typeof rpc };
+    }
+  ).adminClient = { auth: { admin: adminAuth }, rpc };
 
   it("adminCreateUser returns userId without logging password", async () => {
     adminAuth.createUser.mockResolvedValue({
@@ -44,9 +46,11 @@ describe("SupabaseAuthAdapter admin APIs", () => {
     );
   });
 
-  it("adminSignOutGlobal delegates to admin signOut", async () => {
-    adminAuth.signOut.mockResolvedValue({ error: null });
+  it("adminSignOutGlobal revokes sessions via RPC", async () => {
+    rpc.mockResolvedValue({ error: null });
     await adapter.adminSignOutGlobal("uid-1");
-    expect(adminAuth.signOut).toHaveBeenCalledWith("uid-1", "global");
+    expect(rpc).toHaveBeenCalledWith("admin_revoke_user_sessions", {
+      p_user_id: "uid-1",
+    });
   });
 });

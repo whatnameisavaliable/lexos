@@ -15,7 +15,7 @@ import {
   buildStorageKeyPrefix,
 } from "../lib/transcription-storage-key.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 import type { UploadSessionRepository } from "../repositories/upload-session.repository.js";
 
@@ -32,7 +32,7 @@ export class TranscriptionUploadInitService {
     private readonly taskRepository: TranscriptionTaskRepository,
     private readonly uploadSessionRepository: UploadSessionRepository,
     private readonly storageAdapter: SupabaseStorageAdapter,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
     private readonly storageBucketMedia: string,
   ) {}
 
@@ -89,19 +89,15 @@ export class TranscriptionUploadInitService {
       objectKey: sourceStorageKey,
     });
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "task.create",
       targetType: "transcription_task",
       targetId: task.id,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         uploadSessionId: session.id,
         sizeBytes: Number(body.sizeBytes),
         mimeType: body.mimeType,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return {
       uploadSessionId: session.id,

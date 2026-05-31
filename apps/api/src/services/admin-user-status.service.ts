@@ -3,7 +3,7 @@ import { BUILTIN_ADMIN_USERNAME } from "@lexos/shared/config";
 import { ErrorCode } from "@lexos/shared/api";
 import type { SupabaseAuthAdapter } from "../adapters/auth/supabase-auth.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { AdminUserRepository } from "../repositories/admin-user.repository.js";
 import { clearProfileStatusCache } from "../middleware/auth.middleware.js";
 import { toAdminUserDetailDto, type AdminUserDetailDto } from "./admin-user-mapper.js";
@@ -20,7 +20,7 @@ export class AdminUserStatusService {
   constructor(
     private readonly authAdapter: SupabaseAuthAdapter,
     private readonly adminUserRepository: AdminUserRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   async setStatus(
@@ -63,14 +63,10 @@ export class AdminUserStatusService {
       clearProfileStatusCache(userId);
     }
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: body.status === "disabled" ? "user.disable" : "user.enable",
       targetType: "profile",
-      targetId: userId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
-    });
+      targetId: userId}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return toAdminUserDetailDto(updated);
   }

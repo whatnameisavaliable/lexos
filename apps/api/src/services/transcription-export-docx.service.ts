@@ -9,7 +9,7 @@ import {
 } from "../lib/transcription-export-key.js";
 import { resolveTranscriptExportSections } from "../lib/export-transcript-text.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTranscriptRepository } from "../repositories/transcription-transcript.repository.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
@@ -27,7 +27,7 @@ export class TranscriptionExportDocxService {
     private readonly transcriptRepository: TranscriptionTranscriptRepository,
     private readonly exportAdapter: DocxExportAdapter,
     private readonly storageAdapter: SupabaseStorageAdapter,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   /** 生成 DOCX → 上传 exports 桶 → 返回签名 URL。 */
@@ -79,18 +79,14 @@ export class TranscriptionExportDocxService {
       ownerId,
     );
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.export",
       targetType: "transcription_task",
       targetId: taskId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         format: "docx",
         objectKey,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return signed;
   }

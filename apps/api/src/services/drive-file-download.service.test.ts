@@ -25,7 +25,7 @@ describe("DriveFileDownloadService", () => {
         bucket: "exports",
       }),
     };
-    const audit = { append: vi.fn().mockResolvedValue(undefined) };
+    const audit = { write: vi.fn().mockResolvedValue(undefined) };
     const service = new DriveFileDownloadService(
       repo as never,
       storage as never,
@@ -45,7 +45,7 @@ describe("DriveFileDownloadService", () => {
       "u1/task-1/export-2024.pdf",
       "u1",
     );
-    expect(audit.append).toHaveBeenCalled();
+    expect(audit.write).toHaveBeenCalled();
   });
 
   it("resolveDriveFileBucket picks exports for export keys", () => {

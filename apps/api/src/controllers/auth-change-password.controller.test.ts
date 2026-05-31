@@ -5,7 +5,12 @@ import { runWithRequestContext } from "../middleware/request-context.js";
 
 describe("AuthChangePasswordController", () => {
   it("calls change password service", async () => {
-    const service = { changePassword: vi.fn().mockResolvedValue(undefined) };
+    const service = {
+      changePassword: vi.fn().mockResolvedValue({
+        accessToken: "new-at",
+        expiresAt: 1,
+      }),
+    };
     const controller = new AuthChangePasswordController(
       service as never,
       "x-request-id",

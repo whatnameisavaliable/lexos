@@ -4,7 +4,7 @@ import type { AiRuntimeEnvConfig } from "@lexos/shared/config";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import { createAiCredentialCrypto } from "../lib/ai-credential-crypto.js";
 import type { AiModelRepository } from "../repositories/ai-model.repository.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import { toAiModelPublic } from "./ai-model-mapper.js";
 
 export interface AiModelUpdateMeta {
@@ -17,7 +17,7 @@ export class AiModelUpdateService {
 
   constructor(
     private readonly aiModelRepository: AiModelRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
     aiEnv: AiRuntimeEnvConfig,
   ) {
     this.crypto = createAiCredentialCrypto(aiEnv);
@@ -63,18 +63,14 @@ export class AiModelUpdateService {
         isDefaultFallback: body.isDefaultFallback,
       });
 
-      await this.auditLogRepository.append({
-        actorId: actor.userId,
+      await this.auditWriterService.write({actorId: actor.userId,
         action: "ai.model.upsert",
         targetType: "ai_model_credentials",
         targetId: row.id,
-        ip: meta.ip ?? null,
-        userAgent: meta.userAgent ?? null,
         metadata: {
           model_id: row.model_id,
           fields_changed: fieldsChanged,
-        },
-      });
+        }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
       const apiKey =
         body.apiKey !== undefined

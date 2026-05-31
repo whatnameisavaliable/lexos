@@ -6,11 +6,11 @@ import { TranscriptionTaskDownloadService } from "./transcription-task-download.
 describe("TranscriptionTaskDownloadService", () => {
   const taskRepository = { findById: vi.fn() };
   const storageAdapter = { createSignedDownloadUrl: vi.fn() };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
   const service = new TranscriptionTaskDownloadService(
     taskRepository as never,
     storageAdapter as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   it("returns signed URL and writes file.download audit", async () => {
@@ -40,8 +40,9 @@ describe("TranscriptionTaskDownloadService", () => {
     );
 
     expect(result.signedUrl).toContain("signed.example");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "file.download", targetId: "task-1" }),
+      expect.any(Object),
     );
   });
 
@@ -99,13 +100,14 @@ describe("TranscriptionTaskDownloadService", () => {
       "user-1/task-1/source.mp3",
       "user-1",
     );
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
           downloadType: "source",
           requestedType: "audio",
         }),
       }),
+      expect.any(Object),
     );
   });
 });

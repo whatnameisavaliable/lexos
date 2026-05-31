@@ -13,6 +13,7 @@ import type { AiPromptsCreateController } from "../controllers/ai-prompts-create
 import type { AiPromptsGetController } from "../controllers/ai-prompts-get.controller.js";
 import type { AiPromptsPatchController } from "../controllers/ai-prompts-patch.controller.js";
 import type { AiPromptsPublishController } from "../controllers/ai-prompts-publish.controller.js";
+import type { AiPromptsDeleteController } from "../controllers/ai-prompts-delete.controller.js";
 import type { AiInvocationLogsListController } from "../controllers/ai-invocation-logs-list.controller.js";
 
 export interface AdminAiRouteHandlers {
@@ -29,6 +30,7 @@ export interface AdminAiRouteHandlers {
   readonly promptsGet: AiPromptsGetController;
   readonly promptsPatch: AiPromptsPatchController;
   readonly promptsPublish: AiPromptsPublishController;
+  readonly promptsDelete: AiPromptsDeleteController;
   readonly invocationLogsList: AiInvocationLogsListController;
 }
 
@@ -114,6 +116,10 @@ export async function handleAdminAiRoute(
   }
   if (method === "PATCH" && promptParams) {
     await handlers.promptsPatch.handle(req, res, promptParams);
+    return true;
+  }
+  if (method === "DELETE" && promptParams) {
+    await handlers.promptsDelete.handle(req, res, promptParams);
     return true;
   }
 

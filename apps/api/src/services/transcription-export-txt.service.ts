@@ -9,7 +9,7 @@ import {
 } from "../lib/transcription-export-key.js";
 import { resolveTranscriptExportSections } from "../lib/export-transcript-text.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTranscriptRepository } from "../repositories/transcription-transcript.repository.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 import type { TranscriptionExportRequestMeta } from "./transcription-export-docx.service.js";
@@ -23,7 +23,7 @@ export class TranscriptionExportTxtService {
     private readonly transcriptRepository: TranscriptionTranscriptRepository,
     private readonly exportAdapter: TxtExportAdapter,
     private readonly storageAdapter: SupabaseStorageAdapter,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   /** 生成 TXT → 上传 exports 桶 → 返回签名 URL。 */
@@ -75,18 +75,14 @@ export class TranscriptionExportTxtService {
       ownerId,
     );
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.export",
       targetType: "transcription_task",
       targetId: taskId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         format: "txt",
         objectKey,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return signed;
   }

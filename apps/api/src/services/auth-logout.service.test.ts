@@ -5,10 +5,10 @@ import { AuthLogoutService } from "./auth-logout.service.js";
 describe("AuthLogoutService", () => {
   it("signs out and appends audit log", async () => {
     const authAdapter = { signOut: vi.fn().mockResolvedValue(undefined) };
-    const auditLogRepository = { append: vi.fn().mockResolvedValue("id") };
+    const auditWriterService = { write: vi.fn().mockResolvedValue("id") };
     const service = new AuthLogoutService(
       authAdapter as never,
-      auditLogRepository as never,
+      auditWriterService as never,
     );
 
     await service.logout(
@@ -22,8 +22,9 @@ describe("AuthLogoutService", () => {
     );
 
     expect(authAdapter.signOut).toHaveBeenCalledWith("token");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "auth.logout" }),
+      expect.any(Object),
     );
   });
 });

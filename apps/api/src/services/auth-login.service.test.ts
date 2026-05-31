@@ -10,12 +10,12 @@ describe("AuthLoginService", () => {
     resolveVirtualEmail: vi.fn(),
   };
   const profileRepository = { findById: vi.fn() };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
 
   const service = new AuthLoginService(
     authAdapter as never,
     profileRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   it("returns tokens on successful login", async () => {
@@ -35,7 +35,7 @@ describe("AuthLoginService", () => {
       requiresPasswordChange: false,
       mfaEnabled: false,
     });
-    auditLogRepository.append.mockResolvedValue("audit-1");
+    auditWriterService.write.mockResolvedValue("audit-1");
 
     const result = await service.login({
       username: "lawyer",
@@ -43,8 +43,16 @@ describe("AuthLoginService", () => {
     });
 
     expect(result.accessToken).toBe("at");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
-      expect.objectContaining({ action: "auth.login_success", actorId: "u1" }),
+    expect(result.requiresPasswordChange).toBe(false);
+    expect(result.role).toBe("lawyer");
+    expect(auditWriterService.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "auth.login_success",
+        actorId: "u1",
+        targetType: "profile",
+        targetId: "u1",
+      }),
+      expect.any(Object),
     );
   });
 
@@ -55,13 +63,40 @@ describe("AuthLoginService", () => {
     authAdapter.signInWithPassword.mockRejectedValue(
       new AuthAdapterError("AUTH_INVALID_CREDENTIALS", "bad"),
     );
-    auditLogRepository.append.mockResolvedValue("a");
+    auditWriterService.write.mockResolvedValue("a");
 
     await expect(
       service.login({ username: "x", password: "y" }),
     ).rejects.toMatchObject({
       code: AuthErrorCode.AUTH_INVALID_CREDENTIALS,
     } satisfies Partial<AppHttpError>);
+  });
+
+  it("returns requiresPasswordChange when profile flag is set", async () => {
+    authAdapter.signInWithPassword.mockResolvedValue({
+      accessToken: "at",
+      refreshToken: "rt",
+      userId: "u1",
+      expiresAt: 1,
+    });
+    profileRepository.findById.mockResolvedValue({
+      id: "u1",
+      username: "lawyer",
+      displayName: "L",
+      role: "lawyer",
+      contact: null,
+      status: "enabled",
+      requiresPasswordChange: true,
+      mfaEnabled: false,
+    });
+    auditWriterService.write.mockResolvedValue("audit-1");
+
+    const result = await service.login({
+      username: "lawyer",
+      password: "secret",
+    });
+
+    expect(result.requiresPasswordChange).toBe(true);
   });
 
   it("rejects disabled account with AUTH_ACCOUNT_DISABLED", async () => {
@@ -81,7 +116,7 @@ describe("AuthLoginService", () => {
       requiresPasswordChange: false,
       mfaEnabled: false,
     });
-    auditLogRepository.append.mockResolvedValue("a");
+    auditWriterService.write.mockResolvedValue("a");
 
     await expect(
       service.login({ username: "lawyer", password: "x" }),

@@ -40,6 +40,17 @@ export interface CreateDriveFolderInput {
   readonly name: string;
 }
 
+/** 创建文件节点入参。 */
+export interface CreateDriveFileInput {
+  readonly createdBy: string;
+  readonly parentId: string;
+  readonly name: string;
+  readonly storageKey: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number | null;
+  readonly linkedTaskId?: string | null;
+}
+
 /** 更新节点入参。 */
 export interface UpdateDriveNodeInput {
   readonly name?: string;

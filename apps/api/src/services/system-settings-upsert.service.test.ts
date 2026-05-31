@@ -12,7 +12,11 @@ describe("SystemSettingsUpsertService", () => {
         updatedAt: "2026-05-31T00:00:00.000Z",
       })),
     };
-    const service = new SystemSettingsUpsertService(repo as never);
+    const auditWriterService = { write: vi.fn(async () => "audit-1") };
+    const service = new SystemSettingsUpsertService(
+      repo as never,
+      auditWriterService as never,
+    );
     const item = await service.upsert("token", "admin-1", "retention.days", {
       value: { days: 30 },
     });
@@ -27,7 +31,10 @@ describe("SystemSettingsUpsertService", () => {
 
   it("rejects forbidden key patterns", async () => {
     const repo = { upsert: vi.fn() };
-    const service = new SystemSettingsUpsertService(repo as never);
+    const service = new SystemSettingsUpsertService(
+      repo as never,
+      { write: vi.fn() } as never,
+    );
     await expect(
       service.upsert("token", "admin-1", "external.api_key", { value: {} }),
     ).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });

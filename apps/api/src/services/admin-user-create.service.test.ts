@@ -15,7 +15,7 @@ describe("AdminUserCreateService", () => {
     seedDriveRootFolder: vi.fn(),
     deleteProfile: vi.fn(),
   };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
 
   const actor = {
     userId: "admin-id",
@@ -29,7 +29,7 @@ describe("AdminUserCreateService", () => {
   const service = new AdminUserCreateService(
     authAdapter as never,
     adminUserRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
     "initial-pass",
   );
 
@@ -49,7 +49,7 @@ describe("AdminUserCreateService", () => {
       updatedAt: "t",
     });
     adminUserRepository.seedDriveRootFolder.mockResolvedValue(undefined);
-    auditLogRepository.append.mockResolvedValue("audit-1");
+    auditWriterService.write.mockResolvedValue("audit-1");
 
     const result = await service.create(actor, {
       username: "lawyer1",
@@ -58,8 +58,9 @@ describe("AdminUserCreateService", () => {
     });
 
     expect(result.username).toBe("lawyer1");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "user.create", targetId: "new-id" }),
+      expect.any(Object),
     );
   });
 

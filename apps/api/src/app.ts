@@ -23,6 +23,7 @@ import { requireRoles } from "./middleware/role-gate.factory.js";
 import { withRequestId } from "./middleware/request-id.middleware.js";
 import { AdminUserRepository } from "./repositories/admin-user.repository.js";
 import { AuditLogRepository } from "./repositories/audit-log.repository.js";
+import { AuditWriterService } from "./services/audit-writer.service.js";
 import { ProfileAdminRepository } from "./repositories/profile-admin.repository.js";
 import { ProfileRepository } from "./repositories/profile.repository.js";
 import { handleHealthRoute } from "./routes/health.routes.js";
@@ -173,13 +174,14 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const profileAdminRepository = new ProfileAdminRepository(supabaseEnv);
   const adminUserRepository = AdminUserRepository.fromSupabaseEnv(supabaseEnv);
   const auditLogRepository = new AuditLogRepository(supabaseEnv);
+  const auditWriterService = new AuditWriterService(auditLogRepository);
 
   const authLoginService = new AuthLoginService(
     authAdapter,
     profileRepository,
-    auditLogRepository,
+    auditWriterService,
   );
-  const authLogoutService = new AuthLogoutService(authAdapter, auditLogRepository);
+  const authLogoutService = new AuthLogoutService(authAdapter, auditWriterService);
   const authRefreshService = new AuthRefreshService(
     authAdapter,
     profileRepository,
@@ -188,25 +190,25 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const authChangePasswordService = new AuthChangePasswordService(
     authAdapter,
     profileAdminRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const profileService = new ProfileService(profileRepository);
   const adminUserListService = new AdminUserListService(adminUserRepository);
   const adminUserCreateService = new AdminUserCreateService(
     authAdapter,
     adminUserRepository,
-    auditLogRepository,
+    auditWriterService,
     authSeedEnv.authInitialPassword,
   );
   const adminUserGetService = new AdminUserGetService(adminUserRepository);
   const adminUserUpdateService = new AdminUserUpdateService(
     adminUserRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const adminUserStatusService = new AdminUserStatusService(
     authAdapter,
     adminUserRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const adminUserResetPasswordService = new AdminUserResetPasswordService(
     authAdapter,
@@ -225,12 +227,12 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const aiModelListService = new AiModelListService(aiModelRepository, aiEnv);
   const aiModelCreateService = new AiModelCreateService(
     aiModelRepository,
-    auditLogRepository,
+    auditWriterService,
     aiEnv,
   );
   const aiModelUpdateService = new AiModelUpdateService(
     aiModelRepository,
-    auditLogRepository,
+    auditWriterService,
     aiEnv,
   );
   const aiModelDeleteService = new AiModelDeleteService(aiModelRepository);
@@ -246,7 +248,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const aiFeatureMappingUpsertService = new AiFeatureMappingUpsertService(
     aiFeatureMappingRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const aiPromptListService = new AiPromptListService(aiPromptRepository);
   const aiPromptCreateService = new AiPromptCreateService(aiPromptRepository);
@@ -254,7 +256,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const aiPromptUpdateService = new AiPromptUpdateService(aiPromptRepository);
   const aiPromptPublishService = new AiPromptPublishService(
     aiPromptRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const aiPromptDeleteService = new AiPromptDeleteService(aiPromptRepository);
   const aiInvocationLogListService = new AiInvocationLogListService(
@@ -273,6 +275,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const systemSettingsUpsertService = new SystemSettingsUpsertService(
     systemSettingsRepository,
+    auditWriterService,
   );
 
   const storageEnv = loadStorageRuntimeEnvFromProcess();
@@ -290,7 +293,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTaskRepository,
     uploadSessionRepository,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
     storageEnv.storageBucketMedia,
   );
   const transcriptionUploadCompleteService =
@@ -321,7 +324,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const transcriptionTaskDownloadService = new TranscriptionTaskDownloadService(
     transcriptionTaskRepository,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
   );
   const docxExportAdapter = new DocxExportAdapter();
   const pdfExportAdapter = new PdfExportAdapter();
@@ -331,25 +334,25 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTranscriptRepository,
     docxExportAdapter,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
   );
   const transcriptionExportPdfService = new TranscriptionExportPdfService(
     transcriptionTaskRepository,
     transcriptionTranscriptRepository,
     pdfExportAdapter,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
   );
   const transcriptionExportTxtService = new TranscriptionExportTxtService(
     transcriptionTaskRepository,
     transcriptionTranscriptRepository,
     txtExportAdapter,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
   );
   const transcriptionTaskDeleteService = new TranscriptionTaskDeleteService(
     transcriptionTaskRepository,
-    auditLogRepository,
+    auditWriterService,
   );
 
   const driveNodeRepository = new DriveNodeRepository(supabaseEnv);
@@ -370,13 +373,13 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const driveNodeUpdateService = new DriveNodeUpdateService(driveNodeRepository);
   const driveNodeDeleteService = new DriveNodeDeleteService(
     driveNodeRepository,
-    auditLogRepository,
+    auditWriterService,
   );
   const driveSearchService = new DriveSearchService(driveSearchRepository);
   const driveFileDownloadService = new DriveFileDownloadService(
     driveNodeRepository,
     storageAdapter,
-    auditLogRepository,
+    auditWriterService,
   );
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);

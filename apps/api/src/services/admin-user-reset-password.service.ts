@@ -43,7 +43,10 @@ export class AdminUserResetPasswordService {
         ip: meta.ip,
         userAgent: meta.userAgent,
       });
-    } catch (err) {
+    } catch {
+      await this.adminUserRepository
+        .setRequiresPasswordChange(userId, true)
+        .catch(() => undefined);
       throw new AppHttpError(
         ErrorCode.INTERNAL_ERROR,
         "Password reset audit failed; user password was updated",

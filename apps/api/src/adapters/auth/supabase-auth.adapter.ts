@@ -73,6 +73,24 @@ export class SupabaseAuthAdapter {
   /**
    * 用户名 + 密码登录（内部转换为虚拟邮箱）。
    */
+  /**
+   * 使用 refresh token 换取新 access token（`POST /api/auth/refresh`）。
+   */
+  async refreshSession(refreshToken: string): Promise<AuthSignInResult> {
+    const { data, error } = await this.anonClient.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+    if (error || !data.session || !data.user) {
+      throw new AuthAdapterError(
+        "AUTH_UNAUTHORIZED",
+        error?.message ?? "refresh session failed",
+      );
+    }
+
+    return this.mapSession(data.session, data.user.id);
+  }
+
   async signInWithPassword(
     username: string,
     password: string,
@@ -155,10 +173,14 @@ export class SupabaseAuthAdapter {
   }
 
   /**
-   * 吊销指定用户全部会话（管理员重置密码等场景，M2 复用）。
+   * 吊销指定用户全部会话（管理员禁用/重置密码）。
+   *
+   * @remarks `auth.admin.signOut` 首参为 JWT，不能传 user id；经 `admin_revoke_user_sessions` RPC 删除 `auth.sessions`。
    */
   async signOutGlobal(userId: string): Promise<void> {
-    const { error } = await this.adminClient.auth.admin.signOut(userId, "global");
+    const { error } = await this.adminClient.rpc("admin_revoke_user_sessions", {
+      p_user_id: userId,
+    });
     if (error) {
       throw new AuthAdapterError("INTERNAL_ERROR", error.message);
     }

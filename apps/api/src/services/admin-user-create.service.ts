@@ -2,7 +2,7 @@ import type { AdminUserCreateBody, AuthContext } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
 import type { SupabaseAuthAdapter } from "../adapters/auth/supabase-auth.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { AdminUserRepository } from "../repositories/admin-user.repository.js";
 import { toAdminUserDetailDto, type AdminUserDetailDto } from "./admin-user-mapper.js";
 
@@ -18,7 +18,7 @@ export class AdminUserCreateService {
   constructor(
     private readonly authAdapter: SupabaseAuthAdapter,
     private readonly adminUserRepository: AdminUserRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
     private readonly initialPassword: string,
   ) {}
 
@@ -56,15 +56,11 @@ export class AdminUserCreateService {
 
       await this.adminUserRepository.seedDriveRootFolder(userId);
 
-      await this.auditLogRepository.append({
-        actorId: actor.userId,
+      await this.auditWriterService.write({actorId: actor.userId,
         action: "user.create",
         targetType: "profile",
         targetId: userId,
-        ip: meta.ip ?? null,
-        userAgent: meta.userAgent ?? null,
-        metadata: { username, role: body.role },
-      });
+        metadata: { username, role: body.role }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
       return toAdminUserDetailDto(profile);
     } catch (err) {

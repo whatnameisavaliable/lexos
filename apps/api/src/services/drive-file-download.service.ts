@@ -3,7 +3,7 @@ import { ErrorCode } from "@lexos/shared/api";
 import type { SignedDownloadUrlResult, StorageBucketName } from "../adapters/storage/storage.adapter.js";
 import type { SupabaseStorageAdapter } from "../adapters/storage/supabase-storage.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { DriveNodeRepository } from "../repositories/drive-node.repository.js";
 
 export interface DriveFileDownloadRequestMeta {
@@ -18,7 +18,7 @@ export class DriveFileDownloadService {
   constructor(
     private readonly driveNodeRepository: DriveNodeRepository,
     private readonly storageAdapter: SupabaseStorageAdapter,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   async download(
@@ -51,19 +51,15 @@ export class DriveFileDownloadService {
       ownerId,
     );
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.download",
       targetType: "drive_node",
       targetId: nodeId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         objectKey: signed.objectKey,
         bucket: signed.bucket,
         fileName: node.name,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return signed;
   }

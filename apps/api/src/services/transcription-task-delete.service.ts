@@ -1,7 +1,7 @@
 import type { AuthContext } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTaskRecord } from "../repositories/transcription-task.types.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
@@ -19,7 +19,7 @@ export interface TranscriptionTaskDeleteRequestMeta {
 export class TranscriptionTaskDeleteService {
   constructor(
     private readonly taskRepository: TranscriptionTaskRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   /**
@@ -52,17 +52,13 @@ export class TranscriptionTaskDeleteService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.delete",
       targetType: "transcription_task",
       targetId: taskId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         previousStatus: task.status,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return deleted;
   }

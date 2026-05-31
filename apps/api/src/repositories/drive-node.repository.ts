@@ -9,6 +9,7 @@ import {
   mapDriveNodeRow,
   mapDriveNodeSummary,
   type CreateDriveFolderInput,
+  type CreateDriveFileInput,
   type DriveNodeListParams,
   type DriveNodeListResult,
   type DriveNodeRecord,
@@ -195,6 +196,87 @@ export class DriveNodeRepository {
       throw new Error(`drive_nodes.createFolder failed: ${error.message}`);
     }
     return mapDriveNodeRow(data as DriveNodeRowDb);
+  }
+
+  /**
+   * 创建文件节点（归档引用；禁止根目录文件由 DB CHECK + 领域规则保障）。
+   */
+  async createFile(
+    accessToken: string,
+    input: CreateDriveFileInput,
+  ): Promise<DriveNodeRecord> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("drive_nodes")
+      .insert({
+        created_by: input.createdBy,
+        parent_id: input.parentId,
+        node_type: "file",
+        name: input.name,
+        storage_key: input.storageKey,
+        mime_type: input.mimeType,
+        size_bytes: input.sizeBytes,
+        linked_task_id: input.linkedTaskId ?? null,
+      })
+      .select(DRIVE_NODE_SELECT)
+      .single();
+
+    if (error) {
+      throw new Error(`drive_nodes.createFile failed: ${error.message}`);
+    }
+    return mapDriveNodeRow(data as DriveNodeRowDb);
+  }
+
+  /**
+   * 按父目录 + storage_key 查找文件（幂等回填）。
+   */
+  async findFileByStorageKeyInParent(
+    accessToken: string,
+    parentId: string,
+    storageKey: string,
+  ): Promise<DriveNodeRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("drive_nodes")
+      .select(DRIVE_NODE_SELECT)
+      .eq("parent_id", parentId)
+      .eq("storage_key", storageKey)
+      .eq("node_type", "file")
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `drive_nodes.findFileByStorageKeyInParent failed: ${error.message}`,
+      );
+    }
+    return data ? mapDriveNodeRow(data as DriveNodeRowDb) : null;
+  }
+
+  /**
+   * 按父目录 + 文件名查找文件（幂等回填）。
+   */
+  async findFileByNameInParent(
+    accessToken: string,
+    parentId: string,
+    name: string,
+  ): Promise<DriveNodeRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("drive_nodes")
+      .select(DRIVE_NODE_SELECT)
+      .eq("parent_id", parentId)
+      .eq("name", name)
+      .eq("node_type", "file")
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `drive_nodes.findFileByNameInParent failed: ${error.message}`,
+      );
+    }
+    return data ? mapDriveNodeRow(data as DriveNodeRowDb) : null;
   }
 
   /**

@@ -12,6 +12,9 @@ export interface AuditWriterRequestContext {
   readonly client?: ParsedAuditClientMetadata;
 }
 
+/** BFF 控制器传入的审计元数据（别名，便于各 Service 复用）。 */
+export type AuditRequestMeta = AuditWriterRequestContext;
+
 /** 审计写入入参（业务 metadata 与目标）。 */
 export interface AuditWriterInput {
   readonly actorId: string | null;

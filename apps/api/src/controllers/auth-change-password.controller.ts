@@ -29,11 +29,21 @@ export class AuthChangePasswordController {
       );
     }
 
-    await this.service.changePassword(ctx.auth, ctx.accessToken, body, {
-      ip: getClientIp(req),
-      userAgent: getUserAgent(req),
-    });
+    const result = await this.service.changePassword(
+      ctx.auth,
+      ctx.accessToken,
+      body,
+      {
+        ip: getClientIp(req),
+        userAgent: getUserAgent(req),
+      },
+    );
 
-    sendJsonSuccess(res, 200, { ok: true }, this.requestIdHeader);
+    sendJsonSuccess(
+      res,
+      200,
+      { ok: true, accessToken: result.accessToken, expiresAt: result.expiresAt },
+      this.requestIdHeader,
+    );
   }
 }

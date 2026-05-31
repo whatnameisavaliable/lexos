@@ -108,6 +108,17 @@ export class AiPromptRepository {
     return data as AiPromptRowDb;
   }
 
+  async delete(id: string): Promise<void> {
+    const { error } = await this.serviceClient
+      .from("ai_prompt_templates")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(`ai_prompt_templates.delete failed: ${error.message}`);
+    }
+  }
+
   async publish(id: string): Promise<AiPromptRowDb> {
     const existing = await this.findById(id);
     if (!existing) {

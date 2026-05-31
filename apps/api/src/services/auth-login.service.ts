@@ -5,19 +5,21 @@ import {
   type SupabaseAuthAdapter,
 } from "../adapters/auth/supabase-auth.adapter.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type {
+  AuditRequestMeta,
+  AuditWriterService,
+} from "./audit-writer.service.js";
 import type { ProfileRepository } from "../repositories/profile.repository.js";
 
-export interface AuthLoginRequestMeta {
-  readonly ip?: string;
-  readonly userAgent?: string;
-}
+export interface AuthLoginRequestMeta extends AuditRequestMeta {}
 
 export interface AuthLoginResult {
   readonly accessToken: string;
   readonly refreshToken: string;
   readonly userId: string;
   readonly expiresAt: number | undefined;
+  readonly role: "admin" | "lawyer";
+  readonly requiresPasswordChange: boolean;
 }
 
 /**
@@ -27,7 +29,7 @@ export class AuthLoginService {
   constructor(
     private readonly authAdapter: SupabaseAuthAdapter,
     private readonly profileRepository: ProfileRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   /**
@@ -58,20 +60,23 @@ export class AuthLoginService {
         );
       }
 
-      await this.auditLogRepository.append({
-        actorId: session.userId,
-        action: "auth.login_success",
-        targetType: "profile",
-        targetId: session.userId,
-        ip: meta.ip ?? null,
-        userAgent: meta.userAgent ?? null,
-      });
+      await this.auditWriterService.write(
+        {
+          actorId: session.userId,
+          action: "auth.login_success",
+          targetType: "profile",
+          targetId: session.userId,
+        },
+        { ip: meta.ip, userAgent: meta.userAgent, client: meta.client },
+      );
 
       return {
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
         userId: session.userId,
         expiresAt: session.expiresAt,
+        role: profile.role,
+        requiresPasswordChange: profile.requiresPasswordChange,
       };
     } catch (err) {
       if (err instanceof AppHttpError) {
@@ -86,13 +91,14 @@ export class AuthLoginService {
     username: string,
     meta: AuthLoginRequestMeta,
   ): Promise<void> {
-    await this.auditLogRepository.append({
-      actorId: null,
-      action: "auth.login_failure",
-      metadata: { attempted_username: username },
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
-    });
+    await this.auditWriterService.write(
+      {
+        actorId: null,
+        action: "auth.login_failure",
+        metadata: { attempted_username: username },
+      },
+      { ip: meta.ip, userAgent: meta.userAgent, client: meta.client },
+    );
   }
 
   private mapLoginError(err: unknown): never {

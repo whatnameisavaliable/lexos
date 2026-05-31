@@ -5,25 +5,32 @@ import { AuthChangePasswordService } from "./auth-change-password.service.js";
 describe("AuthChangePasswordService", () => {
   const authAdapter = {
     signInWithPassword: vi.fn(),
-    updateUserPasswordWithSession: vi.fn(),
+    updateUserPasswordAsAdmin: vi.fn(),
   };
   const profileAdminRepository = {
-    completePasswordChange: vi.fn(),
+    setRequiresPasswordChange: vi.fn(),
   };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
 
   const service = new AuthChangePasswordService(
     authAdapter as never,
     profileAdminRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   it("skips current password when requiresPasswordChange", async () => {
-    authAdapter.updateUserPasswordWithSession.mockResolvedValue(undefined);
-    profileAdminRepository.completePasswordChange.mockResolvedValue(undefined);
-    auditLogRepository.append.mockResolvedValue("id");
+    authAdapter.updateUserPasswordAsAdmin.mockResolvedValue(undefined);
+    profileAdminRepository.setRequiresPasswordChange.mockResolvedValue(undefined);
+    authAdapter.signInWithPassword.mockResolvedValue({
+      accessToken: "new-at",
+      refreshToken: "rt",
+      userId: "u1",
+      sessionId: undefined,
+      expiresAt: 1,
+    });
+    auditWriterService.write.mockResolvedValue("id");
 
-    await service.changePassword(
+    const result = await service.changePassword(
       createAuthContext({
         userId: "u1",
         role: "admin",
@@ -34,7 +41,14 @@ describe("AuthChangePasswordService", () => {
       { newPassword: "new-password-1" },
     );
 
-    expect(authAdapter.signInWithPassword).not.toHaveBeenCalled();
-    expect(profileAdminRepository.completePasswordChange).toHaveBeenCalled();
+    expect(authAdapter.signInWithPassword).toHaveBeenCalledWith(
+      "admin",
+      "new-password-1",
+    );
+    expect(profileAdminRepository.setRequiresPasswordChange).toHaveBeenCalledWith(
+      "u1",
+      false,
+    );
+    expect(result.accessToken).toBe("new-at");
   });
 });

@@ -25,15 +25,15 @@ describe("TranscriptionUploadInitService", () => {
   const storageAdapter = {
     createResumableUploadUrl: vi.fn(),
   };
-  const auditLogRepository = {
-    append: vi.fn(),
+  const auditWriterService = {
+    write: vi.fn(),
   };
 
   const service = new TranscriptionUploadInitService(
     taskRepository as never,
     uploadSessionRepository as never,
     storageAdapter as never,
-    auditLogRepository as never,
+    auditWriterService as never,
     "media",
   );
 
@@ -102,7 +102,7 @@ describe("TranscriptionUploadInitService", () => {
       tusHeaders: { "x-signature": "sig" },
       objectKey: "user-1/task-new/a.mp3",
     });
-    auditLogRepository.append.mockResolvedValue("audit-1");
+    auditWriterService.write.mockResolvedValue("audit-1");
 
     const result = await service.init(actor, "token", {
       title: "访谈",
@@ -112,8 +112,9 @@ describe("TranscriptionUploadInitService", () => {
     });
 
     expect(result.taskId).toBe("task-new");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "task.create" }),
+      expect.any(Object),
     );
   });
 });

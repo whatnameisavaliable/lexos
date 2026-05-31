@@ -11,13 +11,17 @@ describe("DriveNodesListService", () => {
         createdBy: "u1",
         name: "docs",
         parentId: "root",
+        linkedTaskId: null,
       }),
       listChildren: vi.fn().mockResolvedValue({
         items: [{ id: "n1", name: "a" }],
         nextCursor: "cursor",
       }),
     };
-    const service = new DriveNodesListService(repo as never);
+    const backfill = {
+      ensureArchiveFilesForFolder: vi.fn().mockResolvedValue(undefined),
+    };
+    const service = new DriveNodesListService(repo as never, backfill as never);
     const actor = createAuthContext({
       userId: "u1",
       role: "lawyer",

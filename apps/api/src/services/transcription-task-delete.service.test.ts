@@ -5,10 +5,10 @@ import { TranscriptionTaskDeleteService } from "./transcription-task-delete.serv
 
 describe("TranscriptionTaskDeleteService", () => {
   const taskRepository = { findById: vi.fn(), softDelete: vi.fn() };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
   const service = new TranscriptionTaskDeleteService(
     taskRepository as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   it("rejects delete for in-progress task", async () => {
@@ -56,8 +56,9 @@ describe("TranscriptionTaskDeleteService", () => {
     );
 
     expect(result.id).toBe("task-1");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "file.delete", targetId: "task-1" }),
+      expect.any(Object),
     );
   });
 });

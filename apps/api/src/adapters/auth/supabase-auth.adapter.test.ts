@@ -20,7 +20,7 @@ const authEnv = { authVirtualEmailDomain: "llexos.internal" };
 vi.mock("@supabase/supabase-js", () => {
   const signInWithPassword = vi.fn();
   const signOut = vi.fn();
-  const adminSignOut = vi.fn();
+  const rpc = vi.fn();
   const updateUserById = vi.fn();
   const enroll = vi.fn();
   const challenge = vi.fn();
@@ -32,15 +32,15 @@ vi.mock("@supabase/supabase-js", () => {
     signOut,
     updateUser: vi.fn(),
     mfa: { enroll, challenge, verify, getAuthenticatorAssuranceLevel },
-    admin: { signOut: adminSignOut, updateUserById },
+    admin: { updateUserById },
   };
 
   return {
-    createClient: vi.fn(() => ({ auth })),
+    createClient: vi.fn(() => ({ auth, rpc })),
     __mocks: {
       signInWithPassword,
       signOut,
-      adminSignOut,
+      rpc,
       updateUserById,
       enroll,
       challenge,
@@ -105,15 +105,17 @@ describe("SupabaseAuthAdapter", () => {
     } satisfies Partial<AuthAdapterError>);
   });
 
-  it("signOutGlobal calls admin signOut", async () => {
+  it("signOutGlobal revokes sessions via RPC", async () => {
     const { __mocks } = await import("@supabase/supabase-js");
-    const mocks = __mocks as { adminSignOut: ReturnType<typeof vi.fn> };
-    mocks.adminSignOut.mockResolvedValue({ error: null });
+    const mocks = __mocks as { rpc: ReturnType<typeof vi.fn> };
+    mocks.rpc.mockResolvedValue({ error: null });
 
     const adapter = new SupabaseAuthAdapter(supabaseEnv, authEnv);
     await adapter.signOutGlobal("user-1");
 
-    expect(mocks.adminSignOut).toHaveBeenCalledWith("user-1", "global");
+    expect(mocks.rpc).toHaveBeenCalledWith("admin_revoke_user_sessions", {
+      p_user_id: "user-1",
+    });
   });
 });
 

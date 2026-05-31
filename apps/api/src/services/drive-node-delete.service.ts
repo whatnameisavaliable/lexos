@@ -1,7 +1,7 @@
 import type { AuthContext } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { DriveNodeRepository } from "../repositories/drive-node.repository.js";
 import { DRIVE_ROOT_FOLDER_NAME } from "../repositories/drive-node.types.js";
 
@@ -16,7 +16,7 @@ export interface DriveNodeDeleteRequestMeta {
 export class DriveNodeDeleteService {
   constructor(
     private readonly driveNodeRepository: DriveNodeRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   async delete(
@@ -56,18 +56,14 @@ export class DriveNodeDeleteService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Node not found");
     }
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "file.delete",
       targetType: "drive_node",
       targetId: nodeId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         nodeType: node.nodeType,
         name: node.name,
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return { id: nodeId };
   }

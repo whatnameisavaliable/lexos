@@ -10,13 +10,13 @@ describe("TranscriptionExportDocxService", () => {
     uploadObject: vi.fn(),
     createSignedDownloadUrl: vi.fn(),
   };
-  const auditLogRepository = { append: vi.fn() };
+  const auditWriterService = { write: vi.fn() };
   const service = new TranscriptionExportDocxService(
     taskRepository as never,
     transcriptRepository as never,
     exportAdapter as never,
     storageAdapter as never,
-    auditLogRepository as never,
+    auditWriterService as never,
   );
 
   it("uploads export and writes file.export audit", async () => {
@@ -50,11 +50,12 @@ describe("TranscriptionExportDocxService", () => {
 
     expect(storageAdapter.uploadObject).toHaveBeenCalled();
     expect(result.bucket).toBe("exports");
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
+    expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "file.export",
         metadata: expect.objectContaining({ format: "docx" }),
       }),
+      expect.any(Object),
     );
   });
 });

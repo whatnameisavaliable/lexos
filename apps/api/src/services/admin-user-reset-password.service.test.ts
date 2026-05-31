@@ -10,6 +10,7 @@ describe("AdminUserResetPasswordService", () => {
   const adminUserRepository = {
     findUserById: vi.fn(),
     applyPasswordResetAudit: vi.fn(),
+    setRequiresPasswordChange: vi.fn().mockResolvedValue(undefined),
   };
 
   const service = new AdminUserResetPasswordService(

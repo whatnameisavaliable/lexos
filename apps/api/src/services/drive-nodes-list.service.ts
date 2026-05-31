@@ -4,6 +4,7 @@ import { buildPaginationMeta } from "@lexos/shared/api";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { DriveNodeRepository } from "../repositories/drive-node.repository.js";
 import { DRIVE_ROOT_FOLDER_NAME } from "../repositories/drive-node.types.js";
+import type { DriveArchiveBackfillService } from "./drive-archive-backfill.service.js";
 
 /** `GET /api/drive/nodes` 响应。 */
 export interface DriveNodesListResponse {
@@ -17,7 +18,10 @@ export interface DriveNodesListResponse {
  * 云盘目录子节点列表（分页默认 50）。
  */
 export class DriveNodesListService {
-  constructor(private readonly driveNodeRepository: DriveNodeRepository) {}
+  constructor(
+    private readonly driveNodeRepository: DriveNodeRepository,
+    private readonly archiveBackfillService: DriveArchiveBackfillService,
+  ) {}
 
   async list(
     actor: AuthContext,
@@ -38,6 +42,14 @@ export class DriveNodesListService {
 
     if (parent.name === DRIVE_ROOT_FOLDER_NAME && parent.parentId == null) {
       // 允许列出根目录内容
+    }
+
+    if (parent.linkedTaskId != null) {
+      await this.archiveBackfillService.ensureArchiveFilesForFolder(
+        actor,
+        accessToken,
+        parent.id,
+      );
     }
 
     const result = await this.driveNodeRepository.listChildren(accessToken, {

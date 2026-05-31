@@ -1,6 +1,6 @@
 import type { AdminUserUpdateBody, AuthContext } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
-import type { AuditLogRepository } from "../repositories/audit-log.repository.js";
+import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { AdminUserRepository } from "../repositories/admin-user.repository.js";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import { toAdminUserDetailDto, type AdminUserDetailDto } from "./admin-user-mapper.js";
@@ -16,7 +16,7 @@ export interface AdminUserUpdateMeta {
 export class AdminUserUpdateService {
   constructor(
     private readonly adminUserRepository: AdminUserRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditWriterService: AuditWriterService,
   ) {}
 
   async update(
@@ -38,17 +38,13 @@ export class AdminUserUpdateService {
       ...(body.contact !== undefined ? { contact: body.contact } : {}),
     });
 
-    await this.auditLogRepository.append({
-      actorId: actor.userId,
+    await this.auditWriterService.write({actorId: actor.userId,
       action: "user.update",
       targetType: "profile",
       targetId: userId,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent ?? null,
       metadata: {
         fields: Object.keys(body),
-      },
-    });
+      }}, { ip: meta.ip ?? null, userAgent: meta.userAgent ?? null });
 
     return toAdminUserDetailDto(updated);
   }

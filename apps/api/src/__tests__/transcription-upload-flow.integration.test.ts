@@ -165,6 +165,7 @@ function buildUploadServices(appEnv: ReturnType<typeof loadAppRuntimeEnv>) {
     uploadSessionRepository,
     storage,
     new AuditLogRepository(appEnv),
+    "media",
   );
   const completeService = new TranscriptionUploadCompleteService(
     appEnv,

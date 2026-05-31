@@ -49,22 +49,28 @@ export function decodeDriveSearchCursor(
 }
 
 /**
- * 从正文中截取检索片段（前后各保留上下文）。
+ * 从正文中截取检索片段（前后各保留上下文）；去除 HTML 标签。
  */
 export function buildSearchSnippet(
   text: string,
   query: string,
   radius = 40,
 ): string {
-  const lowerText = text.toLowerCase();
+  const plain = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+  const lowerText = plain.toLowerCase();
   const lowerQuery = query.toLowerCase();
   const index = lowerText.indexOf(lowerQuery);
   if (index < 0) {
-    return text.slice(0, radius * 2).trim();
+    return plain.slice(0, radius * 2).trim();
   }
   const start = Math.max(0, index - radius);
-  const end = Math.min(text.length, index + query.length + radius);
+  const end = Math.min(plain.length, index + query.length + radius);
   const prefix = start > 0 ? "…" : "";
-  const suffix = end < text.length ? "…" : "";
-  return `${prefix}${text.slice(start, end).trim()}${suffix}`;
+  const suffix = end < plain.length ? "…" : "";
+  return `${prefix}${plain.slice(start, end).trim()}${suffix}`;
 }

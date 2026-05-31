@@ -1182,19 +1182,19 @@
 
 ### M8-F 埋点覆盖率补齐（每条事件一项；重构调用方为 `audit-writer.service`）
 
-- [ ] 核对并补齐：`auth.login_success` / `auth.login_failure` / `auth.logout` / `auth.password_change`（M1）
-- [ ] 核对并补齐：`auth.password_reset`、`user.create` / `user.update` / `user.disable` / `user.enable`（M2）
-- [ ] 核对并补齐：`ai.model.upsert` / `ai.mapping.upsert` / `ai.prompt.publish`（M3）
-- [ ] 核对并补齐：`task.create`（M4）、`task.complete` / `task.fail`（M5）
-- [ ] 核对并补齐：`file.download` / `file.export` / `file.delete`（M6/M7）
-- [ ] 新增 `apps/api/src/__tests__/audit-coverage.static.test.ts`：静态扫描或清单断言上述 action 至少在一条集成路径被调用
+- [x] 核对并补齐：`auth.login_success` / `auth.login_failure` / `auth.logout` / `auth.password_change`（M1）
+- [x] 核对并补齐：`auth.password_reset`、`user.create` / `user.update` / `user.disable` / `user.enable`（M2）
+- [x] 核对并补齐：`ai.model.upsert` / `ai.mapping.upsert` / `ai.prompt.publish`（M3）
+- [x] 核对并补齐：`task.create`（M4）、`task.complete` / `task.fail`（M5）
+- [x] 核对并补齐：`file.download` / `file.export` / `file.delete`（M6/M7）
+- [x] 新增 `apps/api/src/__tests__/audit-coverage.static.test.ts`：静态扫描或清单断言上述 action 至少在一条集成路径被调用
 
 ---
 
 ### M8-G 数据库不可变与链校验（单文件一项）
 
-- [ ] 新增 `apps/api/src/__tests__/audit-immutable.db.test.ts`：`UPDATE`/`DELETE audit_logs` 抛错
-- [ ] 新增 `scripts/verify-audit-chain.mjs`（运维可选）：顺序校验 `prev_hash` 链接【非热路径】
+- [x] 新增 `apps/api/src/__tests__/audit-immutable.db.test.ts`：`UPDATE`/`DELETE audit_logs` 抛错
+- [x] 新增 `scripts/verify-audit-chain.mjs`（运维可选）：顺序校验 `prev_hash` 链接【非热路径】
 
 ---
 

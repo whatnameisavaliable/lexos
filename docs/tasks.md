@@ -1269,12 +1269,12 @@
 
 ### M9-C 架构红线静态检查（每个检查一个测试文件）
 
-- [ ] 新增 `tools/compliance/no-hardcoded-supabase-host.test.ts`：源码禁止 `*.supabase.co`（§4.4.2）
-- [ ] 新增 `tools/compliance/no-service-queue-add.test.ts`：`apps/api/src/services` 禁止 `queue.add(`；`apps/api` 禁止 `bullmq`/`ioredis` 生产依赖（v1.3）
-- [ ] 新增 `tools/compliance/no-browser-ffmpeg-wasm.test.ts`：`apps/web` 禁止 `ffmpeg.wasm` / `@ffmpeg`（PRD Out of Scope）
-- [ ] 新增 `tools/compliance/no-python-vad-service.test.ts`：仓库禁止独立 Python VAD 微服务目录/依赖
-- [ ] 新增 `tools/compliance/no-business-supabase-writes.test.ts`：`apps/web` 禁止业务表 `supabase.from(...).insert|update|delete`（§5.7.1）
-- [ ] 在根 `package.json` 增加脚本：`test:compliance` 运行上述检查
+- [x] 新增 `tools/compliance/no-hardcoded-supabase-host.test.ts`：源码禁止 `*.supabase.co`（§4.4.2）
+- [x] 新增 `tools/compliance/no-service-queue-add.test.ts`：`apps/api/src/services` 禁止 `queue.add(`；`apps/api` 禁止 `bullmq`/`ioredis` 生产依赖（v1.3）
+- [x] 新增 `tools/compliance/no-browser-ffmpeg-wasm.test.ts`：`apps/web` 禁止 `ffmpeg.wasm` / `@ffmpeg`（PRD Out of Scope）
+- [x] 新增 `tools/compliance/no-python-vad-service.test.ts`：仓库禁止独立 Python VAD 微服务目录/依赖
+- [x] 新增 `tools/compliance/no-business-supabase-writes.test.ts`：`apps/web` 禁止业务表 `supabase.from(...).insert|update|delete`（§5.7.1）
+- [x] 在根 `package.json` 增加脚本：`test:compliance` 运行上述检查
 
 ---
 

@@ -1134,10 +1134,10 @@
 
 ### M8-A 共享 DTO（`packages/shared`）
 
-- [ ] 新增 `packages/shared/src/dto/audit-logs-query.dto.ts`：`limit`（默认 50）、`cursor?`、`action?`、`actorId?`、`targetType?`、`from?`、`to?`
-- [ ] 新增 `packages/shared/src/types/audit-log-item.ts`：`id`、`action`、`actorId`、`targetType`、`targetId`、`metadata`（含 `clientTimestamp`）、`createdAt`、`rowHash`（**不**向前端暴露链校验密钥）
-- [ ] 新增 `packages/shared/src/dto/system-setting-upsert.dto.ts`：`value`（JSON 对象）
-- [ ] 新增 `packages/shared/src/constants/audit-required-events.ts`：导出 `audit_action` 清单（对齐 `database.md` §1.2），供覆盖率测试引用
+- [x] 新增 `packages/shared/src/dto/audit-logs-query.dto.ts`：`limit`（默认 50）、`cursor?`、`action?`、`actorId?`、`targetType?`、`from?`、`to?`
+- [x] 新增 `packages/shared/src/types/audit-log-item.ts`：`id`、`action`、`actorId`、`targetType`、`targetId`、`metadata`（含 `clientTimestamp`）、`createdAt`、`rowHash`（**不**向前端暴露链校验密钥）
+- [x] 新增 `packages/shared/src/dto/system-setting-upsert.dto.ts`：`value`（JSON 对象）
+- [x] 新增 `packages/shared/src/constants/audit-required-events.ts`：导出 `audit_action` 清单（对齐 `database.md` §1.2），供覆盖率测试引用
 
 ---
 

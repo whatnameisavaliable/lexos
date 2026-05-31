@@ -1161,11 +1161,11 @@
 
 ### M8-D 系统配置 Repository / Service（单文件一项）
 
-- [ ] 确认 M0 RLS：`system_settings` 仅 `admin` 可读写；若缺失：`npx supabase migration new rls_system_settings` 并 `db push`
-- [ ] 新增 `apps/api/src/repositories/system-settings.repository.ts`：`list`、`get(key)`、`upsert(key, value, updatedBy)`
-- [ ] 新增 `apps/api/src/services/system-settings-list.service.ts` + 测试
-- [ ] 新增 `apps/api/src/services/system-settings-get.service.ts` + 测试
-- [ ] 新增 `apps/api/src/services/system-settings-upsert.service.ts` + 测试（禁止写入密钥类 key 名【待确认】黑名单）
+- [x] 确认 M0 RLS：`system_settings` 仅 `admin` 可读写；若缺失：`npx supabase migration new rls_system_settings` 并 `db push`
+- [x] 新增 `apps/api/src/repositories/system-settings.repository.ts`：`list`、`get(key)`、`upsert(key, value, updatedBy)`
+- [x] 新增 `apps/api/src/services/system-settings-list.service.ts` + 测试
+- [x] 新增 `apps/api/src/services/system-settings-get.service.ts` + 测试
+- [x] 新增 `apps/api/src/services/system-settings-upsert.service.ts` + 测试（禁止写入密钥类 key 名【待确认】黑名单）
 
 ---
 

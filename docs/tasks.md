@@ -1152,10 +1152,10 @@
 
 ### M8-C 审计查询 Repository / Service（单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/audit-log-read.repository.ts`：`list(query)` admin JWT；按 `created_at DESC` 分页
-- [ ] 新增 `apps/api/src/repositories/audit-log-read.repository.test.ts`：律师 JWT 无行
-- [ ] 新增 `apps/api/src/services/audit-log-list.service.ts` + `audit-log-list.service.test.ts`
-- [ ] 新增 `apps/api/src/services/audit-log-get.service.ts` + `audit-log-get.service.test.ts`（单条详情）
+- [x] 新增 `apps/api/src/repositories/audit-log-read.repository.ts`：`list(query)` admin JWT；按 `created_at DESC` 分页
+- [x] 新增 `apps/api/src/repositories/audit-log-read.repository.test.ts`：律师 JWT 无行
+- [x] 新增 `apps/api/src/services/audit-log-list.service.ts` + `audit-log-list.service.test.ts`
+- [x] 新增 `apps/api/src/services/audit-log-get.service.ts` + `audit-log-get.service.test.ts`（单条详情）
 
 ---
 

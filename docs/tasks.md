@@ -1251,7 +1251,7 @@
 ### M9-A 交付文档（每个文件一项）
 
 - [x] 新增 `.env.production.example`（自 `.env.example` 派生；内网占位符；**无**真实密钥）
-- [ ] 新增 `docs/DEPLOYMENT.md`：进程清单（API、Web、`worker:pipeline`、`scheduler:stalled`）与启动顺序；**无 Redis**
+- [x] 新增 `docs/DEPLOYMENT.md`：进程清单（API、Web、`worker:pipeline`、`scheduler:stalled`）与启动顺序；**无 Redis**
 - [ ] 在 `docs/DEPLOYMENT.md` 增加私有化替代矩阵验收表（对照 `architecture.md` §4.4 逐行勾选说明）
 - [ ] 新增 `docs/OPEN_ISSUES.md`：汇总 `prd.md` / `architecture.md` / `database.md` 中【待确认】条目（链接章节号）
 - [ ] 新增 `docs/E2E_MANUAL_CHECKLIST.md`：无法自动化的验收步骤（MFA 真机扫码等）

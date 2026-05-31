@@ -1,25 +1,8 @@
+import type { AuditAction } from "@lexos/shared";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { SupabaseEnvConfig } from "@lexos/shared/config";
 
-/** `public.audit_action` 子集（登录/登出/改密，M1 使用）。 */
-export type AuditAction =
-  | "auth.login_success"
-  | "auth.login_failure"
-  | "auth.logout"
-  | "auth.password_change"
-  | "auth.password_reset"
-  | "user.create"
-  | "user.update"
-  | "user.disable"
-  | "user.enable"
-  | "ai.model.upsert"
-  | "ai.mapping.upsert"
-  | "ai.prompt.publish"
-  | "task.create"
-  | "task.complete"
-  | "file.download"
-  | "file.export"
-  | "file.delete";
+export type { AuditAction };
 
 /** `append_audit_log` 入参。 */
 export interface AppendAuditLogInput {

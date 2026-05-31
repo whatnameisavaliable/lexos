@@ -1143,10 +1143,10 @@
 
 ### M8-B 审计写入基础设施（单文件一项）
 
-- [ ] 新增 `apps/api/src/repositories/audit-log.repository.ts`：仅 `append(...)` 封装 RPC `append_audit_log`（`service_role`）
-- [ ] 新增 `apps/api/src/services/audit-writer.service.ts`：注入 `ip`、`userAgent`、`metadata`；浏览器事件自动合并 `client_timestamp`/`client_timezone`
-- [ ] 新增 `apps/api/src/services/audit-writer.service.test.ts`：`auth.login_failure` 必含 `attempted_username`（哈希可选）
-- [ ] 新增 `apps/api/src/lib/audit-client-metadata.ts`：从请求头 `X-Client-Timestamp`、`X-Client-Timezone` 解析（BFF 契约）
+- [x] 新增 `apps/api/src/repositories/audit-log.repository.ts`：仅 `append(...)` 封装 RPC `append_audit_log`（`service_role`）
+- [x] 新增 `apps/api/src/services/audit-writer.service.ts`：注入 `ip`、`userAgent`、`metadata`；浏览器事件自动合并 `client_timestamp`/`client_timezone`
+- [x] 新增 `apps/api/src/services/audit-writer.service.test.ts`：`auth.login_failure` 必含 `attempted_username`（哈希可选）
+- [x] 新增 `apps/api/src/lib/audit-client-metadata.ts`：从请求头 `X-Client-Timestamp`、`X-Client-Timezone` 解析（BFF 契约）
 
 ---
 

@@ -108,7 +108,7 @@ M* → M9
 
 - [x] 执行 `npx supabase migration new upload_sessions_sop`
   - **依赖**：`tables_case_pipelines` 迁移文件已创建
-- [ ] 新增 `packages/shared/src/migrations/m10-upload-sessions-sop.migration.test.ts`：断言含 `pipeline_id` 或 `session_kind` 及 `task_id` 可空约束（卷宗 TUS 专用，`architecture.md` §3.2.6.8）
+- [x] 新增 `packages/shared/src/migrations/m10-upload-sessions-sop.migration.test.ts`：断言含 `pipeline_id` 或 `session_kind` 及 `task_id` 可空约束（卷宗 TUS 专用，`architecture.md` §3.2.6.8）
   - **依赖**：上一条
 
 - [ ] 执行 `npx supabase migration new rls_sop`

@@ -228,7 +228,7 @@ M* → M9
 - [x] 新增 `packages/shared/src/enums/sop-execution-type.test.ts`：覆盖三值与非法字符串
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/enums/case-pipeline-status.ts`：导出 `CasePipelineStatus` 与 `isCasePipelineStatus()`
+- [x] 新增 `packages/shared/src/enums/case-pipeline-status.ts`：导出 `CasePipelineStatus` 与 `isCasePipelineStatus()`
   - **依赖**：无
 - [ ] 新增 `packages/shared/src/enums/case-pipeline-status.test.ts`
   - **依赖**：上一条

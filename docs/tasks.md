@@ -155,7 +155,7 @@ M* → M9
 - [x] 更新 `m10-enums-sop.migration.test.ts`：断言四个 `ADD VALUE` 子串均存在
   - **依赖**：上一条
 
-- [ ] 在 `audit_action_sop.sql` 中扩展 `audit_action`：`sop.template.publish`、`sop.prompt.update`、`sop.artifact.export_pdf`、`sop.artifact.verify`（`prd.md` 附录审计表）
+- [x] 在 `audit_action_sop.sql` 中扩展 `audit_action`：`sop.template.publish`、`sop.prompt.update`、`sop.artifact.export_pdf`、`sop.artifact.verify`（`prd.md` 附录审计表）
   - **依赖**：M10-A `audit_action_sop` 文件已创建
 - [ ] 运行 `m10-audit-action-sop.migration.test.ts` 全绿
   - **依赖**：上一条

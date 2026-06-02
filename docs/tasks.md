@@ -223,7 +223,7 @@ M* → M9
 
 #### M10-C `packages/shared` — SOP 枚举（每个枚举文件一对任务）
 
-- [ ] 新增 `packages/shared/src/enums/sop-execution-type.ts`：导出 `SopExecutionType` 常量对象与 `isSopExecutionType()`
+- [x] 新增 `packages/shared/src/enums/sop-execution-type.ts`：导出 `SopExecutionType` 常量对象与 `isSopExecutionType()`
   - **依赖**：无（可与迁移并行，合并前须与 DB 枚举一致）
 - [ ] 新增 `packages/shared/src/enums/sop-execution-type.test.ts`：覆盖三值与非法字符串
   - **依赖**：上一条

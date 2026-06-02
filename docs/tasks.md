@@ -1035,49 +1035,49 @@ M* → M9
 
 #### M13-B `apps/api` — 领域规则（纯函数）
 
-- [ ] 新增 `apps/api/src/domain/sop/assert-pipeline-actionable.ts`：导出 `assertPipelineActionable(status)`；`completed`/`suspended` 禁止 execute/finalize（`suspended` 须先 resume）
+- [x] 新增 `apps/api/src/domain/sop/assert-pipeline-actionable.ts`：导出 `assertPipelineActionable(status)`；`completed`/`suspended` 禁止 execute/finalize（`suspended` 须先 resume）
   - **依赖**：M10 `CasePipelineStatus`
-- [ ] 新增 `apps/api/src/domain/sop/assert-pipeline-actionable.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/assert-pipeline-actionable.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/find-dag-entry-step-code.ts`：导出 `findDagEntryStepCode(steps)`（唯一入度 0 节点）
+- [x] 新增 `apps/api/src/domain/sop/find-dag-entry-step-code.ts`：导出 `findDagEntryStepCode(steps)`（唯一入度 0 节点）
   - **依赖**：无
-- [ ] 新增 `apps/api/src/domain/sop/find-dag-entry-step-code.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/find-dag-entry-step-code.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/assert-depends-on-finalized.ts`：导出 `assertDependsOnFinalized(pipelineId, step, artifactsByCode)`；未定稿 → `OPERATION_NOT_ALLOWED`
+- [x] 新增 `apps/api/src/domain/sop/assert-depends-on-finalized.ts`：导出 `assertDependsOnFinalized(pipelineId, step, artifactsByCode)`；未定稿 → `OPERATION_NOT_ALLOWED`
   - **依赖**：无
-- [ ] 新增 `apps/api/src/domain/sop/assert-depends-on-finalized.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/assert-depends-on-finalized.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/assert-artifact-not-running.ts`：导出 `assertArtifactNotRunning(status)`；`running` 时拒绝第二次 execute
+- [x] 新增 `apps/api/src/domain/sop/assert-artifact-not-running.ts`：导出 `assertArtifactNotRunning(status)`；`running` 时拒绝第二次 execute
   - **依赖**：M10 `PipelineArtifactStatus`
-- [ ] 新增 `apps/api/src/domain/sop/assert-artifact-not-running.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/assert-artifact-not-running.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/assert-artifact-editable.ts`：导出 `assertArtifactEditable(status)`；`finalized` 禁止 PATCH
+- [x] 新增 `apps/api/src/domain/sop/assert-artifact-editable.ts`：导出 `assertArtifactEditable(status)`；`finalized` 禁止 PATCH
   - **依赖**：无
-- [ ] 新增 `apps/api/src/domain/sop/assert-artifact-editable.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/assert-artifact-editable.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-storage-key-prefix.ts`：导出 `buildSopMediaStorageKeyPrefix(ownerId, pipelineId)` → `{ownerId}/sops/{pipelineId}/`
+- [x] 新增 `apps/api/src/domain/sop/build-sop-storage-key-prefix.ts`：导出 `buildSopMediaStorageKeyPrefix(ownerId, pipelineId)` → `{ownerId}/sops/{pipelineId}/`
   - **依赖**：无
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-storage-key-prefix.test.ts`：首段等于 `ownerId`
+- [x] 新增 `apps/api/src/domain/sop/build-sop-storage-key-prefix.test.ts`：首段等于 `ownerId`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-deep-research-outbox-payload.ts`：导出 `buildSopDeepResearchOutboxPayload(...)`（`stage=sop.deep_research`）
+- [x] 新增 `apps/api/src/domain/sop/build-sop-deep-research-outbox-payload.ts`：导出 `buildSopDeepResearchOutboxPayload(...)`（`stage=sop.deep_research`）
   - **依赖**：M10 `SOP_STAGE_DEEP_RESEARCH`
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-deep-research-outbox-payload.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/build-sop-deep-research-outbox-payload.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-pdf-export-outbox-payload.ts`：导出 `buildSopPdfExportOutboxPayload(...)`（`stage=sop.pdf_export`）
+- [x] 新增 `apps/api/src/domain/sop/build-sop-pdf-export-outbox-payload.ts`：导出 `buildSopPdfExportOutboxPayload(...)`（`stage=sop.pdf_export`）
   - **依赖**：M10 `SOP_STAGE_PDF_EXPORT`
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-pdf-export-outbox-payload.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/build-sop-pdf-export-outbox-payload.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-media-ocr-outbox-payload.ts`：导出 `buildSopMediaOcrOutboxPayload(...)`（`stage=sop.media.ocr`）
+- [x] 新增 `apps/api/src/domain/sop/build-sop-media-ocr-outbox-payload.ts`：导出 `buildSopMediaOcrOutboxPayload(...)`（`stage=sop.media.ocr`）
   - **依赖**：M10 `SOP_STAGE_MEDIA_OCR`
-- [ ] 新增 `apps/api/src/domain/sop/build-sop-media-ocr-outbox-payload.test.ts`
+- [x] 新增 `apps/api/src/domain/sop/build-sop-media-ocr-outbox-payload.test.ts`
   - **依赖**：上一条
 
 ---

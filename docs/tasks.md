@@ -121,9 +121,9 @@ M* → M9
 - [x] 新增 `packages/shared/src/migrations/m10-storage-exports-sop-path.migration.test.ts`：断言 `exports` 策略校验路径含 `sops` 段（`database.md` §3.16.8）
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new seed_system_settings_sop`
+- [x] 执行 `npx supabase migration new seed_system_settings_sop`
   - **依赖**：Part A `tables_audit_system` 已应用
-- [ ] 新增 `packages/shared/src/migrations/m10-seed-system-settings-sop.migration.test.ts`：断言 `INSERT INTO public.system_settings` 且 key 为 `sop.deep_research_enabled`
+- [x] 新增 `packages/shared/src/migrations/m10-seed-system-settings-sop.migration.test.ts`：断言 `INSERT INTO public.system_settings` 且 key 为 `sop.deep_research_enabled`
   - **依赖**：上一条
 
 ---

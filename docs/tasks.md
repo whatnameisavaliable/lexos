@@ -1215,34 +1215,34 @@ M* → M9
 
 #### M13-G `apps/api` — Service：产出物、定稿、校验、PDF 重试
 
-- [ ] 新增 `apps/api/src/services/sop-artifact-get.service.ts`
+- [x] 新增 `apps/api/src/services/sop-artifact-get.service.ts`
   - **依赖**：M13-C artifact repo
-- [ ] 新增 `apps/api/src/services/sop-artifact-get.service.test.ts`
+- [x] 新增 `apps/api/src/services/sop-artifact-get.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-artifact-patch.service.ts`：解析 `If-Match`；`assertArtifactEditable`；`version++`
+- [x] 新增 `apps/api/src/services/sop-artifact-patch.service.ts`：解析 `If-Match`；`assertArtifactEditable`；`version++`
   - **依赖**：M13-B `assert-artifact-editable`
-- [ ] 新增 `apps/api/src/services/sop-artifact-patch.service.test.ts`：陈旧 version → `RESOURCE_CONFLICT` 409
+- [x] 新增 `apps/api/src/services/sop-artifact-patch.service.test.ts`：陈旧 version → `RESOURCE_CONFLICT` 409
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-artifact-verify.service.ts`：`append_audit_log('sop.artifact.verify')`；仅本案律师
+- [x] 新增 `apps/api/src/services/sop-artifact-verify.service.ts`：`append_audit_log('sop.artifact.verify')`；仅本案律师
   - **依赖**：M13-C verified repo；`AuditWriterService`
-- [ ] 新增 `apps/api/src/services/sop-artifact-verify.service.test.ts`
+- [x] 新增 `apps/api/src/services/sop-artifact-verify.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-step-finalize.service.ts`：`assertVerifiedIfRequired` → `finalized` + `finalized_snapshot_raw`；`html` 步骤同事务 Outbox `sop.pdf_export`
+- [x] 新增 `apps/api/src/services/sop-step-finalize.service.ts`：`assertVerifiedIfRequired` → `finalized` + `finalized_snapshot_raw`；`html` 步骤同事务 Outbox `sop.pdf_export`
   - **依赖**：M13-C verified；M13-B pdf outbox payload
-- [ ] 新增 `apps/api/src/services/sop-step-finalize.service.test.ts`：未 Verified → 422
+- [x] 新增 `apps/api/src/services/sop-step-finalize.service.test.ts`：未 Verified → 422
   - **依赖**：上一条
 
-- [ ] 在 `sop-step-finalize.service.ts` 提取 `assertVerifiedIfRequired(...)` 私有函数（自动日志 OR 人工审计）
+- [x] 在 `sop-step-finalize.service.ts` 提取 `assertVerifiedIfRequired(...)` 私有函数（自动日志 OR 人工审计）
   - **依赖**：finalize 骨架
-- [ ] 新增 `sop-step-finalize.service.verified.test.ts`
+- [x] 新增 `sop-step-finalize.service.verified.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-artifact-regenerate-pdf.service.ts`：仅 `finalized`；入队 `sop.pdf_export` Outbox
+- [x] 新增 `apps/api/src/services/sop-artifact-regenerate-pdf.service.ts`：仅 `finalized`；入队 `sop.pdf_export` Outbox
   - **依赖**：M13-B pdf payload；outbox repo
-- [ ] 新增 `apps/api/src/services/sop-artifact-regenerate-pdf.service.test.ts`：`draft` 状态 → 422
+- [x] 新增 `apps/api/src/services/sop-artifact-regenerate-pdf.service.test.ts`：`draft` 状态 → 422
   - **依赖**：上一条
 
 ---

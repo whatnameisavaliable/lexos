@@ -117,6 +117,28 @@ export class PipelineArtifactRepository {
   }
 
   /**
+   * 按产出物 ID 查询。
+   */
+  async findArtifactById(
+    accessToken: string,
+    artifactId: string,
+  ): Promise<PipelineArtifactRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("pipeline_artifacts")
+      .select(PIPELINE_ARTIFACT_SELECT)
+      .eq("id", artifactId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `pipeline_artifacts.findArtifactById failed: ${error.message}`,
+      );
+    }
+    return data ? mapPipelineArtifactRow(data as PipelineArtifactRowDb) : null;
+  }
+
+  /**
    * 乐观锁更新正文（`If-Match: version`）；版本不匹配时返回 `null`。
    */
   async patchContentRaw(

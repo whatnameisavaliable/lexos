@@ -76,7 +76,7 @@ M* → M9
 - [x] 为 `enums_sop.sql` 新增静态测试 `packages/shared/src/migrations/m10-enums-sop.migration.test.ts`：断言文件含 `sop_execution_type`、`pipeline_artifact_status` 及四条 `sop.` `ai_feature_key` 扩展
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new audit_action_sop`；创建空迁移文件供 §M10-B2 写入
+- [x] 执行 `npx supabase migration new audit_action_sop`；创建空迁移文件供 §M10-B2 写入
   - **依赖**：M10-A 第一条
 - [ ] 新增 `packages/shared/src/migrations/m10-audit-action-sop.migration.test.ts`：断言迁移文件含 `sop.template.publish`、`sop.artifact.verify`
   - **依赖**：上一条

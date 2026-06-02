@@ -233,135 +233,135 @@ M* → M9
 - [x] 新增 `packages/shared/src/enums/case-pipeline-status.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/enums/pipeline-artifact-status.ts`：导出 `PipelineArtifactStatus`（`running|draft|failed|finalized`）
+- [x] 新增 `packages/shared/src/enums/pipeline-artifact-status.ts`：导出 `PipelineArtifactStatus`（`running|draft|failed|finalized`）
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/enums/pipeline-artifact-status.test.ts`
+- [x] 新增 `packages/shared/src/enums/pipeline-artifact-status.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/enums/artifact-content-type.ts`：导出 `ArtifactContentType`
+- [x] 新增 `packages/shared/src/enums/artifact-content-type.ts`：导出 `ArtifactContentType`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/enums/artifact-content-type.test.ts`
+- [x] 新增 `packages/shared/src/enums/artifact-content-type.test.ts`
   - **依赖**：上一条
 
-- [ ] 扩展 `packages/shared/src/enums/ai-feature-key.ts`：追加 `SOP_FACT_EXTRACT` 等四个常量；扩展 `AI_FEATURE_KEY_VALUES`
+- [x] 扩展 `packages/shared/src/enums/ai-feature-key.ts`：追加 `SOP_FACT_EXTRACT` 等四个常量；扩展 `AI_FEATURE_KEY_VALUES`
   - **依赖**：无
-- [ ] 更新 `packages/shared/src/enums/ai-feature-key.test.ts`：断言 `isAiFeatureKey('sop.fact_extract')` 为 true
+- [x] 更新 `packages/shared/src/enums/ai-feature-key.test.ts`：断言 `isAiFeatureKey('sop.fact_extract')` 为 true
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/enums/sop-ai-feature-keys.ts`：导出 `SOP_AI_FEATURE_KEY_VALUES` 只读数组（四功能点）
+- [x] 新增 `packages/shared/src/enums/sop-ai-feature-keys.ts`：导出 `SOP_AI_FEATURE_KEY_VALUES` 只读数组（四功能点）
   - **依赖**：`ai-feature-key.ts` 已扩展
-- [ ] 新增 `packages/shared/src/enums/sop-ai-feature-keys.test.ts`：长度恒为 4
+- [x] 新增 `packages/shared/src/enums/sop-ai-feature-keys.test.ts`：长度恒为 4
   - **依赖**：上一条
 
 ---
 
 #### M10-D `packages/shared` — 错误码、Outbox 阶段、系统设置键
 
-- [ ] 在 `packages/shared/src/api/error-code.ts` 的 `ErrorCode` 中新增 `CONTEXT_LIMIT_EXCEEDED`
+- [x] 在 `packages/shared/src/api/error-code.ts` 的 `ErrorCode` 中新增 `CONTEXT_LIMIT_EXCEEDED`
   - **依赖**：无
-- [ ] 在 `error-code.ts` 的 `ERROR_CODE_HTTP_STATUS` 中为 `CONTEXT_LIMIT_EXCEEDED` 映射 **422**
+- [x] 在 `error-code.ts` 的 `ERROR_CODE_HTTP_STATUS` 中为 `CONTEXT_LIMIT_EXCEEDED` 映射 **422**
   - **依赖**：上一条
-- [ ] 更新 `packages/shared/src/api/error-code.test.ts`：断言 422 映射与 `isErrorCode` 识别
+- [x] 更新 `packages/shared/src/api/error-code.test.ts`：断言 422 映射与 `isErrorCode` 识别
   - **依赖**：上两条
 
-- [ ] 新增 `packages/shared/src/constants/sop-pipeline-stages.ts`：导出 `SOP_STAGE_MEDIA_OCR`、`SOP_STAGE_DEEP_RESEARCH`、`SOP_STAGE_PDF_EXPORT` 及 `SOP_PIPELINE_STAGES`
+- [x] 新增 `packages/shared/src/constants/sop-pipeline-stages.ts`：导出 `SOP_STAGE_MEDIA_OCR`、`SOP_STAGE_DEEP_RESEARCH`、`SOP_STAGE_PDF_EXPORT` 及 `SOP_PIPELINE_STAGES`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/constants/sop-pipeline-stages.test.ts`：断言 `isSopPipelineStage()` 与 `architecture.md` §3.2.6.2 三字面值一致
+- [x] 新增 `packages/shared/src/constants/sop-pipeline-stages.test.ts`：断言 `isSopPipelineStage()` 与 `architecture.md` §3.2.6.2 三字面值一致
   - **依赖**：上一条
 
-- [ ] 扩展 `packages/shared/src/constants/pipeline-stages.ts`：导出联合类型 `PipelineStage | SopPipelineStage` 的 `ALL_WORKER_STAGES`（转写五阶段 + SOP 三阶段）
+- [x] 扩展 `packages/shared/src/constants/pipeline-stages.ts`：导出联合类型 `PipelineStage | SopPipelineStage` 的 `ALL_WORKER_STAGES`（转写五阶段 + SOP 三阶段）
   - **依赖**：`sop-pipeline-stages.ts` 已存在
-- [ ] 更新 `packages/shared/src/constants/pipeline-stages.test.ts`：断言 `ALL_WORKER_STAGES` 长度为 8
+- [x] 更新 `packages/shared/src/constants/pipeline-stages.test.ts`：断言 `ALL_WORKER_STAGES` 长度为 8
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/constants/sop-system-settings-keys.ts`：导出 `SOP_DEEP_RESEARCH_ENABLED_KEY = 'sop.deep_research_enabled'`
+- [x] 新增 `packages/shared/src/constants/sop-system-settings-keys.ts`：导出 `SOP_DEEP_RESEARCH_ENABLED_KEY = 'sop.deep_research_enabled'`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/constants/sop-system-settings-keys.test.ts`
+- [x] 新增 `packages/shared/src/constants/sop-system-settings-keys.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/sop-outbox-payload.ts`：定义 `SopOutboxPayload`（`stage` + `pipeline_id` + `step_code` + `artifact_id` 可选字段）
+- [x] 新增 `packages/shared/src/types/sop-outbox-payload.ts`：定义 `SopOutboxPayload`（`stage` + `pipeline_id` + `step_code` + `artifact_id` 可选字段）
   - **依赖**：`sop-pipeline-stages.ts` 已存在
-- [ ] 新增 `packages/shared/src/types/sop-outbox-payload.test.ts`：断言 `aggregate_type` 文档注释为 `case_pipeline`
+- [x] 新增 `packages/shared/src/types/sop-outbox-payload.test.ts`：断言 `aggregate_type` 文档注释为 `case_pipeline`
   - **依赖**：上一条
 
-- [ ] 在 `packages/shared/src/index.ts` 中 re-export M10-C、M10-D 新增模块
+- [x] 在 `packages/shared/src/index.ts` 中 re-export M10-C、M10-D 新增模块
   - **依赖**：M10-C、M10-D 全部源文件已存在
-- [ ] 新增 `packages/shared/src/index.m10-exports.test.ts`：静态 import 断言 `SOP_PIPELINE_STAGES`、`ErrorCode.CONTEXT_LIMIT_EXCEEDED` 可解析
+- [x] 新增 `packages/shared/src/index.m10-exports.test.ts`：静态 import 断言 `SOP_PIPELINE_STAGES`、`ErrorCode.CONTEXT_LIMIT_EXCEEDED` 可解析
   - **依赖**：上一条
 
 ---
 
 #### M10-E `packages/shared` — 迁移 manifest（M10 登记）
 
-- [ ] 在 `packages/shared/src/migrations/manifest.ts` 中新增导出数组 `M10_MIGRATIONS`（含 `enums_sop`～`seed_system_settings_sop` 共 11 项 `requiredSnippets`）
+- [x] 在 `packages/shared/src/migrations/manifest.ts` 中新增导出数组 `M10_MIGRATIONS`（含 `enums_sop`～`seed_system_settings_sop` 共 11 项 `requiredSnippets`）
   - **依赖**：M10-B 各迁移 SQL 正文已写入
-- [ ] 新增 `packages/shared/src/migrations/manifest.m10.test.ts`：调用 `assertMigrationsManifest(M10_MIGRATIONS)`
+- [x] 新增 `packages/shared/src/migrations/manifest.m10.test.ts`：调用 `assertMigrationsManifest(M10_MIGRATIONS)`
   - **依赖**：上一条
 
-- [ ] 在 `manifest.ts` 中新增函数 `listExpectedM10MigrationNames(): readonly string[]`
+- [x] 在 `manifest.ts` 中新增函数 `listExpectedM10MigrationNames(): readonly string[]`
   - **依赖**：`M10_MIGRATIONS` 已定义
-- [ ] 为 `listExpectedM10MigrationNames` 新增单元测试：返回长度 11 且含 `rls_sop`
+- [x] 为 `listExpectedM10MigrationNames` 新增单元测试：返回长度 11 且含 `rls_sop`
   - **依赖**：上一条
 
 ---
 
 #### M10-F 环境变量模板（SOP Worker 限额）
 
-- [ ] 在 `.env.example` 中追加 `SOP_PDF_MAX_CONCURRENT=1`、`SOP_DEEP_RESEARCH_MAX_CONCURRENT=2`、`SOP_DEEP_RESEARCH_TIMEOUT_MS=1800000`（注释引用 `architecture.md` §3.2.6.3、§3.2.6.9）
+- [x] 在 `.env.example` 中追加 `SOP_PDF_MAX_CONCURRENT=1`、`SOP_DEEP_RESEARCH_MAX_CONCURRENT=2`、`SOP_DEEP_RESEARCH_TIMEOUT_MS=1800000`（注释引用 `architecture.md` §3.2.6.3、§3.2.6.9）
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/config/sop-worker-runtime-env.test.ts`：文档化断言三变量名存在于 `.env.example` 文本（读文件，不连网）
+- [x] 新增 `packages/shared/src/config/sop-worker-runtime-env.test.ts`：文档化断言三变量名存在于 `.env.example` 文本（读文件，不连网）
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/config/sop-worker-runtime-env.ts`：导出 `loadSopWorkerRuntimeEnvFromProcess()` 解析上述三变量默认值
+- [x] 新增 `packages/shared/src/config/sop-worker-runtime-env.ts`：导出 `loadSopWorkerRuntimeEnvFromProcess()` 解析上述三变量默认值
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/config/sop-worker-runtime-env.parse.test.ts`：缺省 env 时 PDF=1、DR=2、timeout=1800000
+- [x] 新增 `packages/shared/src/config/sop-worker-runtime-env.parse.test.ts`：缺省 env 时 PDF=1、DR=2、timeout=1800000
   - **依赖**：上一条
 
-- [ ] 在 `packages/shared/src/config/worker-runtime-env.ts` 中合并 `loadSopWorkerRuntimeEnvFromProcess()` 返回值到 `WorkerRuntimeEnvConfig`
+- [x] 在 `packages/shared/src/config/worker-runtime-env.ts` 中合并 `loadSopWorkerRuntimeEnvFromProcess()` 返回值到 `WorkerRuntimeEnvConfig`
   - **依赖**：`sop-worker-runtime-env.ts` 已存在
-- [ ] 更新 `packages/shared/src/config/worker-runtime-env.test.ts`：断言合并后字段存在
+- [x] 更新 `packages/shared/src/config/worker-runtime-env.test.ts`：断言合并后字段存在
   - **依赖**：上一条
 
 ---
 
 #### M10-G Seed — SOP AI 功能点映射占位
 
-- [ ] 在 `supabase/seed.sql`（或独立 `supabase/seeds/sop_ai_mappings.sql` 并由 config 引用）中编写注释块：四 SOP `feature_key` 须指向已存在 `ai_model_credentials.id` 的幂等 `INSERT` 模板
+- [x] 在 `supabase/seed.sql`（或独立 `supabase/seeds/sop_ai_mappings.sql` 并由 config 引用）中编写注释块：四 SOP `feature_key` 须指向已存在 `ai_model_credentials.id` 的幂等 `INSERT` 模板
   - **依赖**：M10-B `enums_sop` 已 push；M3 至少一条模型 seed 存在【无模型则跳过 INSERT 仅保留注释】
-- [ ] 新增 `packages/shared/src/seed/sop-ai-mappings-seed.test.ts`：解析 seed 文件断言含四个 `sop.` feature_key 字面量
+- [x] 新增 `packages/shared/src/seed/sop-ai-mappings-seed.test.ts`：解析 seed 文件断言含四个 `sop.` feature_key 字面量
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/seed/run-sop-ai-mappings-seed-cli.ts`：CLI 在存在默认模型时对四功能点 `INSERT ... ON CONFLICT DO NOTHING`
+- [x] 新增 `packages/shared/src/seed/run-sop-ai-mappings-seed-cli.ts`：CLI 在存在默认模型时对四功能点 `INSERT ... ON CONFLICT DO NOTHING`
   - **依赖**：`sop-ai-mappings-seed.test.ts` 已绿
-- [ ] 新增 `packages/shared/src/seed/run-sop-ai-mappings-seed-cli.test.ts`：Mock DB；断言不硬编码 API Key
+- [x] 新增 `packages/shared/src/seed/run-sop-ai-mappings-seed-cli.test.ts`：Mock DB；断言不硬编码 API Key
   - **依赖**：上一条
 
 ---
 
 #### M10-H RLS 集成测试基建（律师隔离）
 
-- [ ] 新增 `packages/shared/src/rls/case-pipelines-rls.ts`：导出 `fetchCasePipelineAsUser(pipelineId, accessToken)` 封装 Supabase 客户端查询
+- [x] 新增 `packages/shared/src/rls/case-pipelines-rls.ts`：导出 `fetchCasePipelineAsUser(pipelineId, accessToken)` 封装 Supabase 客户端查询
   - **依赖**：M10-B `rls_sop` 已 push
-- [ ] 新增 `packages/shared/src/rls/case-pipelines-rls.test.ts`：Mock 客户端；断言使用 `case_pipelines` 表名
+- [x] 新增 `packages/shared/src/rls/case-pipelines-rls.test.ts`：Mock 客户端；断言使用 `case_pipelines` 表名
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/rls/case-pipelines-rls.integration.test.ts`：律师 A JWT 无法 `SELECT` 律师 B 的 `case_pipelines` 行（`skip` 无联调 env）
+- [x] 新增 `packages/shared/src/rls/case-pipelines-rls.integration.test.ts`：律师 A JWT 无法 `SELECT` 律师 B 的 `case_pipelines` 行（`skip` 无联调 env）
   - **依赖**：`case-pipelines-rls.ts` 已存在；联调库已有两名律师 seed
-- [ ] 新增 `packages/shared/src/rls/case-pipelines-rls.integration.test.ts` 第二用例：律师无法 `SELECT` 他人 `pipeline_artifacts`（经 `pipeline_id`）
+- [x] 新增 `packages/shared/src/rls/case-pipelines-rls.integration.test.ts` 第二用例：律师无法 `SELECT` 他人 `pipeline_artifacts`（经 `pipeline_id`）
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/rls/sop-templates-rls.integration.test.ts`：律师 JWT 可 `SELECT` `is_published=true` 的 `sop_template_versions`；不可 `INSERT` `sop_templates`
+- [x] 新增 `packages/shared/src/rls/sop-templates-rls.integration.test.ts`：律师 JWT 可 `SELECT` `is_published=true` 的 `sop_template_versions`；不可 `INSERT` `sop_templates`
   - **依赖**：M10-B `rls_sop` 已 push；联调库存在一条已发布版本 seed【测试数据可在用例 `beforeAll` 用 service_role 插入】
-- [ ] 为 `sop-templates-rls.integration.test.ts` 增加 admin JWT 可 `INSERT sop_templates` 断言
+- [x] 为 `sop-templates-rls.integration.test.ts` 增加 admin JWT 可 `INSERT sop_templates` 断言
   - **依赖**：上一条
 
 ---
 
 #### M10-I Milestone 10 完成门禁
 
-- [ ] 运行 `npm run test --workspace=@lexos/shared`（或仓库等价命令）覆盖 M10-C～M10-H 新增测试；连续失败 **>2** 次则停止并汇报
+- [x] 运行 `npm run test --workspace=@lexos/shared`（或仓库等价命令）覆盖 M10-C～M10-H 新增测试；连续失败 **>2** 次则停止并汇报
   - **依赖**：M10-A～M10-H 全部 checkbox 已完成
-- [ ] 执行 `npx supabase migration list`；人工核对 M10 的 11 个迁移均为 **applied**
+- [x] 执行 `npx supabase migration list`；人工核对 M10 的 11 个迁移均为 **applied**
   - **依赖**：`db push` 已成功
 
 **人工黑盒验收**（由人工在联调/预发环境执行，不通过不得 `git commit`）：
@@ -2782,7 +2782,7 @@ M10 (SOP DB/RLS/Storage)
 
 | Milestone | 名称 | 状态 |
 |-----------|------|------|
-| M10 | SOP 基础设施与数据库迁移 | **未开始** |
+| M10 | SOP 基础设施与数据库迁移 | **进行中（待人工黑盒签收）** |
 | M11 | AI 能力扩展（SOP 功能点） | 未开始 |
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 未开始 |
 | M13 | 律师端 SOP 流水线业务 API | 未开始 |

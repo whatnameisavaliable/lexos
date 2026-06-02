@@ -1,6 +1,11 @@
 /**
  * U3 流水线逻辑阶段名（`architecture.md` §3.2.1.3 · `database.md` v1.4 §3.14）。
  */
+import {
+  SOP_PIPELINE_STAGES,
+  type SopPipelineStage,
+} from "./sop-pipeline-stages.js";
+
 export const PIPELINE_STAGE_MEDIA_EXTRACT = "media.extract" as const;
 export const PIPELINE_STAGE_MEDIA_PREPROCESS = "media.preprocess" as const;
 export const PIPELINE_STAGE_ASR = "asr" as const;
@@ -18,6 +23,15 @@ export const PIPELINE_STAGES = [
 
 /** 流水线阶段字面量联合类型。 */
 export type PipelineStage = (typeof PIPELINE_STAGES)[number];
+
+/** 转写五阶段 + SOP 三阶段（U3 Worker 全量 Outbox stage）。 */
+export const ALL_WORKER_STAGES = [
+  ...PIPELINE_STAGES,
+  ...SOP_PIPELINE_STAGES,
+] as const;
+
+/** U3 可消费的全部 Outbox 阶段联合类型。 */
+export type AllWorkerStage = PipelineStage | SopPipelineStage;
 
 /** 判断字符串是否为已知流水线阶段。 */
 export function isPipelineStage(value: string): value is PipelineStage {

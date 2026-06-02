@@ -4,6 +4,7 @@ import {
   AI_FEATURE_KEY_VALUES,
   AiFeatureKey,
   isAiActiveFeatureKey,
+  isAiFeatureKey,
 } from "./ai-feature-key.js";
 
 describe("AiFeatureKey", () => {
@@ -16,5 +17,12 @@ describe("AiFeatureKey", () => {
     expect(AI_FEATURE_KEY_VALUES).toContain(AiFeatureKey.ASR_SEMANTIC);
     expect(isAiActiveFeatureKey(AiFeatureKey.ASR_SEMANTIC)).toBe(false);
     expect(isAiActiveFeatureKey(AiFeatureKey.ASR_PHYSICAL)).toBe(true);
+  });
+
+  it("includes SOP feature keys from M10 enum extension", () => {
+    expect(isAiFeatureKey("sop.fact_extract")).toBe(true);
+    expect(isAiFeatureKey("sop.strategy_gen")).toBe(true);
+    expect(isAiFeatureKey("sop.deep_research")).toBe(true);
+    expect(isAiFeatureKey("sop.visual_charting")).toBe(true);
   });
 });

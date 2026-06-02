@@ -39,3 +39,31 @@
 ---
 
 **结论**：M9 工程交付项已完成；人工清单与 OPEN_ISSUES 签收需产品下一步确认。
+
+---
+
+## M10 — SOP 基础设施（2026-06-02）
+
+| 字段 | 值 |
+|------|-----|
+| 验收日期 | 2026-06-02 |
+| 环境 | Supabase 联调（`supabase db push --include-all` 已应用） |
+| 执行人 | 工程自动化（CLI 核对） |
+
+### 自动化 / CLI 已核对
+
+| 项 | 结果 | 说明 |
+|----|:----:|------|
+| M10 迁移 `20260602100001`～`20260602100011` | 通过 | `supabase migration list` 本地与远端均为 applied |
+| 五张 SOP 表存在 | 通过 | `pg_class` 查询五表均存在 |
+| RLS 已启用 | 通过 | 五表 `relrowsecurity = true` |
+| `sop.deep_research_enabled` | 通过 | `system_settings` 值为 `true` |
+| `packages/shared` M10 单测 | 通过 | 仓库根目录 `vitest run packages/shared/src/...`（53 passed，1 skipped 无 DB URL） |
+
+### 待人工黑盒（须 QA/产品在 Studio 或双律师 JWT 环境签收）
+
+| 项 | 状态 | 备注 |
+|----|:----:|------|
+| 律师 A 无法读律师 B `case_pipelines` / `pipeline_artifacts` | 待执行 | 集成测需联调 env + 双律师 seed |
+| Storage `exports` 路径违规上传拒绝 | 待执行 | 抽查策略或试传 |
+| **【人工黑盒验收签收】** | 待执行 | 全部通过后勾选 `tasks.md` M10-I |

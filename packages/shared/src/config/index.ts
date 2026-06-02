@@ -50,6 +50,10 @@ export {
   type WorkerRuntimeEnvConfig,
 } from "./worker-runtime-env.js";
 export {
+  loadSopWorkerRuntimeEnvFromProcess,
+  type SopWorkerRuntimeEnvConfig,
+} from "./sop-worker-runtime-env.js";
+export {
   assertUsableWorkerDatabaseUrl,
   describeDatabaseEndpoint,
   isPlaceholderDatabaseUrl,

@@ -18,4 +18,10 @@ describe("ErrorCode", () => {
     expect(isErrorCode("AUTH_FORBIDDEN")).toBe(true);
     expect(isErrorCode("NOT_A_CODE")).toBe(false);
   });
+
+  it("maps CONTEXT_LIMIT_EXCEEDED to 422", () => {
+    expect(ErrorCode.CONTEXT_LIMIT_EXCEEDED).toBe("CONTEXT_LIMIT_EXCEEDED");
+    expect(ERROR_CODE_HTTP_STATUS[ErrorCode.CONTEXT_LIMIT_EXCEEDED]).toBe(422);
+    expect(isErrorCode("CONTEXT_LIMIT_EXCEEDED")).toBe(true);
+  });
 });

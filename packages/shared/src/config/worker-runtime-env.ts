@@ -4,9 +4,15 @@ import {
   loadOutboxRuntimeEnvFromProcess,
   type OutboxRuntimeEnvConfig,
 } from "./outbox-runtime-env.js";
+import {
+  loadSopWorkerRuntimeEnvFromProcess,
+  type SopWorkerRuntimeEnvConfig,
+} from "./sop-worker-runtime-env.js";
 
 /** U3 Pipeline Worker 完整运行时配置（`architecture.md` §4.2 · v1.3 无 Redis）。 */
-export interface WorkerRuntimeEnvConfig extends OutboxRuntimeEnvConfig {
+export interface WorkerRuntimeEnvConfig
+  extends OutboxRuntimeEnvConfig,
+    SopWorkerRuntimeEnvConfig {
   /** FFmpeg 可执行路径；默认 `ffmpeg`。 */
   readonly ffmpegPath: string;
   /** 同时处理的转写任务数；默认 5。 */
@@ -40,6 +46,7 @@ const DEFAULT_ASR_MAX_CHUNK_SIZE_MB = 20;
  */
 export function loadWorkerRuntimeEnvFromProcess(): WorkerRuntimeEnvConfig {
   const outbox = loadOutboxRuntimeEnvFromProcess();
+  const sop = loadSopWorkerRuntimeEnvFromProcess();
 
   const workerDbUrl =
     process.env.WORKER_DB_URL?.trim() ||
@@ -61,6 +68,7 @@ export function loadWorkerRuntimeEnvFromProcess(): WorkerRuntimeEnvConfig {
 
   return {
     ...outbox,
+    ...sop,
     outboxDbUrl: workerDbUrl,
     ffmpegPath,
     workerMaxConcurrency: parsePositiveInt(

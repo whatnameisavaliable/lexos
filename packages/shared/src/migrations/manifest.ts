@@ -99,6 +99,103 @@ export const M0_B_MIGRATIONS: readonly MigrationManifestEntry[] = [
   },
 ];
 
+/** M10 已登记的 SOP 迁移（按应用顺序）。 */
+export const M10_MIGRATIONS: readonly MigrationManifestEntry[] = [
+  {
+    name: "enums_sop",
+    requiredSnippets: [
+      "CREATE TYPE public.sop_execution_type AS ENUM",
+      "CREATE TYPE public.case_pipeline_status AS ENUM",
+      "CREATE TYPE public.pipeline_artifact_status AS ENUM",
+      "CREATE TYPE public.artifact_content_type AS ENUM",
+      "ADD VALUE IF NOT EXISTS 'sop.fact_extract'",
+      "ADD VALUE IF NOT EXISTS 'sop.strategy_gen'",
+      "ADD VALUE IF NOT EXISTS 'sop.deep_research'",
+      "ADD VALUE IF NOT EXISTS 'sop.visual_charting'",
+    ],
+  },
+  {
+    name: "audit_action_sop",
+    requiredSnippets: [
+      "sop.template.publish",
+      "sop.prompt.update",
+      "sop.artifact.export_pdf",
+      "sop.artifact.verify",
+    ],
+  },
+  {
+    name: "tables_sop_templates",
+    requiredSnippets: [
+      "CREATE TABLE public.sop_templates",
+      "case_type VARCHAR",
+    ],
+  },
+  {
+    name: "tables_sop_template_versions",
+    requiredSnippets: [
+      "CREATE TABLE public.sop_template_versions",
+      "UNIQUE (template_id, version_number)",
+      "is_published",
+    ],
+  },
+  {
+    name: "tables_sop_steps",
+    requiredSnippets: [
+      "CREATE TABLE public.sop_steps",
+      "UNIQUE (template_version_id, step_code)",
+      "depends_on",
+      "sop_execution_type",
+    ],
+  },
+  {
+    name: "tables_case_pipelines",
+    requiredSnippets: [
+      "CREATE TABLE public.case_pipelines",
+      "case_pipeline_status",
+      "lawyer_id",
+      "REFERENCES public.sop_template_versions",
+    ],
+  },
+  {
+    name: "tables_pipeline_artifacts",
+    requiredSnippets: [
+      "CREATE TABLE public.pipeline_artifacts",
+      "finalized_snapshot_raw",
+      "UNIQUE (pipeline_id, step_code)",
+      "pipeline_artifacts_set_updated_at",
+      "linked_drive_node_id UUID REFERENCES public.drive_nodes",
+    ],
+  },
+  {
+    name: "upload_sessions_sop",
+    requiredSnippets: [
+      "pipeline_id UUID",
+      "task_id DROP NOT NULL",
+      "upload_sessions_task_or_pipeline_chk",
+    ],
+  },
+  {
+    name: "rls_sop",
+    requiredSnippets: [
+      "sop_templates ENABLE ROW LEVEL SECURITY",
+      "case_pipelines ENABLE ROW LEVEL SECURITY",
+      "pipeline_artifacts ENABLE ROW LEVEL SECURITY",
+      "is_published = true",
+    ],
+  },
+  {
+    name: "storage_exports_sop_path",
+    requiredSnippets: ["exports_insert_path_owner", "'sops'"],
+  },
+  {
+    name: "seed_system_settings_sop",
+    requiredSnippets: [
+      "INSERT INTO public.system_settings",
+      "sop.deep_research_enabled",
+    ],
+  },
+];
+
 /**
  * 解析 `supabase/migrations` 下匹配 `*_<name>.sql` 的文件路径。
  */
@@ -151,4 +248,11 @@ export function assertMigrationsManifest(
  */
 export function listExpectedMigrationNames(): readonly string[] {
   return M0_B_MIGRATIONS.map((e) => e.name);
+}
+
+/**
+ * 返回 M10 manifest 中迁移的逻辑名列表。
+ */
+export function listExpectedM10MigrationNames(): readonly string[] {
+  return M10_MIGRATIONS.map((e) => e.name);
 }

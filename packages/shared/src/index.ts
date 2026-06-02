@@ -50,14 +50,24 @@ export * from "./dto/system-setting-upsert.dto.js";
 export * from "./types/audit-log-item.js";
 export * from "./types/transcription-queued-outbox-payload.js";
 export * from "./constants/pipeline-stages.js";
+export * from "./constants/sop-pipeline-stages.js";
+export * from "./constants/sop-system-settings-keys.js";
 export * from "./types/pipeline-stage-outbox-payload.js";
+export * from "./types/sop-outbox-payload.js";
+export * from "./enums/sop-execution-type.js";
+export * from "./enums/case-pipeline-status.js";
+export * from "./enums/pipeline-artifact-status.js";
+export * from "./enums/artifact-content-type.js";
+export * from "./enums/sop-ai-feature-keys.js";
 export * from "./lib/mask-api-key.js";
 export * from "./ai/normalize-openai-base-url.js";
 export * from "./db/index.js";
 export {
   M0_B_MIGRATIONS,
+  M10_MIGRATIONS,
   assertMigrationContent,
   assertMigrationsManifest,
   resolveMigrationFile,
+  listExpectedM10MigrationNames,
   type MigrationManifestEntry,
 } from "./migrations/manifest.js";

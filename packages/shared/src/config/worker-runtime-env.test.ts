@@ -23,6 +23,9 @@ describe("loadWorkerRuntimeEnvFromProcess", () => {
     expect(config.ffmpegPath).toBe("ffmpeg");
     expect(config.workerMaxConcurrency).toBe(5);
     expect(config.asrRateLimitMax).toBe(50);
+    expect(config.sopPdfMaxConcurrent).toBe(1);
+    expect(config.sopDeepResearchMaxConcurrent).toBe(2);
+    expect(config.sopDeepResearchTimeoutMs).toBe(1_800_000);
   });
 
   it("prefers WORKER_DB_URL for outboxDbUrl", () => {

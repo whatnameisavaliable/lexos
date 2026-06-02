@@ -7,6 +7,10 @@ export const AiFeatureKey = {
   ASR_SEMANTIC: "asr_semantic",
   LLM_TRANSCRIPT_POLISH: "llm_transcript_polish",
   LLM_LEGAL_SUMMARY: "llm_legal_summary",
+  SOP_FACT_EXTRACT: "sop.fact_extract",
+  SOP_STRATEGY_GEN: "sop.strategy_gen",
+  SOP_DEEP_RESEARCH: "sop.deep_research",
+  SOP_VISUAL_CHARTING: "sop.visual_charting",
 } as const;
 
 /** `ai_feature_model_mappings.feature_key` / `ai_prompt_templates.feature_key` 合法取值。 */

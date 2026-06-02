@@ -2,7 +2,7 @@ import type { SystemSettingsRepository } from "../repositories/system-settings.r
 import type { SystemSettingItem } from "../repositories/system-settings.types.js";
 
 /**
- * `GET /api/admin/settings` — 系统配置列表。
+ * `GET /api/admin/settings` �?系统配置列表�?
  */
 export class SystemSettingsListService {
   constructor(

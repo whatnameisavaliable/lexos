@@ -2,7 +2,7 @@
  * LexOS Stalled 任务补偿 Cron（`architecture.md` §3.6.4.2）。
  */
 import {
-  loadEnvFiles,
+  loadLexosRuntimeEnvFiles,
   loadOutboxRuntimeEnvFromProcess,
   resolveRepoRoot,
 } from "@lexos/shared/config";
@@ -11,7 +11,7 @@ import { WorkerAuditAdapter } from "../../pipeline/src/adapters/audit/worker-aud
 import { StalledTaskScannerService } from "./stalled-task-scanner.service.js";
 
 const repoRoot = resolveRepoRoot();
-loadEnvFiles(repoRoot, [".env", ".env.development"]);
+loadLexosRuntimeEnvFiles(repoRoot);
 
 const env = loadOutboxRuntimeEnvFromProcess();
 const dbPool = createWorkerDbPool(env);

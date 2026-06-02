@@ -4,15 +4,17 @@ import { buildNextStageOutboxRow } from "../domain/worker-outbox.factory.js";
 import { withPgClient } from "../infra/with-pg-client.js";
 import type { StageHandler, StageHandlerContext } from "./stage-handler.js";
 import type { MediaExtractService } from "../services/media-extract.service.js";
+import type { WorkerStorageAdapter } from "../adapters/storage/worker-storage.adapter.js";
 import type { WorkerTaskRepository } from "../repositories/worker-task.repository.js";
 import type { WorkerTransactionService } from "../services/worker-transaction.service.js";
 
 /**
- * `media.extract` 阶段：MP4 抽音 → `media.preprocess`。
+ * `media.extract` 阶段：MP4 抽音 → 删除源 MP4（PRD-3.5-01）→ `media.preprocess`。
  */
 export class MediaExtractHandler implements StageHandler {
   constructor(
     private readonly mediaExtract: MediaExtractService,
+    private readonly storage: WorkerStorageAdapter,
     private readonly taskRepository: WorkerTaskRepository,
     private readonly transactionService: WorkerTransactionService,
   ) {}
@@ -41,6 +43,8 @@ export class MediaExtractHandler implements StageHandler {
       sourceStorageKey: task.sourceStorageKey,
       createdBy: payload.createdBy,
     });
+
+    await this.storage.removeObject(task.sourceStorageKey).catch(() => undefined);
 
     await withPgClient(pool, async (client) => {
       await this.taskRepository.updateAudioStorageKey(

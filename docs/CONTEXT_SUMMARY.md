@@ -35,9 +35,9 @@
 
 | 角色 | 业务权限 |
 |------|----------|
-| `admin` | 用户/AI/审计/全量转写与云盘；强制 MFA |
+| `admin` | 用户/AI/审计/系统设置管理写；**不可**浏览律师转写/云盘业务数据 |
 | `lawyer` | 仅 **本人** 转写、云盘、检索 |
-| `director` / `client` / `channel` | **预留**，首期无业务模块 |
+| `director` / `client` / `channel` | **预留**：占位页 + 个人中心只读 + 改密 |
 | `anonymous` | 仅登录等公开页 |
 
 **律师数据边界**：`created_by = auth.uid()`；RLS + API 双重校验。
@@ -46,13 +46,15 @@
 
 ## 4. 认证与安全要点
 
-- 登录：用户名 → 虚拟邮箱 `{username}@llexos.internal` → `signInWithPassword`。
+- 登录：用户名 → 虚拟邮箱 `{username}@llexos.internal` → `signInWithPassword`；失败统一 **`用户名或密码错误`**。
 - **首期已移除**：图形验证码（Turnstile/Geetest）、MFA/TOTP 绑定流程；`profiles.mfa_enabled` 字段保留但 UI/API 不强制。
 - `profiles`：`status`、`requires_password_change`、`mfa_enabled`（字段保留，首期不启用 MFA 流程）。
-- 强制改密：`requires_password_change=true` 时仅白名单 API + 改密页；Router Guard 拦截业务。
+- 强制改密：`requires_password_change=true` 时仅白名单 API + 改密页；BFF **`password-change-gate` 中间件**拦截（Controller 不重复校验）。
 - 管理员重置密码：**单事务** 改密标记 + `signOut(global)` + 审计。
-- 禁用用户：`signOut(global)` + 每请求校验 `status`（缓存 ≤30s）。
-- 锁号：Auth 5 次/30 分钟（首期**未启用**图形验证码与 MFA，见下方说明）。
+- 禁用用户：**不** global signOut；`clearProfileStatusCache` + 下一请求 `status` 校验拒绝。
+- 内置 `admin`：**不可禁用**。
+- 会话：refresh token 持久化；401 时静默 refresh；仅登出/清 token 后须重登。
+- 密码：首期无复杂度规则（非空即可）。
 - 前端 **禁止** 用 Supabase 客户端写业务表；下载 **仅** BFF 签名 URL + 审计。
 
 ---
@@ -85,8 +87,8 @@
 3. `uploads/complete` → `queued` + **Outbox**（`payload.stage = media.extract|media.preprocess`）
 4. U3 轮询 Outbox → 按 `stage` 顺序执行：
    - `media.extract`（MP4）→ `media.preprocess`（重采样+切片至 `/tmp/lexos/{task_id}/`）
-   - `asr`（单任务切片并发 3，全局限流 50/min 进程内）
-   - `llm`（兜底模型 1 次）
+   - `asr`（`asr_physical` 仅；无 `asr_semantic` 阶段，PRD-3-01）
+   - `llm`（`llm_transcript_polish` + `llm_legal_summary`；主模型失败 → `fallback_model_id` 重试 1 次，记 `ai_invocation_logs`，不写 `audit_logs`）
    - `drive.archive` → 云盘 `YYYY-MM-DD/任务名/`
 5. 每阶段成功 → `published_at = now()`；下一阶段插入新 Outbox 行（同事务）
 
@@ -105,6 +107,7 @@
 /api/transcription/uploads/init      创建 upload_session + task
 /api/transcription/uploads/complete  TUS 完成回调
 /api/transcription/*     任务列表、状态、文稿 PATCH（If-Match）
+/api/transcription/tasks/:id/retry  重试后续步骤 / 分项重试润色·摘要（PRD-3.5-06/08）
 /api/transcription/tasks/:id/download  签名下载 + 审计
 /api/drive/*             目录、文件、全文检索（分页 50）
 /api/drive/files/:id/download          签名下载 + 审计
@@ -165,7 +168,10 @@ Outbox 事务触发 U3；阶段幂等 `UNIQUE(stage, outbox_event_id, attempt)`�
 管理员专用；API Key 密文；Prompt 禁止硬编码
 
 ### `audit_logs`
-append-only + 哈希链；`metadata` 含 `client_timestamp`（浏览器事件）；仅 `append_audit_log()`
+append-only + 哈希链；`metadata` 含 `client_timestamp`；仅 `append_audit_log()`；**保留 365 天**（PRD-3.7-02）；**不**写 `auth.login_failure`（PRD-3.7-01）
+
+### 云盘（PRD-3.6）
+归档目录名**不截断**（非法字符替换）；同级**不可重名**；删文件夹**级联**+确认；律师删本人、**admin 可删**律师节点（不可浏览云盘）
 
 ### 检索（首期）
 `CREATE EXTENSION pg_trgm`；`polished_text`/`summary_text` GIN `gin_trgm_ops`；禁单独依赖 `simple` tsvector 做中文
@@ -190,7 +196,7 @@ append-only + 哈希链；`metadata` 含 `client_timestamp`（浏览器事件）
 - **转写工作台**：校对模式（只读 `asr_raw_json`+seek）/ 编辑模式（仅 `polished_text`）
 - **上传**：init → TUS(服务端前缀) → complete；上传中 `beforeunload` + 路由 `AlertDialog`
 - 主题色：深蓝/藏青/高级灰（`globals.css` 令牌）
-- 用户列表 admin：含 MFA Badge（`mfa_enabled`）
+- 用户列表 admin：**不含** MFA 列（首期 MFA 已取消；`mfa_enabled` 字段保留）
 
 ---
 
@@ -203,7 +209,8 @@ STORAGE_BUCKET_MEDIA, STORAGE_BUCKET_EXPORTS, STORAGE_SIGNED_URL_TTL_SEC
 WORKER_DB_URL, WORKER_POLL_INTERVAL_MS, OUTBOX_MAX_ATTEMPTS, WORKER_MAX_CONCURRENCY
 FFMPEG_*, WORKER_TMP_DIR, ASR_RATE_LIMIT_MAX, ASR_API_CONCURRENCY
 ASR_PROVIDER_TYPE, ASR_MAX_CHUNK_SIZE_MB, ASR_SEGMENT_DURATION_SEC
-AUTH_VIRTUAL_EMAIL_DOMAIN, AUTH_INITIAL_PASSWORD, CAPTCHA_*, MFA_REQUIRED_ROLES
+AUTH_VIRTUAL_EMAIL_DOMAIN, AUTH_INITIAL_PASSWORD, CAPTCHA_*
+MFA_REQUIRED_ROLES=（首期留空，MFA 已取消）
 AI_*_TIMEOUT_MS, STALLED_TASK_*
 ```
 

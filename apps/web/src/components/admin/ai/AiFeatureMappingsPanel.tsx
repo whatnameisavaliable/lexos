@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AI_FEATURE_KEY_VALUES } from "@lexos/shared";
+import { AI_ACTIVE_FEATURE_KEY_VALUES } from "@lexos/shared";
 import type { AiModelPublic } from "@lexos/shared";
 import { listMappings, listModels } from "@/lib/admin-ai-api";
 import type { AiFeatureMappingData } from "@/lib/admin-ai-api";
@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-/** 四功能点 × 主/兜底模型映射。 */
+/** 首期三功能点 × 主/兜底模型映射（不含预留 `asr_semantic`）。 */
 export function AiFeatureMappingsPanel() {
   const [models, setModels] = useState<readonly AiModelPublic[]>([]);
   const [mappings, setMappings] = useState<readonly AiFeatureMappingData[]>([]);
@@ -76,7 +76,7 @@ export function AiFeatureMappingsPanel() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {AI_FEATURE_KEY_VALUES.map((featureKey) => (
+        {AI_ACTIVE_FEATURE_KEY_VALUES.map((featureKey) => (
           <AiFeatureMappingRow
             key={featureKey}
             featureKey={featureKey}

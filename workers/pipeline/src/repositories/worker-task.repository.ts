@@ -146,6 +146,35 @@ export class WorkerTaskRepository {
     );
   }
 
+  /** 更新 LLM 部分成功标记（PRD-3.5-04）。 */
+  async updateLlmOutcomeFlags(
+    client: PoolClient,
+    taskId: string,
+    flags: { readonly polishFailed: boolean; readonly summaryFailed: boolean },
+  ): Promise<void> {
+    await client.query(
+      `UPDATE public.transcription_tasks
+       SET llm_polish_failed = $2,
+           llm_summary_failed = $3,
+           last_progress_at = now(),
+           updated_at = now()
+       WHERE id = $1::uuid`,
+      [taskId, flags.polishFailed, flags.summaryFailed],
+    );
+  }
+
+  /** 清除错误字段（重试或部分成功收尾）。 */
+  async clearTaskError(client: PoolClient, taskId: string): Promise<void> {
+    await client.query(
+      `UPDATE public.transcription_tasks
+       SET error_code = NULL,
+           error_message = NULL,
+           updated_at = now()
+       WHERE id = $1::uuid`,
+      [taskId],
+    );
+  }
+
   /** 标记任务失败。 */
   async markFailed(
     client: PoolClient,

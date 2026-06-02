@@ -40,19 +40,19 @@ export function parseAsrSegments(
   if (!Array.isArray(segments)) {
     return [];
   }
-  return segments
-    .map((item, index) => {
-      if (!item || typeof item !== "object") {
-        return null;
-      }
-      const record = item as Record<string, unknown>;
-      const text = typeof record.text === "string" ? record.text.trim() : "";
-      const startMs = readStartMs(record);
-      if (!text || !Number.isFinite(startMs)) {
-        return null;
-      }
-      const endMs = readEndMs(record, startMs);
-      return {
+  return segments.flatMap((item, index): AsrProofreadSegment[] => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+    const record = item as Record<string, unknown>;
+    const text = typeof record.text === "string" ? record.text.trim() : "";
+    const startMs = readStartMs(record);
+    if (!text || !Number.isFinite(startMs)) {
+      return [];
+    }
+    const endMs = readEndMs(record, startMs);
+    return [
+      {
         segmentIndex:
           typeof record.segmentIndex === "number"
             ? record.segmentIndex
@@ -68,9 +68,9 @@ export function parseAsrSegments(
             : typeof record.speaker_label === "string"
               ? record.speaker_label
               : null,
-      };
-    })
-    .filter((item): item is AsrProofreadSegment => item !== null);
+      },
+    ];
+  });
 }
 
 /** 根据当前播放位置判断高亮分段索引。 */

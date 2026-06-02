@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DRIVE_FOLDER_NAME_MAX_LENGTH } from "./drive-folder-create.dto.js";
+import { DRIVE_FOLDER_NAME_MAX_LENGTH } from "../lib/sanitize-drive-folder-name.js";
 
 const uuidSchema = z.string().uuid();
 

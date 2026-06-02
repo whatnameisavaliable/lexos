@@ -32,6 +32,14 @@ const durationSecSchema = z.coerce
   .max(MAX_DURATION_SEC);
 const idempotencyKeySchema = z.string().trim().min(1).max(128);
 
+/** 可选说话人上限；未配置则不限制（PRD-3.5-02）。 */
+const maxSpeakersSchema = z.coerce
+  .number()
+  .int()
+  .positive()
+  .max(32)
+  .optional();
+
 /**
  * `POST /api/transcription/uploads/init` 请求体（`prd.md` §3.5.1 · `architecture.md` §5.5.1）。
  */
@@ -42,6 +50,7 @@ export const transcriptionUploadInitBodySchema = z.object({
   sizeBytes: sizeBytesSchema,
   durationSec: durationSecSchema.optional(),
   idempotencyKey: idempotencyKeySchema.optional(),
+  maxSpeakers: maxSpeakersSchema,
 });
 
 /** 上传初始化请求 DTO（解析后）。 */
@@ -52,6 +61,8 @@ export interface TranscriptionUploadInitBody {
   readonly sizeBytes: bigint;
   readonly durationSec?: number;
   readonly idempotencyKey?: string;
+  /** 说话人分离上限；省略表示不限制。 */
+  readonly maxSpeakers?: number;
 }
 
 /**
@@ -68,5 +79,6 @@ export function parseTranscriptionUploadInitBody(
     sizeBytes: parsed.sizeBytes,
     durationSec: parsed.durationSec,
     idempotencyKey: parsed.idempotencyKey,
+    maxSpeakers: parsed.maxSpeakers,
   };
 }

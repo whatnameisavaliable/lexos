@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAuthContext } from "@lexos/shared";
+import { ErrorCode } from "@lexos/shared/api";
 import { ProfileService } from "./profile.service.js";
 
 describe("ProfileService", () => {
@@ -45,5 +46,21 @@ describe("ProfileService", () => {
     );
 
     expect(dto.displayName).toBe("新名");
+  });
+
+  it("rejects profile update for reserved roles", async () => {
+    const service = new ProfileService({} as never);
+    await expect(
+      service.updateProfile(
+        "at",
+        createAuthContext({
+          userId: "u1",
+          role: "director",
+          username: "director",
+          requiresPasswordChange: false,
+        }),
+        { displayName: "新名" },
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
   });
 });

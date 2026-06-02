@@ -15,7 +15,7 @@ describe("AuthSessionService", () => {
       {
         id: "u1",
         username: "admin",
-        displayName: "管理员",
+        displayName: "管理�?,
         role: "admin",
         contact: "x@example.com",
         status: "enabled",
@@ -26,6 +26,6 @@ describe("AuthSessionService", () => {
 
     expect(dto.mfaEnabled).toBe(true);
     expect(dto.requiresPasswordChange).toBe(true);
-    expect(dto.displayName).toBe("管理员");
+    expect(dto.displayName).toBe("管理�?);
   });
 });

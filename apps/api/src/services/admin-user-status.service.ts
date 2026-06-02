@@ -14,7 +14,7 @@ export interface AdminUserStatusMeta {
 }
 
 /**
- * 启用/禁用用户（禁用即 `signOut(global)`；末位 admin / 内置 admin 防护）。
+ * ??/????????????????????? admin / ?? admin ????
  */
 export class AdminUserStatusService {
   constructor(
@@ -59,7 +59,6 @@ export class AdminUserStatusService {
     );
 
     if (body.status === "disabled") {
-      await this.authAdapter.adminSignOutGlobal(userId);
       clearProfileStatusCache(userId);
     }
 

@@ -1,4 +1,5 @@
 import type { PoolClient } from "pg";
+import { sanitizeDriveFolderName } from "@lexos/shared";
 
 /** 归档目录创建入参。 */
 export interface CreateArchiveFolderInput {
@@ -39,7 +40,7 @@ export class WorkerDriveRepository {
       client,
       input.userId,
       dateFolderId,
-      sanitizeFolderName(input.title),
+      sanitizeDriveFolderName(input.title),
       input.taskId,
     );
   }
@@ -162,8 +163,3 @@ function formatArchiveDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function sanitizeFolderName(title: string): string {
-  const trimmed = title.trim().slice(0, 200);
-  const sanitized = trimmed.replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, " ");
-  return sanitized.length > 0 ? sanitized : "untitled";
-}

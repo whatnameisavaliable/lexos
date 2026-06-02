@@ -67,11 +67,11 @@ export interface AiModelListParams {
   readonly isEnabled?: string;
 }
 
-function buildQuery(params?: Record<string, string | undefined>): string {
+function buildQuery(params?: object): string {
   if (!params) return "";
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value) search.set(key, value);
+    if (typeof value === "string" && value) search.set(key, value);
   }
   const qs = search.toString();
   return qs ? `?${qs}` : "";

@@ -8,7 +8,7 @@ export interface AuthLogoutRequestMeta {
 }
 
 /**
- * 登出服务：吊销会话并写 `auth.logout` 审计。
+ * 登出服务：吊销会话并写 `auth.logout` 审计�?
  */
 export class AuthLogoutService {
   constructor(

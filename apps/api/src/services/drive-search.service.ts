@@ -2,7 +2,7 @@ import type { AuthContext, DriveSearchQuery } from "@lexos/shared";
 import { buildPaginationMeta } from "@lexos/shared/api";
 import type { DriveSearchRepository } from "../repositories/drive-search.repository.js";
 
-/** 检索结果项（含跳转信息）。 */
+/** 检索结果项（含跳转信息）�?*/
 export interface DriveSearchResultItem {
   readonly taskId: string;
   readonly taskTitle: string;
@@ -12,14 +12,14 @@ export interface DriveSearchResultItem {
   readonly score: number;
 }
 
-/** `GET /api/drive/search` 响应。 */
+/** `GET /api/drive/search` 响应�?*/
 export interface DriveSearchResponse {
   readonly items: readonly DriveSearchResultItem[];
   readonly meta: ReturnType<typeof buildPaginationMeta>;
 }
 
 /**
- * 云盘全文检索（仅本人任务文稿 · `database.md` §7.3.2）。
+ * 云盘全文检索（仅本人任务文�?· `database.md` §7.3.2）�?
  */
 export class DriveSearchService {
   constructor(private readonly driveSearchRepository: DriveSearchRepository) {}

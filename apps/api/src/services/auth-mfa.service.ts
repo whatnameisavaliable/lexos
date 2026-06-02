@@ -17,7 +17,7 @@ export interface AuthMfaStatusDto {
 }
 
 /**
- * MFA 注册/校验服务（PRD §2.5.2）。
+ * MFA 注册/校验服务（PRD §2.5.2）�?
  */
 export class AuthMfaService {
   constructor(

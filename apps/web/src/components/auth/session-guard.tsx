@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getSession } from "@/lib/auth-api";
+import { refreshSession } from "@/lib/refresh-session";
 import { resolveGuardRedirect } from "@/lib/router-guard";
-import { clearAccessToken } from "@/lib/session";
+import { clearAccessToken, getRefreshToken } from "@/lib/session";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -23,7 +24,16 @@ export function SessionGuard({ children }: { children: React.ReactNode }) {
       try {
         session = await getSession();
       } catch {
-        clearAccessToken();
+        if (getRefreshToken()) {
+          try {
+            await refreshSession();
+            session = await getSession();
+          } catch {
+            clearAccessToken();
+          }
+        } else {
+          clearAccessToken();
+        }
       }
 
       const redirect = resolveGuardRedirect(pathname, session);

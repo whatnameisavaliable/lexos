@@ -4,7 +4,7 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import { toAdminUserDetailDto, type AdminUserDetailDto } from "./admin-user-mapper.js";
 
 /**
- * 管理员查询单个用户详情。
+ * 管理员查询单个用户详情�?
  */
 export class AdminUserGetService {
   constructor(private readonly adminUserRepository: AdminUserRepository) {}

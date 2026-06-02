@@ -10,14 +10,14 @@ export interface AdminUserResetPasswordMeta {
   readonly userAgent?: string;
 }
 
-/** 重置密码成功响应（无敏感字段）。 */
+/** 重置密码成功响应（无敏感字段）�?*/
 export interface AdminUserResetPasswordResult {
   readonly ok: true;
   readonly userId: string;
 }
 
 /**
- * 管理员重置密码（Auth 初始密码 → DB 事务标记+审计 → 全局登出）。
+ * 管理员重置密码（Auth 初始密码 �?DB 事务标记+审计 �?全局登出）�?
  */
 export class AdminUserResetPasswordService {
   constructor(

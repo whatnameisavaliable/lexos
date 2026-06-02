@@ -25,16 +25,16 @@ describe("authChangePasswordBodySchema", () => {
     expect(body.currentPassword).toBe("old-pass");
   });
 
-  it("rejects short newPassword", () => {
-    expect(() =>
-      parseAuthChangePasswordBody({ newPassword: "short" }),
-    ).toThrow(ZodError);
+  it("rejects empty newPassword", () => {
+    expect(() => parseAuthChangePasswordBody({ newPassword: "" })).toThrow(
+      ZodError,
+    );
   });
 
   it("treats empty currentPassword as omitted (forced-change form default)", () => {
     const body = parseAuthChangePasswordBody({
       currentPassword: "",
-      newPassword: "long-enough",
+      newPassword: "x",
     });
     expect(body.currentPassword).toBeUndefined();
     expect(hasCurrentPassword(body)).toBe(false);

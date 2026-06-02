@@ -51,7 +51,7 @@ CREATE TYPE ai_provider_kind AS ENUM (
 
 CREATE TYPE ai_feature_key AS ENUM (
   'asr_physical',
-  'asr_semantic',
+  'asr_semantic',  -- 枚举保留；首期不绑定/不调用（PRD-3-01）
   'llm_transcript_polish',
   'llm_legal_summary'
 );
@@ -110,7 +110,7 @@ audit_logs ── actor_id ── profiles
 
 ### 3.1 `profiles`
 
-**业务场景（PRD）**：§2.4 账户字段；§2.5.1 虚拟邮箱用户业务镜像；§2.5.4 `requires_password_change`；§2.5.2 MFA 展示缓存。
+**业务场景（PRD）**：§2.4 账户字段；§2.5.1 虚拟邮箱用户业务镜像；§2.5.4 `requires_password_change`；§2.5.2 MFA 字段（首期功能关闭，仅保留列）。
 
 | 字段名 | 数据类型 | 约束 | 默认 | 说明 |
 |--------|----------|------|------|------|
@@ -121,15 +121,11 @@ audit_logs ── actor_id ── profiles
 | `contact` | `VARCHAR(256)` | NULL | — | 可选联系方式 |
 | `status` | `user_status` | NOT NULL | `'enabled'` | 启用/禁用 |
 | `requires_password_change` | `BOOLEAN` | NOT NULL | `false` | 强制改密标记 |
-| `mfa_enabled` | `BOOLEAN` | NOT NULL | `false` | TOTP 已绑定缓存；避免列表/个人中心频繁调 Auth API |
+| `mfa_enabled` | `BOOLEAN` | NOT NULL | `false` | **首期保留字段、不启用 MFA 流程**；后续版本恢复 TOTP 时作展示缓存 |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — |
 
-**同步规则**：
-
-- 用户成功完成 TOTP 绑定（Supabase Auth MFA enroll/verify）后，BFF 调用 `set_profile_mfa_enabled(user_id, true)`（`SECURITY DEFINER`）更新本字段。
-- 管理员解除 MFA（若产品允许）或 Auth 侧删除因子后，同步置 `false`。
-- 本字段为**展示与路由门禁缓存**，鉴权仍以 Supabase Auth MFA 校验为准；二者不一致时以 Auth 为准并异步修正缓存。
+**同步规则（首期）**：`mfa_enabled` 默认 `false`；UI/API **不展示、不写入**；`set_profile_mfa_enabled()` 保留供后续里程碑启用 MFA 时使用。
 
 **索引**：
 
@@ -157,6 +153,9 @@ audit_logs ── actor_id ── profiles
 | `size_bytes` | `BIGINT` | NOT NULL | — | ≤ 1073741824（1GB） |
 | `is_mp4` | `BOOLEAN` | NOT NULL | `false` | 是否走抽音分支 |
 | `diarization_degraded` | `BOOLEAN` | NOT NULL | `false` | PRD §4.3 降级标记 |
+| `max_speakers` | `INTEGER` | NULL | — | 说话人上限；NULL=不限制（PRD-3.5-02） |
+| `llm_polish_failed` | `BOOLEAN` | NOT NULL | `false` | 润色失败但任务 completed（PRD-3.5-04） |
+| `llm_summary_failed` | `BOOLEAN` | NOT NULL | `false` | 摘要失败（PRD-3.5-04） |
 | `error_code` | `VARCHAR(64)` | NULL | — | 失败时对齐 architecture ErrorCode |
 | `error_message` | `TEXT` | NULL | — | 运维可见摘要 |
 | `archive_folder_id` | `UUID` | NULL, FK → `drive_nodes(id)` | — | 完成后云盘目录 |
@@ -262,7 +261,7 @@ audit_logs ── actor_id ── profiles
 **索引**：
 
 - `INDEX drive_nodes_created_by_parent_idx ON (created_by, parent_id) WHERE deleted_at IS NULL`
-- `UNIQUE (created_by, parent_id, name) WHERE deleted_at IS NULL`【待确认】同级重名策略
+- `UNIQUE (created_by, parent_id, name) WHERE deleted_at IS NULL`（同级不可重名，PRD-3.6-03）
 
 ---
 
@@ -306,7 +305,9 @@ audit_logs ── actor_id ── profiles
 
 ### 3.8 `ai_feature_model_mappings`
 
-**业务场景（PRD）**：§3.3 功能-模型映射；§4.2.4 兜底。
+**业务场景（PRD）**：§3.3 功能-模型映射；§4.2.4 兜底（PRD-3-02：fallback 重试 1 次，不写 `audit_logs`）。
+
+**首期可配置 `feature_key`**：`asr_physical`、`llm_transcript_polish`、`llm_legal_summary`（`asr_semantic` 不展示、Worker 不调用）。
 
 | 字段名 | 数据类型 | 约束 | 说明 |
 |--------|----------|------|------|
@@ -387,7 +388,7 @@ audit_logs ── actor_id ── profiles
 | `client_timezone` | `string` | 可选；`Intl.DateTimeFormat().resolvedOptions().timeZone` |
 
 - 纯服务端事件（Worker、Outbox、定时任务）：`client_timestamp` 可省略，以 `created_at` 为准。
-- `auth.login_failure` 另须 `attempted_username`（或 `attempted_username_sha256`）。
+- `auth.login_failure`：**PRD-3.7-01** 起不再写入新行；枚举保留供历史查询。历史行若存在可含 `attempted_username`。
 - `append_audit_log()` 将 `client_timestamp` 纳入 `row_hash` 计算（若存在）。
 
 **索引**：
@@ -578,25 +579,23 @@ ALTER TABLE public.transcription_tasks ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tasks_select ON public.transcription_tasks
   FOR SELECT USING (
-    deleted_at IS NULL AND (
-      (created_by = auth.uid() AND is_enabled_user())
-      OR is_admin()
-    )
+    deleted_at IS NULL
+    AND created_by = auth.uid()
+    AND is_enabled_user()
   );
 
 CREATE POLICY tasks_insert ON public.transcription_tasks
   FOR INSERT WITH CHECK (
     created_by = auth.uid()
     AND is_enabled_user()
-    AND current_user_role() IN ('lawyer', 'admin')
+    AND current_user_role() = 'lawyer'
   );
 
 CREATE POLICY tasks_update ON public.transcription_tasks
   FOR UPDATE USING (
-    deleted_at IS NULL AND (
-      (created_by = auth.uid() AND is_enabled_user())
-      OR is_admin()
-    )
+    deleted_at IS NULL
+    AND created_by = auth.uid()
+    AND is_enabled_user()
   );
 
 -- 软删除视为 UPDATE deleted_at
@@ -604,7 +603,7 @@ CREATE POLICY tasks_update ON public.transcription_tasks
 
 4.3.1 `director`/`client`/`channel`：无策略匹配 → 拒绝（首期零业务权限）。
 
-4.3.2 律师 **无** `INSERT` 策略的跨用户写；管理员跨用户写经 API `AdminRepository`（`service_role`），不扩展律师 JWT 策略。
+4.3.2 律师 **无** `INSERT` 策略的跨用户写；`admin` **无**业务表读/写策略（PRD-2-06）；跨用户账户操作经 API `AdminRepository`（`service_role`）。
 
 ### 4.4 `transcription_segments` / `transcription_transcripts`
 
@@ -616,7 +615,7 @@ CREATE POLICY segments_select ON public.transcription_segments
     is_enabled_user() AND EXISTS (
       SELECT 1 FROM public.transcription_tasks t
       WHERE t.id = task_id AND t.deleted_at IS NULL
-        AND (t.created_by = auth.uid() OR is_admin())
+        AND t.created_by = auth.uid()
     )
   );
 
@@ -638,20 +637,20 @@ CREATE POLICY segments_insert_lawyer ON public.transcription_segments
 ```sql
 CREATE POLICY drive_select ON public.drive_nodes
   FOR SELECT USING (
-    deleted_at IS NULL AND (
-      (created_by = auth.uid() AND is_enabled_user())
-      OR is_admin()
-    )
+    deleted_at IS NULL
+    AND created_by = auth.uid()
+    AND is_enabled_user()
   );
 
 CREATE POLICY drive_write ON public.drive_nodes
   FOR ALL USING (
-    created_by = auth.uid() AND is_enabled_user()
-    AND current_user_role() IN ('lawyer', 'admin')
+    created_by = auth.uid()
+    AND is_enabled_user()
+    AND current_user_role() = 'lawyer'
   ) WITH CHECK (created_by = auth.uid());
 ```
 
-4.5.1 律师 JWT：`drive_write` 仅 `created_by = auth.uid()`。管理员跨用户云盘操作 **不** 扩展 RLS，仅 `AdminRepository` + 审计（审查整改 R-03）。
+4.5.1 律师 JWT：`drive_write` 仅 `created_by = auth.uid()`。`admin` **无**云盘/转写业务 RLS 路径；账户管理经 `AdminRepository` + 审计。
 
 4.5.2 `drive_node_tags`：RLS 继承 `drive_nodes` 可见性（`EXISTS` 关联 `node_id`）。
 
@@ -853,11 +852,11 @@ USING (
 
 6.3.1 任务 `completed` 后：Worker 创建 `drive_nodes` 文件夹 `YYYY-MM-DD/title/`，写入转写文件引用；`transcription_tasks.archive_folder_id` 回链。
 
-6.3.2 Storage 临时切片：任务完成后 7 日内删除 `media/{owner}/{task}/segments/*`【待确认】保留期，由定时 Job 执行。
+6.3.2 Worker `/tmp` 切片：任务完成/失败/重试结束后删除 `{WORKER_TMP_DIR}/{taskId}/`；**不上传 Storage**、不单独加密（PRD-3.5-07）。
 
 6.3.3 MP4 源文件：抽音成功后默认删除源对象（PRD 默认删除）；若启用冷存储则复制后删【待确认】。
 
-6.3.4 `audit_logs`：保留 **365** 天【待确认】；超期 **分区 DETACH** 冷归档，禁止 `DELETE` 抹痕。
+6.3.4 `audit_logs`：保留 **365** 天（PRD-3.7-02）；超期 **分区 DETACH** 冷归档，禁止 `DELETE` 抹痕。Cron 首期可后置，数字已签收。
 
 ### 6.5 审计防篡改（审查整改 A-01）
 

@@ -5,7 +5,7 @@ import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.servic
 import type { TranscriptionTaskRecord } from "../repositories/transcription-task.types.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
-/** 允许软删除的任务终态（`tasks.md` M6-D · `database.md` §6.1）。 */
+/** 允许软删除的任务终态（`tasks.md` M6-D · `database.md` §6.1）�?*/
 const DELETABLE_TASK_STATUSES = new Set(["completed", "failed"]);
 
 export interface TranscriptionTaskDeleteRequestMeta {
@@ -14,7 +14,7 @@ export interface TranscriptionTaskDeleteRequestMeta {
 }
 
 /**
- * `DELETE /api/transcription/tasks/:id` 业务逻辑。
+ * `DELETE /api/transcription/tasks/:id` 业务逻辑�?
  */
 export class TranscriptionTaskDeleteService {
   constructor(
@@ -23,7 +23,7 @@ export class TranscriptionTaskDeleteService {
   ) {}
 
   /**
-   * 软删除任务；进行中任务返回 `TASK_INVALID_STATE`。
+   * 软删除任务；进行中任务返�?`TASK_INVALID_STATE`�?
    */
   async delete(
     actor: AuthContext,
@@ -36,7 +36,7 @@ export class TranscriptionTaskDeleteService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

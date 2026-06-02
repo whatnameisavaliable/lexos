@@ -5,7 +5,7 @@ import type { AuditLogReadRepository } from "../repositories/audit-log-read.repo
 import { mapAuditLogRow } from "../repositories/audit-log-read.types.js";
 
 /**
- * 管理员审计日志详情（单条）。
+ * 管理员审计日志详情（单条）�?
  */
 export class AuditLogGetService {
   constructor(private readonly auditLogReadRepository: AuditLogReadRepository) {}

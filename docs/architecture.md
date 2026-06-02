@@ -183,11 +183,15 @@ HTTP Request
 
 3.2.3.4 ASR 超时：`ASR_REQUEST_TIMEOUT_MS`（默认 120_000/片）。
 
-#### 3.2.4 LLM 并发
+#### 3.2.4 LLM（整篇润色 + 整篇摘要）
 
-3.2.4.1 LLM 调用经 U6 Adapter；`LLM_REQUEST_TIMEOUT_MS`（默认 60_000）。
+3.2.4.1 全部 ASR 切片合并为 **一整段文本** 后，各调用 **一次** `llm_transcript_polish`、**一次** `llm_legal_summary`（非按切片 LLM，PRD-3.5-04）。
 
-3.2.4.2 兜底（PRD §4.2.4 L1）：失败回退 `fallback_model_id`，重试 **1** 次。
+3.2.4.2 润色/摘要失败：`status=completed`，`llm_polish_failed` / `llm_summary_failed`；保留 ASR；UI 分项重试 `POST /api/transcription/tasks/:id/retry`。
+
+3.2.4.3 LLM 调用经 U6 Adapter；`LLM_REQUEST_TIMEOUT_MS`（默认 60_000）。
+
+3.2.4.4 兜底（PRD-3-02）：失败回退 `fallback_model_id`，重试 **1** 次；记 `ai_invocation_logs`，**不**记 `audit_logs`。
 
 ### 3.3 任务状态机（与 PRD 对齐）
 
@@ -328,7 +332,7 @@ LIMIT 1;
 | `SUPABASE_DB_URL` | 是 | 池化连接串（Server/Worker） |
 | `STORAGE_BUCKET_MEDIA` | 是 | 默认 `media` |
 | `STORAGE_BUCKET_EXPORTS` | 是 | 默认 `exports` |
-| `STORAGE_SIGNED_URL_TTL_SEC` | 否 | 默认 300【待确认】与 PRD 闭合 |
+| `STORAGE_SIGNED_URL_TTL_SEC` | 否 | 默认 **300**（5 分钟；PRD-2-07 已签收） |
 
 #### 4.2.3 认证与安全
 
@@ -340,7 +344,7 @@ LIMIT 1;
 | `CAPTCHA_SECRET_KEY` | 条件 | 提供商密钥 |
 | `CAPTCHA_PROVIDER=none` | — | 私有化无外网时；须启用 `LOGIN_IP_ALLOWLIST` 或内网独占 |
 | `LOGIN_IP_ALLOWLIST` | 否 | CIDR 列表，逗号分隔 |
-| `MFA_REQUIRED_ROLES` | 否 | 默认 `admin,director` |
+| `MFA_REQUIRED_ROLES` | 否 | 首期留空（MFA 已取消；`profiles.mfa_enabled` 字段保留） |
 
 #### 4.2.4 Worker 与 Outbox
 
@@ -397,7 +401,7 @@ interface AiCompletionAdapter {
 
 #### 4.3.3 功能点绑定
 
-4.3.3.1 `AiOrchestrationService` 按 `feature_key`（PRD §3.3 枚举）查询 `ai_feature_model_mappings` → 主模型 → 失败则 `fallback_model_id` → 记录 `ai_invocation_logs`。
+4.3.3.1 `AiOrchestrationService` 按 `feature_key`（`AI_ACTIVE_FEATURE_KEY_VALUES`）查询 `ai_feature_model_mappings` → 主模型 → 失败则 `fallback_model_id` **重试 1 次**（PRD-3-02）。成功/失败写入 `ai_invocation_logs`（含 `is_fallback`）；**不**写 `audit_logs`。
 
 ### 4.4 私有化替代矩阵与云耦合消除（审查整改 P-01～P-02）
 
@@ -425,7 +429,7 @@ interface AiCompletionAdapter {
 
 5.1.2 加载 `profiles`：`status=disabled` 返回 `AUTH_ACCOUNT_DISABLED`。
 
-5.1.3 **禁用即失效**（审查整改 C-06）：禁用用户时同步调用 `auth.admin.signOut(user_id, 'global')`；中间件每请求校验 `profiles.status`（进程内缓存 TTL ≤30s，键 `userId`）。
+5.1.3 **禁用下一请求失效**（PRD-2.4-04）：禁用用户时 **不** 调用 `signOut(global)`，仅 `clearProfileStatusCache`；中间件每请求校验 `profiles.status`（进程内缓存 TTL ≤30s）。登录时禁用账户与错误凭据 **同一提示**（PRD-2.4-02）。
 
 5.1.4 **密码重置的全局会话撤销（Session Avalanche 防护）**
 
@@ -446,7 +450,17 @@ interface AiCompletionAdapter {
 
 5.2.2 `requires_password_change=true` 时，非白名单业务 API 返回 `AUTH_PASSWORD_CHANGE_REQUIRED`（HTTP 403）。
 
-5.2.3 与前端 Router Guard 双重校验。
+5.2.3 BFF **仅**依赖本中间件；Controller/Service **不**重复校验。前端 Router Guard 负责导航拦截（UX）。
+
+5.2.4 内置 `admin` 不可禁用（PRD-2.4-05）；重置密码仍走 §5.1.4 global signOut。
+
+### 5.2.5 会话续期（PRD-2.4-08）
+
+5.2.5.1 Refresh token 存浏览器 `localStorage`；access token 过期时 `POST /api/auth/refresh` 静默续期。
+
+5.2.5.2 `api-client` 遇 `AUTH_UNAUTHORIZED` 自动 refresh 并重试一次；`SessionGuard` 在 `getSession` 失败时同样尝试 refresh。
+
+5.2.5.3 用户主动 `POST /api/auth/logout` 或 `clearAccessToken()` 后须重新登录。
 
 ### 5.3 角色门禁
 
@@ -574,7 +588,7 @@ interface AiCompletionAdapter {
 
 #### 6.3.2 必须埋点的操作（对齐 PRD §3.7）
 
-登录成功/失败、登出、改密、管理员重置密码、用户创建/禁用、AI 配置变更、任务创建/阶段完成/失败、文件下载/删除/导出、模型调用（含兜底标记）。
+登录成功、登出、改密、管理员重置密码、用户创建/禁用、AI **配置**变更、任务创建/阶段完成/失败、文件下载/删除/导出。（**不**写 `auth.login_failure`，PRD-3.7-01；运行时 AI 兜底见 `ai_invocation_logs`。）
 
 #### 6.3.3 Request ID 传递
 
@@ -606,8 +620,8 @@ interface AiCompletionAdapter {
 | `/api/admin/users/*` | admin | 用户 CRUD、重置密码 |
 | `/api/admin/ai/*` | admin | 模型、映射、Prompt、连通性测试 |
 | `/api/admin/audit/*` | admin | 审计查询 |
-| `/api/transcription/*` | admin, lawyer | 任务元数据、TUS 完成回调、状态查询 |
-| `/api/drive/*` | admin, lawyer | 目录、文件元数据、搜索 |
+| `/api/transcription/*` | lawyer | 任务元数据、TUS 完成回调、状态查询（admin **不可**浏览律师数据） |
+| `/api/drive/*` | lawyer | 目录、文件元数据、搜索（admin **不可**浏览律师数据） |
 | `/api/profile` | 已认证 | 个人资料 |
 
 7.1 文件二进制不经上述 API 上传；仅 `POST /api/transcription/uploads/init` 返回 TUS 目标与约束。

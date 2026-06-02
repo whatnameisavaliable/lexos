@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { AiFeatureKey, AiFeatureMappingUpsertBody } from "@lexos/shared";
-import { AI_FEATURE_KEY_VALUES } from "@lexos/shared";
+import { AI_ACTIVE_FEATURE_KEY_VALUES } from "@lexos/shared";
 import type { SupabaseEnvConfig } from "@lexos/shared/config";
 
 /** `ai_feature_model_mappings` 行。 */
@@ -83,8 +83,8 @@ export class AiFeatureMappingRepository {
     return data as AiFeatureMappingRowDb;
   }
 
-  /** 四功能点枚举（列表占位用）。 */
+  /** 首期启用功能点（列表占位用）。 */
   allFeatureKeys(): readonly AiFeatureKey[] {
-    return AI_FEATURE_KEY_VALUES;
+    return AI_ACTIVE_FEATURE_KEY_VALUES;
   }
 }

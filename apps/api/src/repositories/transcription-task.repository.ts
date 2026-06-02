@@ -53,6 +53,9 @@ export class TranscriptionTaskRepository {
     if (input.idempotencyKey) {
       payload.idempotency_key = input.idempotencyKey;
     }
+    if (input.maxSpeakers != null) {
+      payload.max_speakers = input.maxSpeakers;
+    }
 
     const { data, error } = await client
       .from("transcription_tasks")
@@ -194,6 +197,11 @@ export class TranscriptionTaskRepository {
         | "audio_storage_key"
         | "source_storage_key"
         | "is_mp4"
+        | "max_speakers"
+        | "llm_polish_failed"
+        | "llm_summary_failed"
+        | "error_code"
+        | "error_message"
       >,
       transcript,
     );

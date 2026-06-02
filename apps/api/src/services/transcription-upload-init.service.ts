@@ -25,7 +25,7 @@ export interface TranscriptionUploadInitRequestMeta {
 }
 
 /**
- * `POST /api/transcription/uploads/init` 业务逻辑。
+ * `POST /api/transcription/uploads/init` 业务逻辑�?
  */
 export class TranscriptionUploadInitService {
   constructor(
@@ -37,7 +37,7 @@ export class TranscriptionUploadInitService {
   ) {}
 
   /**
-   * 创建 uploading 任务、上传会话并签发 TUS 参数。
+   * 创建 uploading 任务、上传会话并签发 TUS 参数�?
    */
   async init(
     actor: AuthContext,
@@ -68,6 +68,7 @@ export class TranscriptionUploadInitService {
       durationSec: body.durationSec ?? null,
       isMp4,
       idempotencyKey: body.idempotencyKey ?? null,
+      maxSpeakers: body.maxSpeakers ?? null,
     });
 
     const storageKeyPrefix = buildStorageKeyPrefix(actor.userId, task.id);

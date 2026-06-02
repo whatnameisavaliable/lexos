@@ -4,7 +4,7 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { TranscriptionTranscriptRepository } from "../repositories/transcription-transcript.repository.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
-/** PATCH 成功响应。 */
+/** PATCH 成功响应�?*/
 export interface TranscriptPatchResult {
   readonly taskId: string;
   readonly polishedText: string;
@@ -13,7 +13,7 @@ export interface TranscriptPatchResult {
 }
 
 /**
- * `PATCH /api/transcription/tasks/:id/transcript` 业务逻辑（`architecture.md` §6.5）。
+ * `PATCH /api/transcription/tasks/:id/transcript` 业务逻辑（`architecture.md` §6.5）�?
  */
 export class TranscriptionTranscriptPatchService {
   constructor(
@@ -22,7 +22,7 @@ export class TranscriptionTranscriptPatchService {
   ) {}
 
   /**
-   * 乐观锁更新润色文稿；冲突返回 `RESOURCE_CONFLICT`。
+   * 乐观锁更新润色文稿；冲突返回 `RESOURCE_CONFLICT`�?
    */
   async patch(
     actor: AuthContext,
@@ -36,7 +36,7 @@ export class TranscriptionTranscriptPatchService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

@@ -5,7 +5,7 @@ import type { TranscriptionTranscriptRepository } from "../repositories/transcri
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
 /**
- * `GET /api/transcription/tasks/:id/transcript` 业务逻辑。
+ * `GET /api/transcription/tasks/:id/transcript` 业务逻辑�?
  */
 export class TranscriptionTranscriptGetService {
   constructor(
@@ -14,7 +14,7 @@ export class TranscriptionTranscriptGetService {
   ) {}
 
   /**
-   * 查询任务文稿；越权或不存在返回 `RESOURCE_NOT_FOUND`。
+   * 查询任务文稿；越权或不存在返�?`RESOURCE_NOT_FOUND`�?
    */
   async get(
     actor: AuthContext,
@@ -26,7 +26,7 @@ export class TranscriptionTranscriptGetService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

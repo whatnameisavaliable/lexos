@@ -15,9 +15,9 @@ import type { TranscriptionTranscriptRepository } from "../repositories/transcri
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
 /**
- * 为已完成转写任务的归档目录补写 `drive_nodes` 文件引用（`database.md` §6.3.1）。
+ * 为已完成转写任务的归档目录补�?`drive_nodes` 文件引用（`database.md` §6.3.1）�?
  *
- * M5 早期仅创建文件夹；首次打开目录时懒回填，避免录音「看似丢失」。
+ * M5 早期仅创建文件夹；首次打开目录时懒回填，避免录音「看似丢失」�?
  */
 export class DriveArchiveBackfillService {
   constructor(
@@ -28,7 +28,7 @@ export class DriveArchiveBackfillService {
   ) {}
 
   /**
-   * 若 `folder` 为转写归档目录且尚无文件子节点，则写入音频/转写稿引用。
+   * �?`folder` 为转写归档目录且尚无文件子节点，则写入音�?转写稿引用�?
    */
   async ensureArchiveFilesForFolder(
     actor: AuthContext,
@@ -44,7 +44,7 @@ export class DriveArchiveBackfillService {
       return;
     }
 
-    if (actor.role !== "admin" && folder.createdBy !== actor.userId) {
+    if (folder.createdBy !== actor.userId) {
       return;
     }
 

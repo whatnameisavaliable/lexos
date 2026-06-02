@@ -1,4 +1,9 @@
-import { AuthErrorCode, type AuthLoginBody } from "@lexos/shared";
+import {
+  AuthErrorCode,
+  AUTH_LOGIN_FAILURE_MESSAGE,
+  type AuthLoginBody,
+  type UserRole,
+} from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
 import {
   AuthAdapterError,
@@ -18,12 +23,12 @@ export interface AuthLoginResult {
   readonly refreshToken: string;
   readonly userId: string;
   readonly expiresAt: number | undefined;
-  readonly role: "admin" | "lawyer";
+  readonly role: UserRole;
   readonly requiresPasswordChange: boolean;
 }
 
 /**
- * 登录服务：虚拟邮箱认证 + 审计（首期不含验证码 / MFA）。
+ * ??????????? + ??????????? audit_logs?PRD-3.7-01??
  */
 export class AuthLoginService {
   constructor(
@@ -32,9 +37,7 @@ export class AuthLoginService {
     private readonly auditWriterService: AuditWriterService,
   ) {}
 
-  /**
-   * 执行用户名密码登录。
-   */
+  /** ?????????? */
   async login(
     body: AuthLoginBody,
     meta: AuthLoginRequestMeta = {},
@@ -55,8 +58,8 @@ export class AuthLoginService {
       if (!profile || profile.status === "disabled") {
         await this.authAdapter.signOut(session.accessToken).catch(() => undefined);
         throw new AppHttpError(
-          AuthErrorCode.AUTH_ACCOUNT_DISABLED,
-          "Account is disabled",
+          AuthErrorCode.AUTH_INVALID_CREDENTIALS,
+          AUTH_LOGIN_FAILURE_MESSAGE,
         );
       }
 
@@ -82,23 +85,8 @@ export class AuthLoginService {
       if (err instanceof AppHttpError) {
         throw err;
       }
-      await this.auditLoginFailure(username, meta).catch(() => undefined);
       this.mapLoginError(err);
     }
-  }
-
-  private async auditLoginFailure(
-    username: string,
-    meta: AuthLoginRequestMeta,
-  ): Promise<void> {
-    await this.auditWriterService.write(
-      {
-        actorId: null,
-        action: "auth.login_failure",
-        metadata: { attempted_username: username },
-      },
-      { ip: meta.ip, userAgent: meta.userAgent, client: meta.client },
-    );
   }
 
   private mapLoginError(err: unknown): never {
@@ -109,7 +97,7 @@ export class AuthLoginService {
       if (err.code === "AUTH_INVALID_CREDENTIALS") {
         throw new AppHttpError(
           AuthErrorCode.AUTH_INVALID_CREDENTIALS,
-          "Invalid username or password",
+          AUTH_LOGIN_FAILURE_MESSAGE,
         );
       }
     }

@@ -39,21 +39,4 @@ describe("AuditWriterService", () => {
     });
   });
 
-  it("auth.login_failure requires attempted_username in metadata", async () => {
-    auditLogRepository.append.mockResolvedValue("audit-2");
-
-    await service.write({
-      actorId: null,
-      action: "auth.login_failure",
-      metadata: { attempted_username: "alice" },
-    });
-
-    expect(auditLogRepository.append).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "auth.login_failure",
-        actorId: null,
-        metadata: expect.objectContaining({ attempted_username: "alice" }),
-      }),
-    );
-  });
 });

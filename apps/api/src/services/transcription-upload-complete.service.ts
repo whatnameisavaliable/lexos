@@ -21,7 +21,7 @@ export interface TranscriptionUploadCompleteResult {
 }
 
 /**
- * `POST /api/transcription/uploads/complete` 业务逻辑（单事务 + Outbox）。
+ * `POST /api/transcription/uploads/complete` 业务逻辑（单事务 + Outbox）�?
  */
 export class TranscriptionUploadCompleteService {
   private readonly pool: pg.Pool;
@@ -42,7 +42,7 @@ export class TranscriptionUploadCompleteService {
   }
 
   /**
-   * 校验 Storage 对象并完成上传会话，任务入队。
+   * 校验 Storage 对象并完成上传会话，任务入队�?
    */
   async complete(
     actor: AuthContext,

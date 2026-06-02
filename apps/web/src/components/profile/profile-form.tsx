@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { profileUpdateBodySchema, type ProfileUpdateBody } from "@lexos/shared";
+import { profileUpdateBodySchema, type ProfileUpdateBody, isReservedUserRole, type UserRole } from "@lexos/shared";
 import { getProfile, updateProfile } from "@/lib/profile-api";
 import { toApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function ProfileForm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [readonly, setReadonly] = useState<{
+  const [readonlyMeta, setReadonlyMeta] = useState<{
     username: string;
-    role: string;
+    role: UserRole;
+    displayName: string;
+    contact: string | null;
   } | null>(null);
 
   const form = useForm<ProfileUpdateBody>({
@@ -39,9 +41,11 @@ export function ProfileForm() {
   useEffect(() => {
     void getProfile()
       .then((p) => {
-        setReadonly({
+        setReadonlyMeta({
           username: p.username,
-          role: p.role,
+          role: p.role as UserRole,
+          displayName: p.displayName,
+          contact: p.contact,
         });
         form.reset({
           displayName: p.displayName,
@@ -70,7 +74,7 @@ export function ProfileForm() {
     );
   }
 
-  if (!readonly) {
+  if (!readonlyMeta) {
     return (
       <Alert variant="destructive">
         <AlertDescription>{error ?? "无法加载个人资料"}</AlertDescription>
@@ -78,14 +82,30 @@ export function ProfileForm() {
     );
   }
 
+  const profileReadOnly = isReservedUserRole(readonlyMeta.role);
+
   return (
     <div className="max-w-lg">
       <dl className="mb-6 grid grid-cols-2 gap-2 text-sm">
         <dt className="text-muted-foreground">用户名</dt>
-        <dd>{readonly.username}</dd>
+        <dd>{readonlyMeta.username}</dd>
         <dt className="text-muted-foreground">角色</dt>
-        <dd>{readonly.role}</dd>
+        <dd>{readonlyMeta.role}</dd>
+        {!profileReadOnly ? null : (
+          <>
+            <dt className="text-muted-foreground">真实姓名</dt>
+            <dd>{readonlyMeta.displayName}</dd>
+            <dt className="text-muted-foreground">联系方式</dt>
+            <dd>{readonlyMeta.contact ?? "—"}</dd>
+          </>
+        )}
       </dl>
+
+      {profileReadOnly ? (
+        <p className="mb-6 text-sm text-muted-foreground">
+          当前角色仅支持查看账户信息；如需修改资料请联系系统管理员。
+        </p>
+      ) : null}
 
       {error ? (
         <Alert variant="destructive" className="mb-4">
@@ -93,37 +113,39 @@ export function ProfileForm() {
         </Alert>
       ) : null}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <FormField
-            control={form.control}
-            name="displayName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>真实姓名</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="contact"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>联系方式</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit">保存</Button>
-        </form>
-      </Form>
+      {!profileReadOnly ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="displayName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>真实姓名</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contact"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>联系方式</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit">保存</Button>
+          </form>
+        </Form>
+      ) : null}
 
       <section className="mt-8 border-t border-border pt-6">
         <h2 className="text-lg font-medium">安全</h2>

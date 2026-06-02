@@ -6,7 +6,7 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { AuditWriterService, AuditRequestMeta } from "./audit-writer.service.js";
 import type { TranscriptionTaskRepository } from "../repositories/transcription-task.repository.js";
 
-/** 下载类型：音频抽音或原始源文件。 */
+/** 下载类型：音频抽音或原始源文件�?*/
 export type TranscriptionDownloadType = "audio" | "source";
 
 export interface TranscriptionTaskDownloadRequestMeta {
@@ -15,7 +15,7 @@ export interface TranscriptionTaskDownloadRequestMeta {
 }
 
 /**
- * `GET /api/transcription/tasks/:id/download` 业务逻辑（`architecture.md` §5.5.3）。
+ * `GET /api/transcription/tasks/:id/download` 业务逻辑（`architecture.md` §5.5.3）�?
  */
 export class TranscriptionTaskDownloadService {
   constructor(
@@ -25,7 +25,7 @@ export class TranscriptionTaskDownloadService {
   ) {}
 
   /**
-   * 签发签名下载 URL 并写 `file.download` 审计。
+   * 签发签名下载 URL 并写 `file.download` 审计�?
    */
   async download(
     actor: AuthContext,
@@ -39,7 +39,7 @@ export class TranscriptionTaskDownloadService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 
@@ -63,7 +63,7 @@ export class TranscriptionTaskDownloadService {
       );
     }
 
-    const ownerId = actor.role === "admin" ? task.createdBy : actor.userId;
+    const ownerId = actor.userId;
     const signed = await this.storageAdapter.createSignedDownloadUrl(
       "media",
       objectKey,

@@ -13,7 +13,7 @@ import {
 import type { DriveNodeGetResponse } from "./drive-node-get.service.js";
 
 /**
- * 创建云盘子文件夹。
+ * 创建云盘子文件夹�?
  */
 export class DriveFolderCreateService {
   constructor(private readonly driveNodeRepository: DriveNodeRepository) {}
@@ -31,7 +31,7 @@ export class DriveFolderCreateService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Parent folder not found");
     }
 
-    if (actor.role !== "admin" && parent.createdBy !== actor.userId) {
+    if (parent.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

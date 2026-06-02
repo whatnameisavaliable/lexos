@@ -29,7 +29,13 @@
     "verify:m0-gate": "npx tsx packages/shared/src/milestones/run-m0-gate-cli.ts",
     "test:compliance": "vitest run tools/compliance",
     "check:privatization": "node scripts/privatization-readiness-check.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:migrate": "docker compose run --rm migrate",
+    "docker:seed": "docker compose --profile init run --rm seed-admin",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

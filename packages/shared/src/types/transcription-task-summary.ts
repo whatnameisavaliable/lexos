@@ -11,4 +11,8 @@ export interface TranscriptionTaskSummary {
   readonly durationSec: number | null;
   readonly sizeBytes: number;
   readonly createdAt: string;
+  /** `completed` 时：整篇润色失败但保留 ASR（PRD-3.5-04）。 */
+  readonly llmPolishFailed?: boolean;
+  /** `completed` 时：法律摘要失败（PRD-3.5-04）。 */
+  readonly llmSummaryFailed?: boolean;
 }

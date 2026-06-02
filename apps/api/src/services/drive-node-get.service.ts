@@ -7,13 +7,13 @@ import type { DriveNodeRepository } from "../repositories/drive-node.repository.
 import { DRIVE_ROOT_FOLDER_NAME } from "../repositories/drive-node.types.js";
 import { mapDriveNodeSummary } from "../repositories/drive-node.types.js";
 
-/** `GET /api/drive/nodes/:id` 响应。 */
+/** `GET /api/drive/nodes/:id` 响应�?*/
 export interface DriveNodeGetResponse extends DriveNodeSummary {
   readonly parentId: string | null;
 }
 
 /**
- * 云盘节点详情。
+ * 云盘节点详情�?
  */
 export class DriveNodeGetService {
   constructor(private readonly driveNodeRepository: DriveNodeRepository) {}
@@ -28,7 +28,7 @@ export class DriveNodeGetService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Node not found");
     }
 
-    if (actor.role !== "admin" && node.createdBy !== actor.userId) {
+    if (node.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

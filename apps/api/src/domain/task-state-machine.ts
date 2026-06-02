@@ -11,8 +11,8 @@ const ALLOWED_TRANSITIONS: Readonly<
   preprocessing: ["asr_running", "failed"],
   asr_running: ["llm_running", "failed"],
   llm_running: ["completed", "failed"],
-  completed: [],
-  failed: ["queued"],
+  completed: ["llm_running"],
+  failed: ["queued", "asr_running", "llm_running"],
 };
 
 /**

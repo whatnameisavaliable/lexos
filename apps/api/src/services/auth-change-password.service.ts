@@ -16,7 +16,7 @@ export interface AuthChangePasswordMeta {
   readonly userAgent?: string;
 }
 
-/** 改密成功后会话（刷新 access token 供前端写入 Cookie）。 */
+/** 改密成功后会话（刷新 access token 供前端写�?Cookie）�?*/
 export interface AuthChangePasswordResult {
   readonly accessToken: string;
   readonly refreshToken: string;
@@ -24,7 +24,7 @@ export interface AuthChangePasswordResult {
 }
 
 /**
- * 改密服务：主动改密校验原密码；强制改密可省略；完成后 RPC 清除标记。
+ * 改密服务：主动改密校验原密码；强制改密可省略；完成后 RPC 清除标记�?
  */
 export class AuthChangePasswordService {
   constructor(
@@ -59,7 +59,7 @@ export class AuthChangePasswordService {
       }
     }
 
-    // 服务端仅持 access token，Supabase `updateUser` 须 setSession；经鉴权后走 Admin API。
+    // 服务端仅�?access token，Supabase `updateUser` �?setSession；经鉴权后走 Admin API�?
     await this.authAdapter.updateUserPasswordAsAdmin(
       auth.userId,
       body.newPassword,

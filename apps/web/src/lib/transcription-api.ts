@@ -1,11 +1,15 @@
 import type {
+  TranscriptionTaskDetail,
   TranscriptionTaskListQuery,
+  TranscriptionTaskRetryBody,
+  TranscriptionTaskRetryScope,
   TranscriptionTaskStatus,
   TranscriptionTaskSummary,
   TranscriptionUploadCompleteBody,
   TranscriptionUploadInitBody,
   TranscriptionUploadInitResponse,
 } from "@lexos/shared";
+export type { TranscriptionTaskRetryScope };
 import type { PaginationMeta } from "@lexos/shared/api";
 import { setCachedTranscriptVersion } from "./transcript-if-match";
 import { apiFetch, ApiClientError } from "./api-client";
@@ -37,24 +41,8 @@ export interface TranscriptionTranscriptDetail {
   readonly updatedAt: string;
 }
 
-/** `GET /api/transcription/tasks/:id` 详情。 */
-export interface TranscriptionTaskDetail {
-  readonly id: string;
-  readonly createdBy: string;
-  readonly title: string;
-  readonly status: TranscriptionTaskStatus;
-  readonly sourceMime: string;
-  readonly sourceStorageKey: string;
-  readonly audioStorageKey: string | null;
-  readonly durationSec: number | null;
-  readonly sizeBytes: number;
-  readonly isMp4: boolean;
-  readonly asrQueueTier: "express" | "batch" | null;
-  readonly idempotencyKey: string | null;
-  readonly diarizationDegraded?: boolean;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-}
+/** `GET /api/transcription/tasks/:id` 详情（与 `@lexos/shared` 对齐）。 */
+export type { TranscriptionTaskDetail };
 
 /** `GET /api/transcription/tasks` 响应。 */
 export interface TranscriptionTaskListData {
@@ -264,6 +252,23 @@ export async function exportTxt(taskId: string): Promise<SignedDownloadUrlResult
   return postExport(
     `/transcription/tasks/${encodeURIComponent(taskId)}/export/txt`,
   );
+}
+
+/** `POST /api/transcription/tasks/:id/retry` */
+export async function retryTranscriptionTask(
+  taskId: string,
+  scope: TranscriptionTaskRetryScope,
+): Promise<{ readonly taskId: string; readonly status: string; readonly stage: string }> {
+  const body: TranscriptionTaskRetryBody = { scope };
+  const res = await apiFetch<{
+    readonly taskId: string;
+    readonly status: string;
+    readonly stage: string;
+  }>(`/transcription/tasks/${encodeURIComponent(taskId)}/retry`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
 }
 
 /** `DELETE /api/transcription/tasks/:id` */

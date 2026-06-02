@@ -15,7 +15,7 @@ import type { TranscriptionTaskRepository } from "../repositories/transcription-
 import type { TranscriptionExportRequestMeta } from "./transcription-export-docx.service.js";
 
 /**
- * `POST /api/transcription/tasks/:id/export/pdf` 业务逻辑。
+ * `POST /api/transcription/tasks/:id/export/pdf` 业务逻辑�?
  */
 export class TranscriptionExportPdfService {
   constructor(
@@ -26,7 +26,7 @@ export class TranscriptionExportPdfService {
     private readonly auditWriterService: AuditWriterService,
   ) {}
 
-  /** 生成 PDF → 上传 exports 桶 → 返回签名 URL。 */
+  /** 生成 PDF �?上传 exports �?�?返回签名 URL�?*/
   async exportPdf(
     actor: AuthContext,
     accessToken: string,
@@ -38,7 +38,7 @@ export class TranscriptionExportPdfService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

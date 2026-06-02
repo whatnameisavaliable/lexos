@@ -137,6 +137,8 @@ main (grid-area: main)
 
 3.4.2 业务 API 返回 `AUTH_PASSWORD_CHANGE_REQUIRED` 时，客户端统一重定向改密页。
 
+3.4.3 BFF 仅 `password-change-gate` 中间件拦截；前端 Router Guard 负责导航，**不在**页面层重复校验 session 字段。
+
 ---
 
 ## 4. 复杂图表与打印视图渲染强制要求
@@ -203,9 +205,9 @@ main (grid-area: main)
 
 | 角色 | 首期菜单 |
 |------|----------|
-| `admin` | 用户管理、AI 配置、审计日志、系统设置、转写（全量）、云盘（全量） |
+| `admin` | 用户管理、AI 配置、审计日志、系统设置、管理首页 |
 | `lawyer` | 语音转写、个人云盘、个人中心 |
-| `director` / `client` / `channel` | 个人中心或占位页「功能未开放」【待确认】文案 |
+| `director` / `client` / `channel` | 占位页（功能尚未开放）、个人中心（只读）、修改密码 |
 
 5.1.1 菜单项由服务端 `role` 驱动配置数组渲染；禁止前端写死后仅靠 `display:none` 隐藏无权限路由。
 
@@ -213,9 +215,10 @@ main (grid-area: main)
 
 1. 是否登录  
 2. `requires_password_change`  
-3. MFA 完成状态（`admin`/`director`）：优先读 `profiles.mfa_enabled`；为 `false` 时引导绑定页（最终以 Auth MFA API 校验为准）  
-4. 角色是否匹配路由 `allowedRoles`  
-5. 是否存在进行中的 TUS 上传（见 §6.3.4.2）  
+3. 角色是否匹配路由 `allowedRoles`（admin 禁止进入 `/transcription`、`/drive`、`/lawyer`；预留角色仅 `/coming-soon`、`/profile`、`/change-password`）  
+4. 是否存在进行中的 TUS 上传（见 §6.3.4.2）  
+
+**首期不含 MFA 门禁**（`profiles.mfa_enabled` 字段保留，UI 不展示）。
 
 ---
 
@@ -227,19 +230,25 @@ main (grid-area: main)
 
 6.1.2 无「忘记密码」提交；展示文案「请联系系统管理员重置密码」。
 
+6.1.3 登录失败（不存在/密码错误/账户禁用）统一提示：**用户名或密码错误**。
+
+6.1.4 会话：`localStorage` 持久化 refresh token；access 过期时静默 refresh；仅登出或清除本地 token 后须重登。
+
 ### 6.2 用户管理（admin）
 
-6.2.1 表格列：用户名、真实姓名、角色、状态、**MFA 已绑定**（读 `profiles.mfa_enabled`，Badge 展示）、创建时间、操作。
+6.2.1 表格列：用户名、真实姓名、角色、状态、创建时间、操作。（首期 **不含 MFA 列**。）
 
-6.2.2 操作：`编辑`、`禁用/启用`、`重置密码`（`AlertDialog` 二次确认）。
+6.2.2 操作：`编辑`、`禁用/启用`、`重置密码`（`AlertDialog` 二次确认）。内置 `admin` 行的「禁用」置灰不可点。
 
 6.2.3 分页：每页 50；Offset 或 Cursor 与 API 一致。
 
 ### 6.3 语音转写任务列表（lawyer / admin）
 
-6.3.1 列：任务名、状态、时长、创建时间、操作。
+6.3.1 列：任务名、状态、时长、创建时间、操作。`failed` 显示「重试后续步骤」；`completed` 且 `llm_*_failed` 显示「部分成功」及分项重试。
 
-6.3.2 状态标签：与 `transcription_task_status` 枚举一一对应颜色令牌（`muted`/`warning`/`success`/`destructive`）。
+6.3.2 状态标签：与 `transcription_task_status` 枚举对应；`completed` + LLM 分项失败时 Badge 为 **部分成功**（`warning` 色）。
+
+6.3.2.1 新建任务：可选「说话人上限」数字框；**留空 = 不限制**（PRD-3.5-02）。
 
 6.3.3 上传时序（**必须**经 BFF，严禁前端自拼 Storage 路径）
 
@@ -265,13 +274,19 @@ main (grid-area: main)
 
 6.3.4.4 上传结束后（`complete` 成功或用户取消且已 abort）：移除 `beforeunload` 监听，关闭路由拦截。
 
-6.3.5 状态刷新：轮询间隔 ≥ 2s；禁止 WebSocket 长连阻塞 UI【待确认】Realtime 可选。
+6.3.5 状态刷新：**HTTP 轮询**间隔 ≥ 2s（PRD-3.5-05）；首期不用 Realtime。
 
 ### 6.4 个人云盘
 
 6.4.1 左树右表或单表「当前路径」；禁止根目录新建文件（PRD §3.6）；无 `parent_id` 时仅显示文件夹导航。
 
-6.4.2 自动归档目录只读标识【待确认】是否允许律师重命名（PRD 允许重命名）。
+6.4.2 自动归档目录名使用完整标题（非法字符替换为 `_`，**不截断**）；超过 256 字归档失败并提示。
+
+6.4.3 同级目录/文件**禁止重名**；创建或重命名冲突时 Toast 提示。
+
+6.4.4 删除：律师可删本人节点；**管理员**可跨用户删除（不可浏览/下载律师云盘），审计 `file.delete` 含 `deletedByAdmin`。文件夹删除前二次确认，文案说明**级联软删**子项；成功 Toast 可展示 `deletedCount`。
+
+6.4.5 自动归档目录允许律师重命名（PRD §3.6）。
 
 ### 6.5 高密度表格通用规范
 

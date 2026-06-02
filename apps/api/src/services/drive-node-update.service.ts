@@ -9,7 +9,7 @@ import {
 import type { DriveNodeGetResponse } from "./drive-node-get.service.js";
 
 /**
- * 重命名 / 移动云盘节点。
+ * 重命�?/ 移动云盘节点�?
  */
 export class DriveNodeUpdateService {
   constructor(private readonly driveNodeRepository: DriveNodeRepository) {}
@@ -25,7 +25,7 @@ export class DriveNodeUpdateService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Node not found");
     }
 
-    if (actor.role !== "admin" && node.createdBy !== actor.userId) {
+    if (node.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 
@@ -52,7 +52,7 @@ export class DriveNodeUpdateService {
         );
       }
 
-      if (actor.role !== "admin" && targetParent.createdBy !== actor.userId) {
+      if (targetParent.createdBy !== actor.userId) {
         throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
       }
 

@@ -1,7 +1,7 @@
 import type { AdminUserListItem } from "@lexos/shared";
 import type { AdminProfileRecord } from "../repositories/admin-user.types.js";
 
-/** 管理员用户详情 API 响应。 */
+/** 管理员用户详�?API 响应�?*/
 export interface AdminUserDetailDto {
   readonly id: string;
   readonly username: string;
@@ -16,7 +16,7 @@ export interface AdminUserDetailDto {
 }
 
 /**
- * 将仓库记录映射为详情 DTO。
+ * 将仓库记录映射为详情 DTO�?
  */
 export function toAdminUserDetailDto(
   record: AdminProfileRecord,
@@ -36,7 +36,7 @@ export function toAdminUserDetailDto(
 }
 
 /**
- * 列表项与详情 DTO 字段对齐（列表无 `requiresPasswordChange`）。
+ * 列表项与详情 DTO 字段对齐（列表无 `requiresPasswordChange`）�?
  */
 export function toAdminUserListDto(
   item: AdminUserListItem,

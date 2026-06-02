@@ -69,7 +69,7 @@ export function AiModelFormDialog({
           name,
           modelName,
           modelId,
-          ...(rotateKey && apiKey ? { apiKey } : {}),
+          apiKey: rotateKey && apiKey ? apiKey : undefined,
           baseUrl: baseUrl || null,
           isEnabled,
           isDefaultFallback,

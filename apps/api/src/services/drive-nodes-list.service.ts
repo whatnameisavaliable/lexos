@@ -6,7 +6,7 @@ import type { DriveNodeRepository } from "../repositories/drive-node.repository.
 import { DRIVE_ROOT_FOLDER_NAME } from "../repositories/drive-node.types.js";
 import type { DriveArchiveBackfillService } from "./drive-archive-backfill.service.js";
 
-/** `GET /api/drive/nodes` 响应。 */
+/** `GET /api/drive/nodes` 响应�?*/
 export interface DriveNodesListResponse {
   readonly items: Awaited<
     ReturnType<DriveNodeRepository["listChildren"]>
@@ -15,7 +15,7 @@ export interface DriveNodesListResponse {
 }
 
 /**
- * 云盘目录子节点列表（分页默认 50）。
+ * 云盘目录子节点列表（分页默认 50）�?
  */
 export class DriveNodesListService {
   constructor(
@@ -36,12 +36,12 @@ export class DriveNodesListService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Folder not found");
     }
 
-    if (actor.role !== "admin" && parent.createdBy !== actor.userId) {
+    if (parent.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 
     if (parent.name === DRIVE_ROOT_FOLDER_NAME && parent.parentId == null) {
-      // 允许列出根目录内容
+      // 允许列出根目录内�?
     }
 
     if (parent.linkedTaskId != null) {

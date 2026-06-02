@@ -94,6 +94,7 @@ export function createPipelineStageProcessor(
   const router = new StageRouter({
     [PIPELINE_STAGE_MEDIA_EXTRACT]: new MediaExtractHandler(
       mediaExtract,
+      storage,
       taskRepository,
       transactionService,
     ),
@@ -115,6 +116,7 @@ export function createPipelineStageProcessor(
       taskRepository,
       new WorkerTranscriptRepository(),
       transactionService,
+      tempDirCleanup,
     ),
     [PIPELINE_STAGE_DRIVE_ARCHIVE]: new DriveArchiveHandler(
       new WorkerDriveRepository(),

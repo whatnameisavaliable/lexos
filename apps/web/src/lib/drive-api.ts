@@ -109,10 +109,15 @@ export async function updateDriveNode(
 }
 
 /** `DELETE /api/drive/nodes/:id` */
-export async function deleteDriveNode(nodeId: string): Promise<{ id: string }> {
-  const res = await apiFetch<{ id: string }>(`/drive/nodes/${nodeId}`, {
-    method: "DELETE",
-  });
+export async function deleteDriveNode(
+  nodeId: string,
+): Promise<{ readonly id: string; readonly deletedCount: number }> {
+  const res = await apiFetch<{ id: string; deletedCount: number }>(
+    `/drive/nodes/${nodeId}`,
+    {
+      method: "DELETE",
+    },
+  );
   return res.data;
 }
 

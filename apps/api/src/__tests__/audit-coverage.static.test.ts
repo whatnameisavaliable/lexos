@@ -33,11 +33,17 @@ const ACTION_ALIASES: Partial<Record<(typeof AUDIT_ACTION_VALUES)[number], strin
   "auth.password_reset": ["auth.password_reset", "admin_apply_password_reset"],
 };
 
+/** PRD-3.7-01：失败登录不再写入；枚举保留供历史行查询。 */
+const AUDIT_ACTIONS_NOT_WRITTEN = new Set<string>(["auth.login_failure"]);
+
 describe("audit action coverage (static)", () => {
   it("each audit_action appears in at least one integration path", () => {
     const missing: string[] = [];
 
     for (const action of AUDIT_ACTION_VALUES) {
+      if (AUDIT_ACTIONS_NOT_WRITTEN.has(action)) {
+        continue;
+      }
       const needles = ACTION_ALIASES[action] ?? [action];
       const found = needles.some((needle) => mergedSource.includes(needle));
       if (!found) {

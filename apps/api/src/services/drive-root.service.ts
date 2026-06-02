@@ -4,19 +4,19 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { DriveNodeRepository } from "../repositories/drive-node.repository.js";
 import type { DriveNodeRecord } from "../repositories/drive-node.types.js";
 
-/** `GET /api/drive/root` 响应。 */
+/** `GET /api/drive/root` 响应�?*/
 export interface DriveRootResponse {
   readonly rootId: string;
 }
 
 /**
- * 获取或创建用户云盘虚拟根目录（`database.md` §7.2.1）。
+ * 获取或创建用户云盘虚拟根目录（`database.md` §7.2.1）�?
  */
 export class DriveRootService {
   constructor(private readonly driveNodeRepository: DriveNodeRepository) {}
 
   /**
-   * 返回 `__root__` 文件夹 id；不存在时创建。
+   * 返回 `__root__` 文件�?id；不存在时创建�?
    */
   async getOrCreateRoot(
     actor: AuthContext,
@@ -42,7 +42,7 @@ export class DriveRootService {
     }
   }
 
-  /** 内部：获取根目录记录。 */
+  /** 内部：获取根目录记录�?*/
   async requireRootRecord(
     actor: AuthContext,
     accessToken: string,

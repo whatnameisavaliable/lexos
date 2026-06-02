@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { TaskStatusBadge } from "./task-status-badge";
+import { TaskRetryActions } from "./task-retry-actions";
 import { formatDurationSec } from "./format-duration";
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -21,11 +22,13 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
 
 export interface TranscriptionTasksTableProps {
   readonly items: readonly TranscriptionTaskSummary[];
+  readonly onRetried?: () => void;
 }
 
 /** 转写任务列表表格（`ui_design.md` §6.3.1 / §6.5）。 */
 export function TranscriptionTasksTable({
   items,
+  onRetried,
 }: TranscriptionTasksTableProps) {
   return (
     <Table>
@@ -39,10 +42,16 @@ export function TranscriptionTasksTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.map((task) => (
+        {items.map((task) => {
+          const partialSuccess =
+            task.status === "completed" &&
+            (task.llmPolishFailed === true || task.llmSummaryFailed === true);
+          const canOpen =
+            task.status === "completed" || partialSuccess;
+          return (
           <TableRow key={task.id} className="h-10 text-sm">
             <TableCell className="font-medium max-w-[240px] truncate">
-              {task.status === "completed" ? (
+              {canOpen ? (
                 <Link
                   href={`/transcription/${task.id}`}
                   className="text-primary hover:underline"
@@ -54,7 +63,10 @@ export function TranscriptionTasksTable({
               )}
             </TableCell>
             <TableCell className="text-center">
-              <TaskStatusBadge status={task.status} />
+              <TaskStatusBadge
+                status={task.status}
+                partialSuccess={partialSuccess}
+              />
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatDurationSec(task.durationSec)}
@@ -63,16 +75,24 @@ export function TranscriptionTasksTable({
               {dateFormatter.format(new Date(task.createdAt))}
             </TableCell>
             <TableCell className="text-right">
-              {task.status === "completed" ? (
-                <Button variant="link" size="sm" className="h-auto px-0" asChild>
-                  <Link href={`/transcription/${task.id}`}>打开工作台</Link>
-                </Button>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {canOpen ? (
+                  <Button variant="link" size="sm" className="h-auto px-0" asChild>
+                    <Link href={`/transcription/${task.id}`}>打开工作台</Link>
+                  </Button>
+                ) : null}
+                <TaskRetryActions
+                  taskId={task.id}
+                  status={task.status}
+                  llmPolishFailed={task.llmPolishFailed}
+                  llmSummaryFailed={task.llmSummaryFailed}
+                  onRetried={onRetried}
+                />
+              </div>
             </TableCell>
           </TableRow>
-        ))}
+          );
+        })}
       </TableBody>
     </Table>
   );

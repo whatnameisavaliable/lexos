@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   describeDatabaseEndpoint,
-  loadEnvFiles,
+  loadLexosRuntimeEnvFiles,
   loadWorkerRuntimeEnvFromProcess,
   resolveRepoRoot,
 } from "@lexos/shared/config";
@@ -39,7 +39,7 @@ function resolvePipelineRepoRoot(): string {
 }
 
 const repoRoot = resolvePipelineRepoRoot();
-loadEnvFiles(repoRoot, [".env", ".env.development"]);
+loadLexosRuntimeEnvFiles(repoRoot);
 
 const env = loadWorkerRuntimeEnvFromProcess();
 const dbEndpoint = describeDatabaseEndpoint(env.outboxDbUrl);

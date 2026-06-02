@@ -1,7 +1,7 @@
 import type { TranscriptionUploadInitResponse } from "@lexos/shared";
 
 /** TUS 客户端 `metadata` 字段（Supabase Resumable Upload）。 */
-export interface TusUploadMetadata {
+export interface TusUploadMetadata extends Record<string, string> {
   readonly bucketName: string;
   readonly objectName: string;
   readonly contentType: string;

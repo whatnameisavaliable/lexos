@@ -72,6 +72,19 @@ export function loadEnvFiles(
 }
 
 /**
+ * 按 `NODE_ENV` 加载 `.env` + 环境专属文件（Docker / 生产用 `.env.production` 或 compose 注入的 process.env）。
+ */
+export function loadLexosRuntimeEnvFiles(
+  repoRoot: string = resolveRepoRoot(),
+): void {
+  const envFile: EnvFileName =
+    process.env.NODE_ENV === "production"
+      ? ".env.production"
+      : ".env.development";
+  loadEnvFiles(repoRoot, [".env", envFile]);
+}
+
+/**
  * 读取必填环境变量；缺失时抛出明确错误（禁止在业务代码中硬编码默认值）。
  */
 export function requireEnv(name: string): string {

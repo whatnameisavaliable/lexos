@@ -6,6 +6,7 @@ import {
   type ApiSuccessResponse,
 } from "@lexos/shared/api";
 import type { ErrorCode } from "@lexos/shared/api";
+import { AUTH_LOGIN_FAILURE_MESSAGE } from "@lexos/shared";
 import { clearAccessToken, getAccessToken } from "./session";
 import { refreshSession } from "./refresh-session";
 import { buildClientAuditHeaders } from "./client-audit-headers";
@@ -33,6 +34,8 @@ export class ApiClientError extends Error {
 
 const USER_FACING_ERROR_MESSAGES: Partial<Record<string, string>> = {
   AUTH_UNAUTHORIZED: "登录已过期或无效，请重新登录后再试",
+  AUTH_INVALID_CREDENTIALS: AUTH_LOGIN_FAILURE_MESSAGE,
+  AUTH_ACCOUNT_DISABLED: AUTH_LOGIN_FAILURE_MESSAGE,
   AUTH_PASSWORD_CHANGE_REQUIRED: "请先修改密码后再继续操作",
 };
 

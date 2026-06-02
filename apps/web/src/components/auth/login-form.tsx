@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { authLoginBodySchema, type AuthLoginBody } from "@lexos/shared";
 import { login } from "@/lib/auth-api";
+import { resolvePostLoginPath } from "@/lib/router-guard";
 import { toApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,10 +41,8 @@ export function LoginForm() {
       const session = await login(values);
       if (session.requiresPasswordChange) {
         router.replace("/change-password");
-      } else if (session.role === "admin") {
-        router.replace("/admin");
       } else {
-        router.replace("/lawyer");
+        router.replace(resolvePostLoginPath(session.role));
       }
       router.refresh();
     } catch (err) {

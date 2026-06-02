@@ -19,7 +19,7 @@ export interface TranscriptionExportRequestMeta {
 }
 
 /**
- * `POST /api/transcription/tasks/:id/export/docx` 业务逻辑。
+ * `POST /api/transcription/tasks/:id/export/docx` 业务逻辑�?
  */
 export class TranscriptionExportDocxService {
   constructor(
@@ -30,7 +30,7 @@ export class TranscriptionExportDocxService {
     private readonly auditWriterService: AuditWriterService,
   ) {}
 
-  /** 生成 DOCX → 上传 exports 桶 → 返回签名 URL。 */
+  /** 生成 DOCX �?上传 exports �?�?返回签名 URL�?*/
   async exportDocx(
     actor: AuthContext,
     accessToken: string,
@@ -42,7 +42,7 @@ export class TranscriptionExportDocxService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "Task not found");
     }
 
-    if (actor.role !== "admin" && task.createdBy !== actor.userId) {
+    if (task.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 

@@ -1,9 +1,9 @@
 "use client";
 
 import type { AdminUserListItem } from "@lexos/shared";
+import { BUILTIN_ADMIN_USERNAME } from "@lexos/shared/config";
 import { MoreHorizontal } from "lucide-react";
 import { ROLE_LABELS } from "@/components/admin/role-labels";
-import { UserMfaBadge } from "@/components/admin/user-mfa-badge";
 import { UserStatusBadge } from "@/components/admin/user-status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +48,6 @@ export function AdminUsersTable({
           <TableHead>真实姓名</TableHead>
           <TableHead>角色</TableHead>
           <TableHead className="text-center">状态</TableHead>
-          <TableHead className="text-center">MFA</TableHead>
           <TableHead>创建时间</TableHead>
           <TableHead className="text-right">操作</TableHead>
         </TableRow>
@@ -61,9 +60,6 @@ export function AdminUsersTable({
             <TableCell>{ROLE_LABELS[user.role]}</TableCell>
             <TableCell className="text-center">
               <UserStatusBadge status={user.status} />
-            </TableCell>
-            <TableCell className="text-center">
-              <UserMfaBadge mfaEnabled={user.mfaEnabled} />
             </TableCell>
             <TableCell>{dateFormatter.format(new Date(user.createdAt))}</TableCell>
             <TableCell className="text-right">
@@ -78,7 +74,13 @@ export function AdminUsersTable({
                   <DropdownMenuItem onClick={() => onEdit(user)}>
                     编辑
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onToggleStatus(user)}>
+                  <DropdownMenuItem
+                    disabled={
+                      user.status === "enabled" &&
+                      user.username === BUILTIN_ADMIN_USERNAME
+                    }
+                    onClick={() => onToggleStatus(user)}
+                  >
                     {user.status === "enabled" ? "禁用" : "启用"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onResetPassword(user)}>

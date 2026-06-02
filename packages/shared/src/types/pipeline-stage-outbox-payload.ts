@@ -4,12 +4,19 @@ import {
   isPipelineStage,
 } from "../constants/pipeline-stages.js";
 
+/** LLM 阶段重试范围（PRD-3.5-04 / §3.5.6）。 */
+export type LlmRetryMode = "all" | "polish" | "summary";
+
 /** U3 Worker 消费的 Outbox `payload`（全阶段）。 */
 export interface PipelineStageOutboxPayload {
   readonly stage: PipelineStage;
   readonly taskId: string;
   readonly createdBy: string;
   readonly isMp4: boolean;
+  /** 仅 `stage=llm`：重试润色和/或摘要（整篇，非按切片）。 */
+  readonly llmRetry?: LlmRetryMode;
+  /** 仅 `stage=llm`：已完成归档后仅重跑 LLM，跳过 `drive.archive`。 */
+  readonly skipArchive?: boolean;
 }
 
 /**
@@ -35,11 +42,26 @@ export function parsePipelineStageOutboxPayload(
   if (typeof row.isMp4 !== "boolean") {
     throw new Error("Invalid outbox payload isMp4");
   }
+  const llmRetry = row.llmRetry;
+  if (
+    llmRetry !== undefined &&
+    llmRetry !== "all" &&
+    llmRetry !== "polish" &&
+    llmRetry !== "summary"
+  ) {
+    throw new Error("Invalid outbox payload llmRetry");
+  }
+  const skipArchive = row.skipArchive;
+  if (skipArchive !== undefined && typeof skipArchive !== "boolean") {
+    throw new Error("Invalid outbox payload skipArchive");
+  }
   return {
     stage: stageRaw,
     taskId: row.taskId,
     createdBy: row.createdBy,
     isMp4: row.isMp4,
+    ...(llmRetry !== undefined ? { llmRetry } : {}),
+    ...(skipArchive !== undefined ? { skipArchive } : {}),
   };
 }
 

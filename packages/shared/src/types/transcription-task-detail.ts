@@ -21,4 +21,10 @@ export interface TranscriptionTaskDetail extends TranscriptionTaskSummary {
   readonly sourceStorageKey: string;
   readonly isMp4: boolean;
   readonly transcript: TranscriptSummaryEmbedded | null;
+  /** 可选说话人上限；`null` 表示不限制。 */
+  readonly maxSpeakers: number | null;
+  readonly llmPolishFailed: boolean;
+  readonly llmSummaryFailed: boolean;
+  readonly errorCode: string | null;
+  readonly errorMessage: string | null;
 }

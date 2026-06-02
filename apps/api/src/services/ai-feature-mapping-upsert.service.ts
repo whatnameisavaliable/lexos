@@ -1,5 +1,5 @@
 import type { AiFeatureKey, AiFeatureMappingUpsertBody, AuthContext } from "@lexos/shared";
-import { isAiFeatureKey } from "@lexos/shared";
+import { isAiActiveFeatureKey } from "@lexos/shared";
 import { ErrorCode } from "@lexos/shared/api";
 import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { AiFeatureMappingRepository } from "../repositories/ai-feature-mapping.repository.js";
@@ -23,8 +23,11 @@ export class AiFeatureMappingUpsertService {
     body: AiFeatureMappingUpsertBody,
     meta: AiFeatureMappingUpsertMeta = {},
   ) {
-    if (!isAiFeatureKey(featureKey)) {
-      throw new AppHttpError(ErrorCode.VALIDATION_FAILED, "Invalid feature key");
+    if (!isAiActiveFeatureKey(featureKey)) {
+      throw new AppHttpError(
+        ErrorCode.OPERATION_NOT_ALLOWED,
+        "Feature key is not active in this release",
+      );
     }
 
     const row = await this.mappingRepository.upsert(featureKey, body);

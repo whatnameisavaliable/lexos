@@ -268,7 +268,6 @@ function DateFilterField({
             mode="single"
             selected={date}
             onSelect={onChange}
-            initialFocus
           />
         </PopoverContent>
       </Popover>

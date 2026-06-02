@@ -9,6 +9,7 @@ import {
   type AuthChangePasswordBody,
 } from "@lexos/shared";
 import { changePassword, getSession } from "@/lib/auth-api";
+import { resolvePostLoginPath } from "@/lib/router-guard";
 import { toApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +52,7 @@ export function ChangePasswordForm() {
     try {
       await changePassword(values);
       const session = await getSession();
-      router.replace(session.role === "admin" ? "/admin" : "/lawyer");
+      router.replace(resolvePostLoginPath(session.role));
       router.refresh();
     } catch (err) {
       setError(toApiClientError(err).message);
@@ -109,7 +110,6 @@ export function ChangePasswordForm() {
                 <FormControl>
                   <Input type="password" autoComplete="new-password" {...field} />
                 </FormControl>
-                <p className="text-sm text-muted-foreground">至少 8 位字符</p>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,6 +1,7 @@
 export {
   ENV_FILE_NAMES,
   loadEnvFiles,
+  loadLexosRuntimeEnvFiles,
   loadSupabaseEnv,
   loadSupabaseEnvFromProcess,
   requireEnv,

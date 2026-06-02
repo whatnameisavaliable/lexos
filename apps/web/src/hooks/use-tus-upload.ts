@@ -14,6 +14,8 @@ export interface TusUploadMeta {
   readonly title: string;
   readonly durationSec?: number;
   readonly idempotencyKey?: string;
+  /** 说话人上限；省略表示不限制（PRD-3.5-02）。 */
+  readonly maxSpeakers?: number;
 }
 
 export interface UseTusUploadOptions {
@@ -84,6 +86,7 @@ export function useTusUpload(
           sizeBytes: BigInt(file.size),
           durationSec: meta.durationSec,
           idempotencyKey: meta.idempotencyKey,
+          maxSpeakers: meta.maxSpeakers,
         });
 
         registerUpload({ taskId: init.taskId, fileName: file.name });

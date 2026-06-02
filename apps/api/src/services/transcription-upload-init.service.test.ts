@@ -43,7 +43,7 @@ describe("TranscriptionUploadInitService", () => {
         actor,
         "token",
         {
-          title: "大文件",
+          title: "大文�?,
           fileName: "big.mp3",
           mimeType: "audio/mpeg",
           sizeBytes: BigInt(MAX_SIZE_BYTES) + 1n,

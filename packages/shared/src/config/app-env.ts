@@ -1,5 +1,5 @@
 import {
-  loadEnvFiles,
+  loadLexosRuntimeEnvFiles,
   loadSupabaseEnvFromProcess,
   requireEnv,
   resolveRepoRoot,
@@ -45,6 +45,6 @@ export function loadAppRuntimeEnvFromProcess(): AppRuntimeEnvConfig {
 export function loadAppRuntimeEnv(
   repoRoot: string = resolveRepoRoot(),
 ): AppRuntimeEnvConfig {
-  loadEnvFiles(repoRoot, [".env", ".env.development"]);
+  loadLexosRuntimeEnvFiles(repoRoot);
   return loadAppRuntimeEnvFromProcess();
 }

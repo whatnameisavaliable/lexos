@@ -43,6 +43,7 @@ export interface NewTranscriptionDialogProps {
 export function NewTranscriptionDialog({ onCreated }: NewTranscriptionDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [maxSpeakersInput, setMaxSpeakersInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +62,7 @@ export function NewTranscriptionDialog({ onCreated }: NewTranscriptionDialogProp
 
   function resetForm() {
     setTitle("");
+    setMaxSpeakersInput("");
     setFile(null);
     setError(null);
     if (fileInputRef.current) {
@@ -100,12 +102,23 @@ export function NewTranscriptionDialog({ onCreated }: NewTranscriptionDialogProp
       return;
     }
     setError(null);
+    const maxSpeakersRaw = maxSpeakersInput.trim();
+    const maxSpeakers =
+      maxSpeakersRaw.length > 0 ? Number(maxSpeakersRaw) : undefined;
+    if (
+      maxSpeakersRaw.length > 0 &&
+      (!Number.isInteger(maxSpeakers) || (maxSpeakers ?? 0) < 1)
+    ) {
+      setError("说话人上限须为正整数，或留空表示不限制");
+      return;
+    }
     try {
       parseTranscriptionUploadInitBody({
         title: title.trim(),
         fileName: file.name,
         mimeType,
         sizeBytes: BigInt(file.size),
+        maxSpeakers,
       });
     } catch (err) {
       if (err instanceof ZodError) {
@@ -116,11 +129,11 @@ export function NewTranscriptionDialog({ onCreated }: NewTranscriptionDialogProp
       return;
     }
     try {
-      await upload(file, { title: title.trim() });
+      await upload(file, { title: title.trim(), maxSpeakers });
     } catch (err) {
       setError(toApiClientError(err).message);
     }
-  }, [file, title, upload]);
+  }, [file, title, maxSpeakersInput, upload]);
 
   useEffect(() => {
     if (!open && isUploading) {
@@ -149,6 +162,22 @@ export function NewTranscriptionDialog({ onCreated }: NewTranscriptionDialogProp
               placeholder="例如：客户会议录音"
               onChange={(e) => setTitle(e.target.value)}
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="transcription-max-speakers">说话人上限（可选）</Label>
+            <Input
+              id="transcription-max-speakers"
+              type="number"
+              min={1}
+              max={32}
+              value={maxSpeakersInput}
+              disabled={isUploading}
+              placeholder="留空表示不限制"
+              onChange={(e) => setMaxSpeakersInput(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              用于说话人分离；不填则由识别服务自行判断人数。
+            </p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="transcription-file">媒体文件</Label>

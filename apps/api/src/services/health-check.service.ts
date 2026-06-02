@@ -1,19 +1,19 @@
 import type { PostgresHealthRepository } from "../repositories/postgres-health.repository.js";
 import type { StorageHealthRepository } from "../repositories/storage-health.repository.js";
 
-/** 单项依赖检查结果。 */
+/** 单项依赖检查结果�?*/
 export interface DependencyCheckResult {
   readonly ok: boolean;
   readonly latencyMs?: number;
   readonly errorMessage?: string;
 }
 
-/** Storage 桶检查结果（含桶名）。 */
+/** Storage 桶检查结果（含桶名）�?*/
 export interface StorageBucketCheckResult extends DependencyCheckResult {
   readonly bucket: string;
 }
 
-/** `/health` 聚合结果。 */
+/** `/health` 聚合结果�?*/
 export interface HealthCheckReport {
   readonly status: "ok" | "unhealthy";
   readonly checks: {
@@ -25,7 +25,7 @@ export interface HealthCheckReport {
   };
 }
 
-/** Storage 健康仓储最小端口（便于测试注入）。 */
+/** Storage 健康仓储最小端口（便于测试注入）�?*/
 export interface StorageHealthProbe {
   pingBuckets(): Promise<{
     media: { ok: boolean; bucket: string; latencyMs?: number; errorMessage?: string };
@@ -34,7 +34,7 @@ export interface StorageHealthProbe {
 }
 
 /**
- * 聚合 Postgres 与 Storage 健康检查（v1.3 起不探测 Redis）。
+ * 聚合 Postgres �?Storage 健康检查（v1.3 起不探测 Redis）�?
  */
 export class HealthCheckService {
   constructor(
@@ -43,7 +43,7 @@ export class HealthCheckService {
   ) {}
 
   /**
-   * 执行健康探测；任一子系统失败 → `unhealthy`。
+   * 执行健康探测；任一子系统失�?�?`unhealthy`�?
    */
   async runChecks(): Promise<HealthCheckReport> {
     const [postgres, storage] = await Promise.all([

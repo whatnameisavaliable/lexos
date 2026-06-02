@@ -57,19 +57,20 @@ describe("AuthLoginService", () => {
   });
 
   it("maps invalid credentials to AUTH_INVALID_CREDENTIALS", async () => {
+    auditWriterService.write.mockClear();
     const { AuthAdapterError } = await import(
       "../adapters/auth/supabase-auth.adapter.js"
     );
     authAdapter.signInWithPassword.mockRejectedValue(
       new AuthAdapterError("AUTH_INVALID_CREDENTIALS", "bad"),
     );
-    auditWriterService.write.mockResolvedValue("a");
 
     await expect(
       service.login({ username: "x", password: "y" }),
     ).rejects.toMatchObject({
       code: AuthErrorCode.AUTH_INVALID_CREDENTIALS,
     } satisfies Partial<AppHttpError>);
+    expect(auditWriterService.write).not.toHaveBeenCalled();
   });
 
   it("returns requiresPasswordChange when profile flag is set", async () => {
@@ -99,7 +100,7 @@ describe("AuthLoginService", () => {
     expect(result.requiresPasswordChange).toBe(true);
   });
 
-  it("rejects disabled account with AUTH_ACCOUNT_DISABLED", async () => {
+  it("rejects disabled account with unified login failure message", async () => {
     authAdapter.signOut.mockResolvedValue(undefined);
     authAdapter.signInWithPassword.mockResolvedValue({
       accessToken: "at",
@@ -121,7 +122,7 @@ describe("AuthLoginService", () => {
     await expect(
       service.login({ username: "lawyer", password: "x" }),
     ).rejects.toMatchObject({
-      code: AuthErrorCode.AUTH_ACCOUNT_DISABLED,
+      code: AuthErrorCode.AUTH_INVALID_CREDENTIALS,
     });
   });
 });

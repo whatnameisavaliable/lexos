@@ -3,7 +3,7 @@ import { buildPaginationMeta } from "@lexos/shared/api";
 import type { AdminUserRepository } from "../repositories/admin-user.repository.js";
 import type { AdminUserListItem } from "@lexos/shared";
 
-/** `GET /api/admin/users` 响应体。 */
+/** `GET /api/admin/users` 响应体�?*/
 export interface AdminUserListResponse {
   readonly items: readonly AdminUserListItem[];
   readonly meta: ReturnType<typeof buildPaginationMeta> & {
@@ -12,7 +12,7 @@ export interface AdminUserListResponse {
 }
 
 /**
- * 管理员用户列表（分页 meta 与 `packages/shared` 对齐）。
+ * 管理员用户列表（分页 meta �?`packages/shared` 对齐）�?
  */
 export class AdminUserListService {
   constructor(private readonly adminUserRepository: AdminUserRepository) {}

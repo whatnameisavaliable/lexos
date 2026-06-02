@@ -26,15 +26,21 @@ const TONE_CLASS: Record<StatusTone, string> = {
 /** 转写任务状态 Badge（`ui_design.md` §6.3.2）。 */
 export function TaskStatusBadge({
   status,
+  partialSuccess = false,
   className,
 }: {
   readonly status: TranscriptionTaskStatus;
+  /** `completed` 且 LLM 分项失败时展示「部分成功」。 */
+  readonly partialSuccess?: boolean;
   readonly className?: string;
 }) {
-  const tone = STATUS_TONE[status];
+  const tone = partialSuccess ? "warning" : STATUS_TONE[status];
+  const label = partialSuccess
+    ? "部分成功"
+    : TRANSCRIPTION_STATUS_LABELS[status];
   return (
     <Badge variant="outline" className={cn(TONE_CLASS[tone], className)}>
-      {TRANSCRIPTION_STATUS_LABELS[status]}
+      {label}
     </Badge>
   );
 }

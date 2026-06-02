@@ -1,17 +1,11 @@
 import { z } from "zod";
 
-/** 新密码最小长度（须高于弱口令 `111111`；Supabase Auth 默认 ≥6）。 */
-export const NEW_PASSWORD_MIN_LENGTH = 8;
-
 /** 新密码最大长度（与 Supabase Auth 常见上限对齐）。 */
 export const NEW_PASSWORD_MAX_LENGTH = 128;
 
 const newPasswordSchema = z
   .string()
-  .min(
-    NEW_PASSWORD_MIN_LENGTH,
-    `newPassword must be at least ${NEW_PASSWORD_MIN_LENGTH} characters`,
-  )
+  .min(1, "newPassword must not be empty")
   .max(NEW_PASSWORD_MAX_LENGTH);
 
 const currentPasswordSchema = z.string().min(1).max(NEW_PASSWORD_MAX_LENGTH);

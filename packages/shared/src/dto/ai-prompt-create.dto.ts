@@ -1,11 +1,11 @@
 import { z } from "zod";
 import {
-  AI_FEATURE_KEY_VALUES,
-  type AiFeatureKey,
+  AI_ACTIVE_FEATURE_KEY_VALUES,
+  type AiActiveFeatureKey,
 } from "../enums/ai-feature-key.js";
 
 const featureKeySchema = z.enum(
-  AI_FEATURE_KEY_VALUES as [AiFeatureKey, ...AiFeatureKey[]],
+  AI_ACTIVE_FEATURE_KEY_VALUES as [AiActiveFeatureKey, ...AiActiveFeatureKey[]],
   { message: "featureKey must be a valid AI feature key" },
 );
 

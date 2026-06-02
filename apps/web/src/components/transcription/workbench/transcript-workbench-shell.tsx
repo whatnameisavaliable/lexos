@@ -25,6 +25,7 @@ import { ExportMenu } from "./export-menu";
 import { PolishedTextEditor } from "./polished-text-editor";
 import { ProofreadTranscriptView } from "./proofread-transcript-view";
 import { SummaryTranscriptView } from "./summary-transcript-view";
+import { TaskRetryActions } from "../task-retry-actions";
 import { TranscriptSaveToolbar } from "./transcript-save-toolbar";
 import {
   WorkbenchViewTabs,
@@ -104,7 +105,14 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
         setTranscript(null);
         return;
       }
-      const transcriptData = await getTranscript(taskId);
+      let transcriptData: TranscriptionTranscriptDetail;
+      try {
+        transcriptData = await getTranscript(taskId);
+      } catch {
+        setTask(taskData);
+        setTranscript(null);
+        return;
+      }
       setTask(taskData);
       setTranscript(transcriptData);
       setDraftPolishedText(transcriptData.polishedText ?? "");
@@ -154,11 +162,19 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
         <Alert>
           <AlertDescription>
             任务尚未完成（当前状态：{task.status}），完成后才可进入工作台。
+            {task.errorMessage ? ` ${task.errorMessage}` : ""}
           </AlertDescription>
         </Alert>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <TaskStatusBadge status={task.status} />
           <span>{task.title}</span>
+          <TaskRetryActions
+            taskId={taskId}
+            status={task.status}
+            llmPolishFailed={task.llmPolishFailed}
+            llmSummaryFailed={task.llmSummaryFailed}
+            onRetried={() => void load()}
+          />
         </div>
       </div>
     );
@@ -176,7 +192,12 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
           </Button>
           <h1 className="text-xl font-semibold">{task.title}</h1>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <TaskStatusBadge status={task.status} />
+            <TaskStatusBadge
+              status={task.status}
+              partialSuccess={
+                task.llmPolishFailed === true || task.llmSummaryFailed === true
+              }
+            />
             <span>时长 {formatDurationSec(task.durationSec)}</span>
           </div>
         </div>
@@ -196,6 +217,25 @@ export function TranscriptWorkbenchShell({ taskId }: TranscriptWorkbenchShellPro
           ) : null}
         </div>
       </div>
+
+      {task.llmPolishFailed || task.llmSummaryFailed ? (
+        <Alert>
+          <AlertDescription className="flex flex-col gap-2">
+            <span>
+              部分步骤未成功：已保留 ASR 听写稿。
+              {task.llmPolishFailed ? " 润色失败。" : ""}
+              {task.llmSummaryFailed ? " 法律摘要失败。" : ""}
+            </span>
+            <TaskRetryActions
+              taskId={taskId}
+              status={task.status}
+              llmPolishFailed={task.llmPolishFailed}
+              llmSummaryFailed={task.llmSummaryFailed}
+              onRetried={() => void load()}
+            />
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {transcript.diarizationDegraded ? <DiarizationDegradedAlert /> : null}
 

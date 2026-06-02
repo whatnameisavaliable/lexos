@@ -29,7 +29,8 @@ export interface AiOrchestrationInvokeResult {
 }
 
 /**
- * AI 编排：功能映射 → 主模型 → fallback 一次；写 `ai_invocation_logs`。
+ * AI 编排：功能映射 → 主模型 → `fallback_model_id` **1 次**（PRD-3-02）。
+ * 写入 `ai_invocation_logs`（含 `is_fallback`）；**不**写 `audit_logs`。
  * 外部 HTTP 调用期间不占用 Postgres 连接。
  */
 export class AiOrchestrationService {

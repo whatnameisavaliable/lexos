@@ -5,7 +5,7 @@ import type { AiFeatureMappingRowDb } from "../repositories/ai-feature-mapping.r
 import type { AiInvocationLogRowDb } from "../repositories/ai-invocation-log.repository.js";
 
 /**
- * 将仓库行映射为对外模型 DTO（掩码 apiKey）。
+ * 将仓库行映射为对外模�?DTO（掩�?apiKey）�?
  */
 export function toAiModelPublic(
   row: AiModelRowDb,
@@ -28,7 +28,7 @@ export function toAiModelPublic(
   };
 }
 
-/** Prompt 列表/详情 DTO。 */
+/** Prompt 列表/详情 DTO�?*/
 export interface AiPromptPublic {
   readonly id: string;
   readonly featureKey: AiPromptRowDb["feature_key"];
@@ -55,7 +55,7 @@ export function toAiPromptPublic(row: AiPromptRowDb): AiPromptPublic {
   };
 }
 
-/** 功能映射 DTO。 */
+/** 功能映射 DTO�?*/
 export interface AiFeatureMappingPublic {
   readonly featureKey: AiFeatureMappingRowDb["feature_key"];
   readonly primaryModelId: string | null;
@@ -75,7 +75,7 @@ export function toAiFeatureMappingPublic(
   };
 }
 
-/** 调用日志 DTO。 */
+/** 调用日志 DTO�?*/
 export interface AiInvocationLogPublic {
   readonly id: string;
   readonly taskId: string | null;

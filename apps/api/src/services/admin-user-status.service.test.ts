@@ -26,7 +26,7 @@ describe("AdminUserStatusService", () => {
     status: "enabled" as const,
   };
 
-  it("disables user and signs out globally", async () => {
+  it("disables user and clears profile status cache", async () => {
     adminUserRepository.findUserById.mockResolvedValue({
       id: "u1",
       username: "lawyer",
@@ -55,7 +55,7 @@ describe("AdminUserStatusService", () => {
 
     await service.setStatus(actor, "u1", { status: "disabled" });
 
-    expect(authAdapter.adminSignOutGlobal).toHaveBeenCalledWith("u1");
+    expect(authAdapter.adminSignOutGlobal).not.toHaveBeenCalled();
     expect(auditWriterService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: "user.disable" }),
       expect.any(Object),

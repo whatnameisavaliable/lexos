@@ -1,7 +1,5 @@
 import { z } from "zod";
-
-/** `drive_nodes.name` 最大长度（`database.md` §3.5）。 */
-export const DRIVE_FOLDER_NAME_MAX_LENGTH = 256;
+import { DRIVE_FOLDER_NAME_MAX_LENGTH } from "../lib/sanitize-drive-folder-name.js";
 
 const parentIdSchema = z.string().uuid("parentId must be a UUID");
 

@@ -131,10 +131,13 @@ import { TranscriptionTaskExportDocxController } from "./controllers/transcripti
 import { TranscriptionTaskExportPdfController } from "./controllers/transcription-task-export-pdf.controller.js";
 import { TranscriptionTaskExportTxtController } from "./controllers/transcription-task-export-txt.controller.js";
 import { TranscriptionTaskDeleteController } from "./controllers/transcription-task-delete.controller.js";
+import { TranscriptionTasksRetryController } from "./controllers/transcription-tasks-retry.controller.js";
+import { TranscriptionTaskRetryService } from "./services/transcription-task-retry.service.js";
 import { handleTranscriptionUploadsRoute } from "./routes/transcription-uploads.routes.js";
 import { handleTranscriptionTasksRoute } from "./routes/transcription-tasks.routes.js";
 import { handleDriveRoute } from "./routes/drive.routes.js";
 import { loadStorageRuntimeEnvFromProcess } from "@lexos/shared/config";
+import { DriveNodeAdminRepository } from "./repositories/drive-node-admin.repository.js";
 import { DriveNodeRepository } from "./repositories/drive-node.repository.js";
 import { DriveSearchRepository } from "./repositories/drive-search.repository.js";
 import { DriveRootService } from "./services/drive-root.service.js";
@@ -313,6 +316,12 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const transcriptionTaskGetService = new TranscriptionTaskGetService(
     transcriptionTaskRepository,
   );
+  const transcriptionTaskRetryService = new TranscriptionTaskRetryService(
+    supabaseEnv,
+    transcriptionTaskRepository,
+    taskStateRepository,
+    outboxRepository,
+  );
   const transcriptionTranscriptGetService = new TranscriptionTranscriptGetService(
     transcriptionTaskRepository,
     transcriptionTranscriptRepository,
@@ -357,6 +366,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
 
   const driveNodeRepository = new DriveNodeRepository(supabaseEnv);
+  const driveNodeAdminRepository = new DriveNodeAdminRepository(supabaseEnv);
   const driveSearchRepository = new DriveSearchRepository(env.supabaseDbUrl);
   const driveRootService = new DriveRootService(driveNodeRepository);
   const driveArchiveBackfillService = new DriveArchiveBackfillService(
@@ -374,6 +384,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const driveNodeUpdateService = new DriveNodeUpdateService(driveNodeRepository);
   const driveNodeDeleteService = new DriveNodeDeleteService(
     driveNodeRepository,
+    driveNodeAdminRepository,
     auditWriterService,
   );
   const driveSearchService = new DriveSearchService(driveSearchRepository);
@@ -385,8 +396,9 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
 
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
   const requireAdmin = requireRoles("admin");
-  const requireTranscriptionAccess = requireRoles("admin", "lawyer");
-  const requireDriveAccess = requireRoles("admin", "lawyer");
+  const requireTranscriptionAccess = requireRoles("lawyer");
+  const requireDriveAccess = requireRoles("lawyer");
+  const requireDriveDeleteAccess = requireRoles("lawyer", "admin");
 
   const loginController = new AuthLoginController(
     authLoginService,
@@ -572,6 +584,10 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTaskDeleteService,
     env.requestIdHeader,
   );
+  const transcriptionTasksRetryController = new TranscriptionTasksRetryController(
+    transcriptionTaskRetryService,
+    env.requestIdHeader,
+  );
   const driveRootController = new DriveRootController(
     driveRootService,
     env.requestIdHeader,
@@ -653,6 +669,17 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   ) => {
     return protectedRoute(async (req, res) => {
       if (!requireDriveAccess(res)) {
+        return;
+      }
+      await handler(req, res);
+    });
+  };
+
+  const protectedDriveDeleteRoute = (
+    handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
+  ) => {
+    return protectedRoute(async (req, res) => {
+      if (!requireDriveDeleteAccess(res)) {
         return;
       }
       await handler(req, res);
@@ -772,6 +799,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
                   exportPdf: transcriptionTaskExportPdfController,
                   exportTxt: transcriptionTaskExportTxtController,
                   delete: transcriptionTaskDeleteController,
+                  retry: transcriptionTasksRetryController,
                 },
               );
             }
@@ -791,17 +819,26 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
 
         if (path.startsWith("/api/drive")) {
           let handled = false;
-          await protectedDriveRoute(async (driveReq, driveRes) => {
-            handled = await handleDriveRoute(driveReq, driveRes, path, {
-              root: driveRootController,
-              listNodes: driveNodesListController,
-              getNode: driveNodeGetController,
-              createFolder: driveFolderCreateController,
-              patchNode: driveNodePatchController,
-              deleteNode: driveNodeDeleteController,
-              search: driveSearchController,
-              downloadFile: driveFileDownloadController,
-            });
+          const driveHandlers = {
+            root: driveRootController,
+            listNodes: driveNodesListController,
+            getNode: driveNodeGetController,
+            createFolder: driveFolderCreateController,
+            patchNode: driveNodePatchController,
+            deleteNode: driveNodeDeleteController,
+            search: driveSearchController,
+            downloadFile: driveFileDownloadController,
+          };
+          const isDriveDelete =
+            (req.method ?? "GET") === "DELETE" &&
+            /^\/api\/drive\/nodes\/[^/]+$/.test(path);
+
+          const runDrive = isDriveDelete
+            ? protectedDriveDeleteRoute
+            : protectedDriveRoute;
+
+          await runDrive(async (driveReq, driveRes) => {
+            handled = await handleDriveRoute(driveReq, driveRes, path, driveHandlers);
             if (!handled) {
               driveRes.statusCode = 404;
               driveRes.setHeader("content-type", "application/json; charset=utf-8");

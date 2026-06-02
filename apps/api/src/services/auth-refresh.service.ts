@@ -9,7 +9,7 @@ import type { ProfileRepository } from "../repositories/profile.repository.js";
 import type { AuthLoginResult } from "./auth-login.service.js";
 
 /**
- * 刷新 access token（不经过 Bearer 中间件）。
+ * 刷新 access token（不经过 Bearer 中间件）�?
  */
 export class AuthRefreshService {
   constructor(

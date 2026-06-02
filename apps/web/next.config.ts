@@ -24,6 +24,8 @@ const storageBucketMedia =
   "media";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: repoRoot,
   transpilePackages: ["@lexos/shared"],
   serverExternalPackages: ["pg"],
   /** PDF 导出等长耗时 API：dev 反代默认 30s 会 ECONNRESET，需放宽。 */

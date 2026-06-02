@@ -11,7 +11,7 @@ export interface AdminUserUpdateMeta {
 }
 
 /**
- * 管理员更新用户资料（禁止 `username` / `status`）。
+ * 管理员更新用户资料（禁止 `username` / `status`）�?
  */
 export class AdminUserUpdateService {
   constructor(

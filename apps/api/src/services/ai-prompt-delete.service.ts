@@ -4,7 +4,7 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { AiPromptRepository } from "../repositories/ai-prompt.repository.js";
 
 /**
- * 删除 Prompt 模板（草稿与已发布均可；运行时按功能点取最新 published 版本）。
+ * 删除 Prompt 模板（草稿与已发布均可；运行时按功能点取最�?published 版本）�?
  */
 export class AiPromptDeleteService {
   constructor(private readonly promptRepository: AiPromptRepository) {}

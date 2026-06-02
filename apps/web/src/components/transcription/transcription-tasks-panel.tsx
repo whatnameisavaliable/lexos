@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NewTranscriptionDialog } from "./new-transcription-dialog";
 import { TranscriptionTasksTable } from "./transcription-tasks-table";
 
-const PAGE_LIMIT = "50";
+const PAGE_LIMIT = 50;
 
 const TERMINAL_STATUSES = new Set(["completed", "failed"]);
 
@@ -126,7 +126,7 @@ export function TranscriptionTasksPanel({
           <NewTranscriptionDialog onCreated={() => refresh()} />
         </div>
       ) : (
-        <TranscriptionTasksTable items={items} />
+        <TranscriptionTasksTable items={items} onRetried={() => refresh()} />
       )}
 
       {!loading && !error && items.length > 0 ? (

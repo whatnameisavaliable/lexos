@@ -12,7 +12,7 @@ export interface DriveFileDownloadRequestMeta {
 }
 
 /**
- * `GET /api/drive/files/:id/download` 业务逻辑（`architecture.md` §5.5.3）。
+ * `GET /api/drive/files/:id/download` 业务逻辑（`architecture.md` §5.5.3）�?
  */
 export class DriveFileDownloadService {
   constructor(
@@ -32,7 +32,7 @@ export class DriveFileDownloadService {
       throw new AppHttpError(ErrorCode.RESOURCE_NOT_FOUND, "File not found");
     }
 
-    if (actor.role !== "admin" && node.createdBy !== actor.userId) {
+    if (node.createdBy !== actor.userId) {
       throw new AppHttpError(ErrorCode.AUTH_FORBIDDEN, "Forbidden");
     }
 
@@ -66,7 +66,7 @@ export class DriveFileDownloadService {
 }
 
 /**
- * 根据对象键推断 Storage 桶（导出文件 vs 媒体文件）。
+ * 根据对象键推�?Storage 桶（导出文件 vs 媒体文件）�?
  */
 export function resolveDriveFileBucket(storageKey: string): StorageBucketName {
   if (storageKey.includes("/export-") || /\.(docx|pdf|txt)$/i.test(storageKey)) {

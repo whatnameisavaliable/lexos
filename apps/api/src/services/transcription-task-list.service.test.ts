@@ -31,8 +31,8 @@ describe("TranscriptionTaskListService", () => {
     expect(taskRepository.listAll).not.toHaveBeenCalled();
   });
 
-  it("uses listAll for admin", async () => {
-    taskRepository.listAll.mockResolvedValue({ items: [] });
+  it("uses listForUser for admin (no cross-user list)", async () => {
+    taskRepository.listForUser.mockResolvedValue({ items: [] });
 
     await service.list(
       createAuthContext({
@@ -45,6 +45,7 @@ describe("TranscriptionTaskListService", () => {
       { limit: 50 },
     );
 
-    expect(taskRepository.listAll).toHaveBeenCalled();
+    expect(taskRepository.listForUser).toHaveBeenCalled();
+    expect(taskRepository.listAll).not.toHaveBeenCalled();
   });
 });

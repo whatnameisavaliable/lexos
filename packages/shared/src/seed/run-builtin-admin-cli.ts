@@ -6,7 +6,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { loadAuthSeedEnvFromProcess } from "../config/auth-env.js";
 import {
-  loadEnvFiles,
+  loadLexosRuntimeEnvFiles,
   loadSupabaseEnvFromProcess,
   resolveRepoRoot,
 } from "../config/env.js";
@@ -15,7 +15,7 @@ import { seedBuiltinAdmin } from "./builtin-admin.js";
 async function main(): Promise<void> {
   const repoRoot = resolveRepoRoot();
   const presetInitialPassword = process.env.AUTH_INITIAL_PASSWORD;
-  loadEnvFiles(repoRoot, [".env", ".env.development"]);
+  loadLexosRuntimeEnvFiles(repoRoot);
   if (
     presetInitialPassword?.trim() &&
     !process.env.AUTH_INITIAL_PASSWORD?.trim()

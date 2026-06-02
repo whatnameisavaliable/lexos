@@ -20,6 +20,11 @@ export interface TranscriptionTaskRowDb {
   readonly asr_queue_tier: "express" | "batch" | null;
   readonly idempotency_key: string | null;
   readonly diarization_degraded: boolean;
+  readonly max_speakers: number | null;
+  readonly llm_polish_failed: boolean;
+  readonly llm_summary_failed: boolean;
+  readonly error_code: string | null;
+  readonly error_message: string | null;
   readonly deleted_at: string | null;
   readonly created_at: string;
   readonly updated_at: string;
@@ -40,6 +45,11 @@ export interface TranscriptionTaskRecord {
   readonly asrQueueTier: "express" | "batch" | null;
   readonly idempotencyKey: string | null;
   readonly diarizationDegraded: boolean;
+  readonly maxSpeakers: number | null;
+  readonly llmPolishFailed: boolean;
+  readonly llmSummaryFailed: boolean;
+  readonly errorCode: string | null;
+  readonly errorMessage: string | null;
   readonly deletedAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -57,6 +67,7 @@ export interface CreateUploadingTaskInput {
   readonly durationSec?: number | null;
   readonly isMp4: boolean;
   readonly idempotencyKey?: string | null;
+  readonly maxSpeakers?: number | null;
 }
 
 /** 列表查询参数。 */
@@ -73,13 +84,13 @@ export interface TranscriptionTaskListResult {
 }
 
 export const TRANSCRIPTION_TASK_SELECT =
-  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, asr_queue_tier, idempotency_key, diarization_degraded, deleted_at, created_at, updated_at";
+  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, asr_queue_tier, idempotency_key, diarization_degraded, max_speakers, llm_polish_failed, llm_summary_failed, error_code, error_message, deleted_at, created_at, updated_at";
 
 export const TRANSCRIPTION_TASK_DETAIL_SELECT =
-  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, diarization_degraded, created_at";
+  "id, created_by, title, status, source_mime, source_storage_key, audio_storage_key, duration_sec, size_bytes, is_mp4, diarization_degraded, max_speakers, llm_polish_failed, llm_summary_failed, error_code, error_message, created_at";
 
 export const TRANSCRIPTION_TASK_LIST_SELECT =
-  "id, title, status, duration_sec, size_bytes, created_at";
+  "id, title, status, duration_sec, size_bytes, created_at, llm_polish_failed, llm_summary_failed";
 
 /**
  * 映射数据库行为 {@link TranscriptionTaskRecord}。
@@ -101,6 +112,11 @@ export function mapTranscriptionTaskRow(
     asrQueueTier: row.asr_queue_tier,
     idempotencyKey: row.idempotency_key,
     diarizationDegraded: row.diarization_degraded,
+    maxSpeakers: row.max_speakers,
+    llmPolishFailed: row.llm_polish_failed,
+    llmSummaryFailed: row.llm_summary_failed,
+    errorCode: row.error_code,
+    errorMessage: row.error_message,
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -113,7 +129,14 @@ export function mapTranscriptionTaskRow(
 export function mapTranscriptionTaskSummary(
   row: Pick<
     TranscriptionTaskRowDb,
-    "id" | "title" | "status" | "duration_sec" | "size_bytes" | "created_at"
+    | "id"
+    | "title"
+    | "status"
+    | "duration_sec"
+    | "size_bytes"
+    | "created_at"
+    | "llm_polish_failed"
+    | "llm_summary_failed"
   >,
 ): TranscriptionTaskSummary {
   return {
@@ -123,6 +146,8 @@ export function mapTranscriptionTaskSummary(
     durationSec: row.duration_sec,
     sizeBytes: Number(row.size_bytes),
     createdAt: row.created_at,
+    llmPolishFailed: row.llm_polish_failed,
+    llmSummaryFailed: row.llm_summary_failed,
   };
 }
 
@@ -165,6 +190,11 @@ export function mapTranscriptionTaskDetail(
     | "audio_storage_key"
     | "source_storage_key"
     | "is_mp4"
+    | "max_speakers"
+    | "llm_polish_failed"
+    | "llm_summary_failed"
+    | "error_code"
+    | "error_message"
   >,
   transcript: TranscriptSummaryEmbedded | null,
 ): TranscriptionTaskDetail {
@@ -180,6 +210,11 @@ export function mapTranscriptionTaskDetail(
     sourceStorageKey: task.source_storage_key,
     isMp4: task.is_mp4,
     transcript,
+    maxSpeakers: task.max_speakers,
+    llmPolishFailed: task.llm_polish_failed,
+    llmSummaryFailed: task.llm_summary_failed,
+    errorCode: task.error_code,
+    errorMessage: task.error_message,
   };
 }
 

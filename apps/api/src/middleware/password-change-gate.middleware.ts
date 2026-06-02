@@ -11,7 +11,7 @@ export const PASSWORD_CHANGE_WHITELIST_PATHS: readonly string[] = [
 ];
 
 /**
- * `requires_password_change=true` 时拦截非白名单业务 API。
+ * `requires_password_change=true` 时拦截非白名单业务 API（PRD-2.4-03：唯一 BFF 门禁，Controller 不重复校验）。
  */
 export function enforcePasswordChangeGate(res: ServerResponse): boolean {
   const ctx = getRequestContext();

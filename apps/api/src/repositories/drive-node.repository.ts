@@ -311,25 +311,66 @@ export class DriveNodeRepository {
   }
 
   /**
-   * 软删除节点。
+   * 软删除节点及其全部未删除子节点；返回删除行数（含根节点）。
    */
-  async softDelete(
+  async softDeleteSubtree(
     accessToken: string,
     nodeId: string,
-  ): Promise<DriveNodeRecord | null> {
+  ): Promise<number> {
+    const ids = await this.collectSubtreeNodeIds(accessToken, nodeId);
+    if (ids.length === 0) {
+      return 0;
+    }
+
+    const deletedAt = new Date().toISOString();
     const client = this.userClient(accessToken);
-    const { data, error } = await client
+    const { error } = await client
       .from("drive_nodes")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", nodeId)
-      .is("deleted_at", null)
-      .select(DRIVE_NODE_SELECT)
-      .maybeSingle();
+      .update({ deleted_at: deletedAt, updated_at: deletedAt })
+      .in("id", ids)
+      .is("deleted_at", null);
 
     if (error) {
-      throw new Error(`drive_nodes.softDelete failed: ${error.message}`);
+      throw new Error(`drive_nodes.softDeleteSubtree failed: ${error.message}`);
     }
-    return data ? mapDriveNodeRow(data as DriveNodeRowDb) : null;
+
+    return ids.length;
+  }
+
+  private async collectSubtreeNodeIds(
+    accessToken: string,
+    rootId: string,
+  ): Promise<string[]> {
+    const ids: string[] = [];
+    const queue = [rootId];
+
+    while (queue.length > 0) {
+      const id = queue.shift();
+      if (!id) {
+        break;
+      }
+      ids.push(id);
+
+      const node = await this.findById(accessToken, id);
+      if (node?.nodeType !== "folder") {
+        continue;
+      }
+
+      let cursor: string | undefined;
+      do {
+        const page = await this.listChildren(accessToken, {
+          parentId: id,
+          limit: 200,
+          cursor,
+        });
+        for (const child of page.items) {
+          queue.push(child.id);
+        }
+        cursor = page.nextCursor;
+      } while (cursor);
+    }
+
+    return ids;
   }
 
   /**

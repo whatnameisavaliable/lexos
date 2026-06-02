@@ -71,8 +71,12 @@ export function DriveNodeActionsMenu({
   async function handleDelete() {
     setSubmitting(true);
     try {
-      await deleteDriveNode(node.id);
-      toast.success("已删除");
+      const result = await deleteDriveNode(node.id);
+      toast.success(
+        result.deletedCount > 1
+          ? `已删除 ${result.deletedCount} 项`
+          : "已删除",
+      );
       setDeleteOpen(false);
       onDeleted();
     } catch (err) {
@@ -144,7 +148,14 @@ export function DriveNodeActionsMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除？</AlertDialogTitle>
             <AlertDialogDescription>
-              将删除「{node.name}」。此操作不可撤销。
+              {node.nodeType === "folder" ? (
+                <>
+                  将删除文件夹「{node.name}」及其中的全部子文件夹与文件（级联删除）。
+                  此操作不可撤销。
+                </>
+              ) : (
+                <>将删除「{node.name}」。此操作不可撤销。</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

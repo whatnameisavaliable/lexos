@@ -10,7 +10,7 @@ import type {
 } from "./audit-writer.service.js";
 
 /**
- * `PUT /api/admin/settings/:key` — 创建或更新系统配置。
+ * `PUT /api/admin/settings/:key` �?创建或更新系统配置�?
  */
 export class SystemSettingsUpsertService {
   constructor(

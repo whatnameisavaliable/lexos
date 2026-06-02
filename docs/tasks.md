@@ -1143,29 +1143,29 @@ M* → M9
 
 #### M13-D `apps/api` — Service：模板与流水线生命周期
 
-- [ ] 新增 `apps/api/src/services/sop-published-templates-list.service.ts`：导出 `list(actor, query)`
+- [x] 新增 `apps/api/src/services/sop-published-templates-list.service.ts`：导出 `list(actor, query)`
   - **依赖**：M13-C `listPublishedTemplates`
-- [ ] 新增 `apps/api/src/services/sop-published-templates-list.service.test.ts`
+- [x] 新增 `apps/api/src/services/sop-published-templates-list.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-pipeline-create.service.ts`：校验 `template_version_id` 已发布 → 创建 `case_pipelines` + `current_step_code` 入口；**不**写 Outbox（`prd.md` §3.8.1）
+- [x] 新增 `apps/api/src/services/sop-pipeline-create.service.ts`：校验 `template_version_id` 已发布 → 创建 `case_pipelines` + `current_step_code` 入口；**不**写 Outbox（`prd.md` §3.8.1）
   - **依赖**：M13-B `find-dag-entry-step-code`；M13-C create/find
-- [ ] 新增 `apps/api/src/services/sop-pipeline-create.service.test.ts`：未发布版本 → `OPERATION_NOT_ALLOWED`
+- [x] 新增 `apps/api/src/services/sop-pipeline-create.service.test.ts`：未发布版本 → `OPERATION_NOT_ALLOWED`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-pipeline-status.service.ts`：组装 `SopPipelineStatusResponse`
+- [x] 新增 `apps/api/src/services/sop-pipeline-status.service.ts`：组装 `SopPipelineStatusResponse`
   - **依赖**：pipeline + artifacts 查询
-- [ ] 新增 `apps/api/src/services/sop-pipeline-status.service.test.ts`：律师越权 → `AUTH_FORBIDDEN`
+- [x] 新增 `apps/api/src/services/sop-pipeline-status.service.test.ts`：律师越权 → `AUTH_FORBIDDEN`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-pipeline-resume.service.ts`：`suspended` → `in_progress`（校验可恢复）
+- [x] 新增 `apps/api/src/services/sop-pipeline-resume.service.ts`：`suspended` → `in_progress`（校验可恢复）
   - **依赖**：M13-B `assert-pipeline-actionable`
-- [ ] 新增 `apps/api/src/services/sop-pipeline-resume.service.test.ts`
+- [x] 新增 `apps/api/src/services/sop-pipeline-resume.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-pipeline-close.service.ts`：显式结案 → `completed`；**禁止**自动结案
+- [x] 新增 `apps/api/src/services/sop-pipeline-close.service.ts`：显式结案 → `completed`；**禁止**自动结案
   - **依赖**：pipeline repository
-- [ ] 新增 `apps/api/src/services/sop-pipeline-close.service.test.ts`：`in_progress` 外状态 → 422
+- [x] 新增 `apps/api/src/services/sop-pipeline-close.service.test.ts`：`in_progress` 外状态 → 422
   - **依赖**：上一条
 
 ---

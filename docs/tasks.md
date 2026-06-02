@@ -142,7 +142,7 @@ M* → M9
 
 - [x] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.pipeline_artifact_status AS ENUM ('running','draft','failed','finalized')`
   - **依赖**：M10-B2 第一条
-- [ ] 新增断言四态 `pipeline_artifact_status` 的测试用例
+- [x] 新增断言四态 `pipeline_artifact_status` 的测试用例
   - **依赖**：上一条
 
 - [ ] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.artifact_content_type AS ENUM ('markdown','html','json')`

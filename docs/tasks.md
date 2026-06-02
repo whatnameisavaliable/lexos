@@ -177,7 +177,7 @@ M* → M9
 
 - [x] 在 `tables_case_pipelines.sql` 中写入 `CREATE TABLE public.case_pipelines`（`lawyer_id`、`template_version_id`、`status`、`current_step_code`）
   - **依赖**：`tables_sop_steps.sql` 正文已写入
-- [ ] 更新 `m10-tables-case-pipelines.migration.test.ts` 断言 FK → `sop_template_versions`
+- [x] 更新 `m10-tables-case-pipelines.migration.test.ts` 断言 FK → `sop_template_versions`
   - **依赖**：上一条
 
 - [ ] 在 `tables_pipeline_artifacts.sql` 中写入 `CREATE TABLE public.pipeline_artifacts`（含 `version` 默认 1、`finalized_snapshot_raw`）

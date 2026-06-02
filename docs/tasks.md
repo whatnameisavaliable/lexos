@@ -145,9 +145,9 @@ M* → M9
 - [x] 新增断言四态 `pipeline_artifact_status` 的测试用例
   - **依赖**：上一条
 
-- [ ] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.artifact_content_type AS ENUM ('markdown','html','json')`
+- [x] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.artifact_content_type AS ENUM ('markdown','html','json')`
   - **依赖**：M10-B3 第一条
-- [ ] 新增断言 `artifact_content_type` 的测试用例
+- [x] 新增断言 `artifact_content_type` 的测试用例
   - **依赖**：上一条
 
 - [ ] 在 `enums_sop.sql` 中执行 `ALTER TYPE public.ai_feature_key ADD VALUE IF NOT EXISTS 'sop.fact_extract'`（其余三条 SOP 值同理，共四次）

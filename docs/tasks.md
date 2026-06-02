@@ -152,7 +152,7 @@ M* → M9
 
 - [x] 在 `enums_sop.sql` 中执行 `ALTER TYPE public.ai_feature_key ADD VALUE IF NOT EXISTS 'sop.fact_extract'`（其余三条 SOP 值同理，共四次）
   - **依赖**：M10-B4 第一条
-- [ ] 更新 `m10-enums-sop.migration.test.ts`：断言四个 `ADD VALUE` 子串均存在
+- [x] 更新 `m10-enums-sop.migration.test.ts`：断言四个 `ADD VALUE` 子串均存在
   - **依赖**：上一条
 
 - [ ] 在 `audit_action_sop.sql` 中扩展 `audit_action`：`sop.template.publish`、`sop.prompt.update`、`sop.artifact.export_pdf`、`sop.artifact.verify`（`prd.md` 附录审计表）

@@ -230,7 +230,7 @@ M* → M9
 
 - [x] 新增 `packages/shared/src/enums/case-pipeline-status.ts`：导出 `CasePipelineStatus` 与 `isCasePipelineStatus()`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/enums/case-pipeline-status.test.ts`
+- [x] 新增 `packages/shared/src/enums/case-pipeline-status.test.ts`
   - **依赖**：上一条
 
 - [ ] 新增 `packages/shared/src/enums/pipeline-artifact-status.ts`：导出 `PipelineArtifactStatus`（`running|draft|failed|finalized`）

@@ -132,7 +132,7 @@ M* → M9
 
 - [x] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.sop_execution_type AS ENUM ('sync_llm','async_deep_research','manual')`
   - **依赖**：M10-A `enums_sop` 文件已创建
-- [ ] 扩展 `enums_sop.sql` 测试：更新 `m10-enums-sop.migration.test.ts` 断言 `sync_llm` 三字面值均存在
+- [x] 扩展 `enums_sop.sql` 测试：更新 `m10-enums-sop.migration.test.ts` 断言 `sync_llm` 三字面值均存在
   - **依赖**：上一条
 
 - [ ] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.case_pipeline_status AS ENUM ('in_progress','completed','suspended')`

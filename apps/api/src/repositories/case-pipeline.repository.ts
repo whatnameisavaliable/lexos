@@ -109,6 +109,30 @@ export class CasePipelineRepository {
     return data ? mapCasePipelineRow(data as CasePipelineRowDb) : null;
   }
 
+  /**
+   * 更新当前步骤游标。
+   */
+  async updateCurrentStepCode(
+    accessToken: string,
+    pipelineId: string,
+    currentStepCode: string | null,
+  ): Promise<CasePipelineRecord | null> {
+    const client = this.userClient(accessToken);
+    const { data, error } = await client
+      .from("case_pipelines")
+      .update({ current_step_code: currentStepCode })
+      .eq("id", pipelineId)
+      .select(CASE_PIPELINE_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `case_pipelines.updateCurrentStepCode failed: ${error.message}`,
+      );
+    }
+    return data ? mapCasePipelineRow(data as CasePipelineRowDb) : null;
+  }
+
   private userClient(accessToken: string): SupabaseClient {
     return createClient(this.supabaseUrl, this.supabaseAnonKey, {
       auth: { persistSession: false, autoRefreshToken: false },

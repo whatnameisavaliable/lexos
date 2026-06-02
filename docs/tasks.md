@@ -1186,29 +1186,29 @@ M* → M9
 
 #### M13-F `apps/api` — Service：`execute`（按分支拆函数）
 
-- [ ] 新增 `apps/api/src/services/sop-step-execute.service.ts`：编排入口 `execute(actor, pipelineId, stepCode, body)`
+- [x] 新增 `apps/api/src/services/sop-step-execute.service.ts`：编排入口 `execute(actor, pipelineId, stepCode, body)`
   - **依赖**：M13-B 前置校验；M13-C repos；M11 编排
-- [ ] 新增 `apps/api/src/services/sop-step-execute.service.test.ts`：前置未定稿 → `OPERATION_NOT_ALLOWED`
+- [x] 新增 `apps/api/src/services/sop-step-execute.service.test.ts`：前置未定稿 → `OPERATION_NOT_ALLOWED`
   - **依赖**：上一条
 
-- [ ] 在 `sop-step-execute.service.ts` 提取 `executeManualStep(...)`：写 `content_type=json`、`status=draft`
+- [x] 在 `sop-step-execute.service.ts` 提取 `executeManualStep(...)`：写 `content_type=json`、`status=draft`
   - **依赖**：execute 骨架
-- [ ] 新增 `sop-step-execute.service.manual.test.ts`
+- [x] 新增 `sop-step-execute.service.manual.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `executeSyncLlmStep(...)`：组装 Prompt → `SopTokenLimitGuard` → `SopAiOrchestrationService`（60s）→ `draft`/`failed`
+- [x] 提取 `executeSyncLlmStep(...)`：组装 Prompt → `SopTokenLimitGuard` → `SopAiOrchestrationService`（60s）→ `draft`/`failed`
   - **依赖**：M11；M13-F 骨架
-- [ ] 新增 `sop-step-execute.service.sync-llm.test.ts`：Mock 超时 → `failed`
+- [x] 新增 `sop-step-execute.service.sync-llm.test.ts`：Mock 超时 → `failed`
   - **依赖**：上一条
 
-- [ ] 提取 `executeAsyncDeepResearchStep(...)`：`assertDeepResearchEnabled` → artifact `running` → 同事务 Outbox → 返回 **202** body
+- [x] 提取 `executeAsyncDeepResearchStep(...)`：`assertDeepResearchEnabled` → artifact `running` → 同事务 Outbox → 返回 **202** body
   - **依赖**：M11 `sop-deep-research-guard`；M13-B outbox payload
-- [ ] 新增 `sop-step-execute.service.async.test.ts`：响应 status 202 且含 `artifact_id`
+- [x] 新增 `sop-step-execute.service.async.test.ts`：响应 status 202 且含 `artifact_id`
   - **依赖**：上一条
 
-- [ ] 提取 `updateCurrentStepCodeAfterExecute(...)`：更新 `case_pipelines.current_step_code`
+- [x] 提取 `updateCurrentStepCodeAfterExecute(...)`：更新 `case_pipelines.current_step_code`
   - **依赖**：execute 分支已实现
-- [ ] 新增 `sop-step-execute.service.current-step.test.ts`
+- [x] 新增 `sop-step-execute.service.current-step.test.ts`
   - **依赖**：上一条
 
 ---

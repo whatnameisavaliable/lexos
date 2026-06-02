@@ -180,7 +180,7 @@ M* → M9
 - [x] 更新 `m10-tables-case-pipelines.migration.test.ts` 断言 FK → `sop_template_versions`
   - **依赖**：上一条
 
-- [ ] 在 `tables_pipeline_artifacts.sql` 中写入 `CREATE TABLE public.pipeline_artifacts`（含 `version` 默认 1、`finalized_snapshot_raw`）
+- [x] 在 `tables_pipeline_artifacts.sql` 中写入 `CREATE TABLE public.pipeline_artifacts`（含 `version` 默认 1、`finalized_snapshot_raw`）
   - **依赖**：`tables_case_pipelines.sql` 正文已写入
 - [ ] 在 `tables_pipeline_artifacts.sql` 中挂载 `BEFORE UPDATE` 触发器 `pipeline_artifacts_set_updated_at` → `public.set_updated_at()`
   - **依赖**：上一条

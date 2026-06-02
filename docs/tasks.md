@@ -96,9 +96,9 @@ M* → M9
 - [x] 新增 `packages/shared/src/migrations/m10-tables-sop-steps.migration.test.ts`：断言含 `UNIQUE (template_version_id, step_code)`、`depends_on`
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new tables_case_pipelines`
+- [x] 执行 `npx supabase migration new tables_case_pipelines`
   - **依赖**：`tables_sop_steps` 迁移文件已创建
-- [ ] 新增 `packages/shared/src/migrations/m10-tables-case-pipelines.migration.test.ts`：断言含 `case_pipeline_status`、`lawyer_id`
+- [x] 新增 `packages/shared/src/migrations/m10-tables-case-pipelines.migration.test.ts`：断言含 `case_pipeline_status`、`lawyer_id`
   - **依赖**：上一条
 
 - [ ] 执行 `npx supabase migration new tables_pipeline_artifacts`

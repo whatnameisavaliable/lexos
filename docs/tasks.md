@@ -187,7 +187,7 @@ M* → M9
 - [x] 更新 `m10-tables-pipeline-artifacts.migration.test.ts` 断言 `linked_drive_node_id` FK → `drive_nodes`
   - **依赖**：上一条
 
-- [ ] 在 `upload_sessions_sop.sql` 中新增 `pipeline_id UUID NULL REFERENCES public.case_pipelines(id)`；将 `task_id` 改为 **NULLABLE**；增加 `CHECK`（`task_id` 与 `pipeline_id` 恰有一个非空）
+- [x] 在 `upload_sessions_sop.sql` 中新增 `pipeline_id UUID NULL REFERENCES public.case_pipelines(id)`；将 `task_id` 改为 **NULLABLE**；增加 `CHECK`（`task_id` 与 `pipeline_id` 恰有一个非空）
   - **依赖**：`tables_case_pipelines.sql` 正文已写入
 - [ ] 更新 `m10-upload-sessions-sop.migration.test.ts` 断言 `upload_sessions_task_or_pipeline_chk`（或等价约束名）
   - **依赖**：上一条

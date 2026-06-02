@@ -91,7 +91,7 @@ M* → M9
 - [x] 新增 `packages/shared/src/migrations/m10-tables-sop-template-versions.migration.test.ts`：断言含 `UNIQUE (template_id, version_number)`
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new tables_sop_steps`
+- [x] 执行 `npx supabase migration new tables_sop_steps`
   - **依赖**：`tables_sop_template_versions` 迁移文件已创建
 - [ ] 新增 `packages/shared/src/migrations/m10-tables-sop-steps.migration.test.ts`：断言含 `UNIQUE (template_version_id, step_code)`、`depends_on`
   - **依赖**：上一条

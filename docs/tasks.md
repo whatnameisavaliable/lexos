@@ -211,7 +211,7 @@ M* → M9
 
 - [x] 在 `seed_system_settings_sop.sql` 中 `INSERT ... ON CONFLICT` 写入 `sop.deep_research_enabled` = `true`（JSONB 布尔）
   - **依赖**：`system_settings` 表已存在
-- [ ] 运行 `m10-seed-system-settings-sop.migration.test.ts` 全绿
+- [x] 运行 `m10-seed-system-settings-sop.migration.test.ts` 全绿
   - **依赖**：上一条
 
 - [ ] 本地执行 `npx supabase db push`（或 `migration up`）应用 M10-B 全部迁移；确认无 SQL 错误

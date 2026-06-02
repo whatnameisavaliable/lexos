@@ -103,7 +103,7 @@ M* → M9
 
 - [x] 执行 `npx supabase migration new tables_pipeline_artifacts`
   - **依赖**：`tables_case_pipelines` 迁移文件已创建
-- [ ] 新增 `packages/shared/src/migrations/m10-tables-pipeline-artifacts.migration.test.ts`：断言含 `finalized_snapshot_raw`、`UNIQUE (pipeline_id, step_code)`、`pipeline_artifacts_set_updated_at`
+- [x] 新增 `packages/shared/src/migrations/m10-tables-pipeline-artifacts.migration.test.ts`：断言含 `finalized_snapshot_raw`、`UNIQUE (pipeline_id, step_code)`、`pipeline_artifacts_set_updated_at`
   - **依赖**：上一条
 
 - [ ] 执行 `npx supabase migration new upload_sessions_sop`

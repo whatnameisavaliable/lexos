@@ -38,6 +38,6 @@ export interface WorkerAiClient {
       readonly systemPrompt: string;
       readonly userPrompt: string;
     },
-    options?: { readonly timeoutMs?: number },
+    options?: { readonly timeoutMs?: number; readonly featureKey?: string },
   ): Promise<WorkerLlmResult>;
 }

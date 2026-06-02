@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AI_ACTIVE_FEATURE_KEY_VALUES } from "@lexos/shared";
+import { ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES } from "@lexos/shared";
 import type { AiModelPublic } from "@lexos/shared";
 import { listMappings, listModels } from "@/lib/admin-ai-api";
 import type { AiFeatureMappingData } from "@/lib/admin-ai-api";
@@ -76,7 +76,7 @@ export function AiFeatureMappingsPanel() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {AI_ACTIVE_FEATURE_KEY_VALUES.map((featureKey) => (
+        {ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES.map((featureKey) => (
           <AiFeatureMappingRow
             key={featureKey}
             featureKey={featureKey}

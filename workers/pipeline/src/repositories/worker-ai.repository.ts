@@ -10,7 +10,7 @@ import type { WorkerAiCredentials } from "../adapters/ai/worker-ai-client.port.j
 
 /** 调用日志写入入参。 */
 export interface AiInvocationLogInput {
-  readonly taskId: string;
+  readonly taskId: string | null;
   readonly featureKey: AiFeatureKey;
   readonly modelId: string;
   readonly isFallback: boolean;
@@ -20,6 +20,7 @@ export interface AiInvocationLogInput {
   readonly inputTokens?: number | null;
   readonly outputTokens?: number | null;
   readonly idempotencyKey: string;
+  readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -89,10 +90,10 @@ export class WorkerAiRepository {
     await client.query(
       `INSERT INTO public.ai_invocation_logs (
          task_id, feature_key, model_id, is_fallback,
-         input_tokens, output_tokens, latency_ms, outcome, error_code
+         input_tokens, output_tokens, latency_ms, outcome, error_code, metadata
        ) VALUES (
          $1::uuid, $2::public.ai_feature_key, $3::uuid, $4,
-         $5, $6, $7, $8, $9
+         $5, $6, $7, $8, $9, $10::jsonb
        )`,
       [
         input.taskId,
@@ -104,6 +105,7 @@ export class WorkerAiRepository {
         input.latencyMs,
         input.outcome,
         input.errorCode ?? null,
+        JSON.stringify(input.metadata ?? {}),
       ],
     );
     void input.idempotencyKey;

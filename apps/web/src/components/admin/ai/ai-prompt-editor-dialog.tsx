@@ -32,7 +32,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AI_ACTIVE_FEATURE_KEY_VALUES, type AiActiveFeatureKey } from "@lexos/shared";
+import {
+  ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES,
+  type AdminConfigurableFeatureKey,
+} from "@lexos/shared";
 import { AI_FEATURE_LABELS } from "@/components/admin/ai/feature-labels";
 import { toast } from "sonner";
 
@@ -51,7 +54,7 @@ export function AiPromptEditorDialog({
   onSaved,
 }: AiPromptEditorDialogProps) {
   const isEdit = Boolean(prompt);
-  const [featureKey, setFeatureKey] = useState<AiActiveFeatureKey>(
+  const [featureKey, setFeatureKey] = useState<AdminConfigurableFeatureKey>(
     "llm_transcript_polish",
   );
   const [name, setName] = useState("");
@@ -116,13 +119,15 @@ export function AiPromptEditorDialog({
                 <Label>功能点</Label>
                 <Select
                   value={featureKey}
-                  onValueChange={(v) => setFeatureKey(v as AiActiveFeatureKey)}
+                  onValueChange={(v) =>
+                    setFeatureKey(v as AdminConfigurableFeatureKey)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {AI_ACTIVE_FEATURE_KEY_VALUES.map((key) => (
+                    {ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES.map((key) => (
                       <SelectItem key={key} value={key}>
                         {AI_FEATURE_LABELS[key]}
                       </SelectItem>

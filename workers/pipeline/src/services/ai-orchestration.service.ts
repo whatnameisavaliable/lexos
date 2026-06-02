@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import type { AiFeatureKey } from "@lexos/shared";
+import { toSopAiInvocationMetadata, type AiFeatureKey } from "@lexos/shared";
 import type { WorkerAiClient } from "../adapters/ai/worker-ai-client.port.js";
 import { withPgClient } from "../infra/with-pg-client.js";
 import {
@@ -11,11 +11,15 @@ import {
 /** AI 编排调用入参。 */
 export interface AiOrchestrationInvokeInput {
   readonly pool: Pool;
-  readonly taskId: string;
+  readonly taskId?: string;
   readonly featureKey: AiFeatureKey;
   readonly idempotencyKey: string;
   readonly transcribePath?: string;
   readonly llmUserPrompt?: string;
+  readonly sop?: {
+    readonly pipelineId: string;
+    readonly stepCode: string;
+  };
 }
 
 /** AI 编排调用结果。 */
@@ -133,7 +137,10 @@ export class AiOrchestrationService {
       const llm = await this.aiClient.complete(
         credentials,
         { systemPrompt, userPrompt: input.llmUserPrompt },
-        { timeoutMs: this.defaultTimeoutMs },
+        {
+          timeoutMs: this.defaultTimeoutMs,
+          featureKey: input.featureKey,
+        },
       );
       return {
         text: llm.content,
@@ -155,7 +162,7 @@ export class AiOrchestrationService {
     >,
   ): Promise<void> {
     await this.aiRepository.insertInvocationLog(input.client, {
-      taskId: input.taskId,
+      taskId: input.sop ? null : (input.taskId ?? null),
       featureKey: input.featureKey,
       modelId: meta.modelId,
       isFallback: meta.isFallback,
@@ -164,6 +171,9 @@ export class AiOrchestrationService {
       inputTokens: meta.inputTokens,
       outputTokens: meta.outputTokens,
       idempotencyKey: input.idempotencyKey,
+      metadata: input.sop
+        ? toSopAiInvocationMetadata(input.sop.pipelineId, input.sop.stepCode)
+        : undefined,
     });
   }
 
@@ -176,7 +186,7 @@ export class AiOrchestrationService {
     error: unknown,
   ): Promise<void> {
     await this.aiRepository.insertInvocationLog(input.client, {
-      taskId: input.taskId,
+      taskId: input.sop ? null : (input.taskId ?? null),
       featureKey: input.featureKey,
       modelId,
       isFallback,
@@ -184,6 +194,9 @@ export class AiOrchestrationService {
       outcome: "failure",
       errorCode: error instanceof Error ? error.message.slice(0, 64) : "AI_ERROR",
       idempotencyKey: input.idempotencyKey,
+      metadata: input.sop
+        ? toSopAiInvocationMetadata(input.sop.pipelineId, input.sop.stepCode)
+        : undefined,
     });
   }
 }

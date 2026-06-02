@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { normalizeOpenAiCompatibleBaseUrl } from "@lexos/shared";
+import { applySopLlmTemperature, normalizeOpenAiCompatibleBaseUrl } from "@lexos/shared";
 import type {
   WorkerAiClient,
   WorkerAiCredentials,
@@ -57,7 +57,7 @@ export class FetchWorkerAiClient implements WorkerAiClient {
   async complete(
     credentials: WorkerAiCredentials,
     request: { readonly systemPrompt: string; readonly userPrompt: string },
-    options?: { readonly timeoutMs?: number },
+    options?: { readonly timeoutMs?: number; readonly featureKey?: string },
   ): Promise<WorkerLlmResult> {
     const started = Date.now();
     const baseUrl = normalizeOpenAiCompatibleBaseUrl(credentials.baseUrl);
@@ -69,13 +69,18 @@ export class FetchWorkerAiClient implements WorkerAiClient {
           Authorization: `Bearer ${credentials.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: credentials.modelName,
-          messages: [
-            { role: "system", content: request.systemPrompt },
-            { role: "user", content: request.userPrompt },
-          ],
-        }),
+        body: JSON.stringify(
+          applySopLlmTemperature(
+            {
+              model: credentials.modelName,
+              messages: [
+                { role: "system", content: request.systemPrompt },
+                { role: "user", content: request.userPrompt },
+              ],
+            },
+            options?.featureKey ?? "",
+          ),
+        ),
       },
       options?.timeoutMs ?? 60_000,
     );

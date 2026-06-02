@@ -196,6 +196,19 @@ export const M10_MIGRATIONS: readonly MigrationManifestEntry[] = [
   },
 ];
 
+/** M11 已登记的 AI/SOP 编排迁移（按应用顺序）。 */
+export const M11_MIGRATIONS: readonly MigrationManifestEntry[] = [
+  {
+    name: "ai_invocation_logs_sop_metadata",
+    requiredSnippets: [
+      "metadata JSONB",
+      "DEFAULT '{}'::jsonb",
+      "ai_invocation_logs_metadata_gin_idx",
+      "USING gin (metadata jsonb_path_ops)",
+    ],
+  },
+];
+
 /**
  * 解析 `supabase/migrations` 下匹配 `*_<name>.sql` 的文件路径。
  */
@@ -255,4 +268,11 @@ export function listExpectedMigrationNames(): readonly string[] {
  */
 export function listExpectedM10MigrationNames(): readonly string[] {
   return M10_MIGRATIONS.map((e) => e.name);
+}
+
+/**
+ * 返回 M11 manifest 中迁移的逻辑名列表。
+ */
+export function listExpectedM11MigrationNames(): readonly string[] {
+  return M11_MIGRATIONS.map((e) => e.name);
 }

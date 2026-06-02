@@ -1,6 +1,20 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { AiInvocationLogsQuery } from "@lexos/shared";
+import type { AiFeatureKey, AiInvocationLogsQuery, SopAiInvocationMetadata } from "@lexos/shared";
 import type { SupabaseEnvConfig } from "@lexos/shared/config";
+
+/** 写入 `ai_invocation_logs` 入参。 */
+export interface InsertAiInvocationLogInput {
+  readonly taskId: string | null;
+  readonly featureKey: AiFeatureKey;
+  readonly modelId: string;
+  readonly isFallback: boolean;
+  readonly inputTokens?: number | null;
+  readonly outputTokens?: number | null;
+  readonly latencyMs: number;
+  readonly outcome: "success" | "failure";
+  readonly errorCode?: string | null;
+  readonly metadata?: SopAiInvocationMetadata;
+}
 
 /** `ai_invocation_logs` 行。 */
 export interface AiInvocationLogRowDb {
@@ -48,6 +62,25 @@ export class AiInvocationLogRepository {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
     return new AiInvocationLogRepository(client);
+  }
+
+  /** 插入调用日志（SOP 时 `taskId` 为 `null` 且 `metadata` 必填）。 */
+  async insertInvocationLog(input: InsertAiInvocationLogInput): Promise<void> {
+    const { error } = await this.serviceClient.from("ai_invocation_logs").insert({
+      task_id: input.taskId,
+      feature_key: input.featureKey,
+      model_id: input.modelId,
+      is_fallback: input.isFallback,
+      input_tokens: input.inputTokens ?? null,
+      output_tokens: input.outputTokens ?? null,
+      latency_ms: input.latencyMs,
+      outcome: input.outcome,
+      error_code: input.errorCode ?? null,
+      metadata: input.metadata ?? {},
+    });
+    if (error) {
+      throw new Error(`ai_invocation_logs.insert failed: ${error.message}`);
+    }
   }
 
   async listAdmin(query: AiInvocationLogsQuery): Promise<AiInvocationLogListResult> {

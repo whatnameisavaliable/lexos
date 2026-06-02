@@ -1,13 +1,16 @@
 import { z } from "zod";
 import {
-  AI_ACTIVE_FEATURE_KEY_VALUES,
-  type AiActiveFeatureKey,
-} from "../enums/ai-feature-key.js";
+  ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES,
+  type AdminConfigurableFeatureKey,
+} from "../ai/admin-configurable-feature-keys.js";
 
-const featureKeySchema = z.enum(
-  AI_ACTIVE_FEATURE_KEY_VALUES as [AiActiveFeatureKey, ...AiActiveFeatureKey[]],
-  { message: "featureKey must be a valid AI feature key" },
-);
+const adminConfigurableFeatureKeys = [
+  ...ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES,
+] as unknown as [AdminConfigurableFeatureKey, ...AdminConfigurableFeatureKey[]];
+
+const featureKeySchema = z.enum(adminConfigurableFeatureKeys, {
+  message: "featureKey must be a valid AI feature key",
+});
 
 const nameSchema = z.string().trim().min(1).max(128);
 const systemPromptSchema = z

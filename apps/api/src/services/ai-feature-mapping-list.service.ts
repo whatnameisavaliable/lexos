@@ -1,4 +1,4 @@
-import { AI_ACTIVE_FEATURE_KEY_VALUES } from "@lexos/shared";
+import { ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES } from "@lexos/shared";
 import type { AiFeatureMappingRepository } from "../repositories/ai-feature-mapping.repository.js";
 import {
   toAiFeatureMappingPublic,
@@ -17,7 +17,7 @@ export class AiFeatureMappingListService {
   async list(): Promise<AiFeatureMappingListResponse> {
     const rows = await this.mappingRepository.listAll();
     const byKey = new Map(rows.map((row) => [row.feature_key, row]));
-    const items = AI_ACTIVE_FEATURE_KEY_VALUES.map((featureKey) =>
+    const items = ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES.map((featureKey) =>
       toAiFeatureMappingPublic(featureKey, byKey.get(featureKey) ?? null),
     );
     return { items };

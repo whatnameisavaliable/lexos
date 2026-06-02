@@ -59,15 +59,31 @@ export * from "./enums/case-pipeline-status.js";
 export * from "./enums/pipeline-artifact-status.js";
 export * from "./enums/artifact-content-type.js";
 export * from "./enums/sop-ai-feature-keys.js";
+export * from "./ai/is-sop-ai-feature-key.js";
+export * from "./ai/admin-configurable-feature-keys.js";
+export * from "./ai/is-admin-configurable-feature-key.js";
+export * from "./sop/step-code-to-mustache-token.js";
+export * from "./sop/extract-mustache-slot-names.js";
+export * from "./sop/render-mustache-template.js";
+export * from "./sop/validate-mustache-slots-in-depends-on.js";
+export * from "./types/sop-prompt-context.js";
+export * from "./types/sop-ai-invocation-metadata.js";
+export * from "./ai/estimate-token-count.js";
+export * from "./ai/assert-context-within-model-window.js";
+export * from "./ai/build-openai-chat-completion-body.js";
+export * from "./ai/apply-sop-llm-temperature.js";
+export * from "./errors/lexos-error.js";
 export * from "./lib/mask-api-key.js";
 export * from "./ai/normalize-openai-base-url.js";
 export * from "./db/index.js";
 export {
   M0_B_MIGRATIONS,
   M10_MIGRATIONS,
+  M11_MIGRATIONS,
   assertMigrationContent,
   assertMigrationsManifest,
   resolveMigrationFile,
   listExpectedM10MigrationNames,
+  listExpectedM11MigrationNames,
   type MigrationManifestEntry,
 } from "./migrations/manifest.js";

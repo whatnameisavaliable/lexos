@@ -214,7 +214,7 @@ M* → M9
 - [x] 运行 `m10-seed-system-settings-sop.migration.test.ts` 全绿
   - **依赖**：上一条
 
-- [ ] 本地执行 `npx supabase db push`（或 `migration up`）应用 M10-B 全部迁移；确认无 SQL 错误
+- [x] 本地执行 `npx supabase db push`（或 `migration up`）应用 M10-B 全部迁移；确认无 SQL 错误
   - **依赖**：M10-B1～B16 全部 SQL 已写入
 - [ ] 新增 `packages/shared/src/db/m10-migrations-applied.integration.test.ts`：查询 `information_schema.tables` 断言五张 SOP 表存在（`skip` 无 `SUPABASE_DB_URL`）
   - **依赖**：上一条

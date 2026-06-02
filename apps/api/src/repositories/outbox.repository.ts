@@ -1,4 +1,14 @@
+import type { SopOutboxPayload, SopPipelineStage } from "@lexos/shared";
+import { SOP_OUTBOX_AGGREGATE_TYPE } from "@lexos/shared";
 import type { PoolClient } from "pg";
+
+/** SOP Outbox 事务内插入入参。 */
+export interface SopOutboxInsertInput {
+  readonly pipelineId: string;
+  readonly stage: SopPipelineStage;
+  readonly stepCode: string;
+  readonly artifactId?: string;
+}
 
 /** `outbox_events` 插入行（`database.md` §3.15）。 */
 export interface OutboxInsertRow {
@@ -43,5 +53,27 @@ export class OutboxRepository {
       throw new Error("outbox_events.insert returned no id");
     }
     return id;
+  }
+
+  /**
+   * 在事务内插入 SOP 流水线 Outbox 事件（`aggregate_type=case_pipeline`）。
+   */
+  async insertSopOutboxInTransaction(
+    client: PoolClient,
+    input: SopOutboxInsertInput,
+  ): Promise<string> {
+    const payload: SopOutboxPayload = {
+      stage: input.stage,
+      pipeline_id: input.pipelineId,
+      step_code: input.stepCode,
+      ...(input.artifactId ? { artifact_id: input.artifactId } : {}),
+    };
+
+    return this.insertInTransaction(client, {
+      aggregateType: SOP_OUTBOX_AGGREGATE_TYPE,
+      aggregateId: input.pipelineId,
+      eventType: `pipeline.stage.${input.stage}`,
+      payload,
+    });
   }
 }

@@ -1084,59 +1084,59 @@ M* → M9
 
 #### M13-C `apps/api` — Repository（律师 JWT · 单方法）
 
-- [ ] 新增 `apps/api/src/repositories/sop-template-read.repository.ts`：导出 `listPublishedTemplates(accessToken, pagination)`
+- [x] 新增 `apps/api/src/repositories/sop-template-read.repository.ts`：导出 `listPublishedTemplates(accessToken, pagination)`
   - **依赖**：M10 RLS（律师仅 `is_published=true`）
-- [ ] 新增 `apps/api/src/repositories/sop-template-read.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/sop-template-read.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/repositories/case-pipeline.repository.ts`：骨架 + 用户 JWT 客户端
+- [x] 新增 `apps/api/src/repositories/case-pipeline.repository.ts`：骨架 + 用户 JWT 客户端
   - **依赖**：M10 `case_pipelines` 表
-- [ ] 新增 `apps/api/src/repositories/case-pipeline.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/case-pipeline.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `case-pipeline.repository.ts` 的 `createPipeline(accessToken, templateVersionId, lawyerId, entryStepCode)`
+- [x] 实现 `case-pipeline.repository.ts` 的 `createPipeline(accessToken, templateVersionId, lawyerId, entryStepCode)`
   - **依赖**：M13-C 第二条
-- [ ] 新增 `case-pipeline.repository.create.test.ts`
+- [x] 新增 `case-pipeline.repository.create.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `findPipelineForLawyer(accessToken, pipelineId)` 与 `updatePipelineStatus(...)`
+- [x] 实现 `findPipelineForLawyer(accessToken, pipelineId)` 与 `updatePipelineStatus(...)`
   - **依赖**：Repository 骨架
-- [ ] 新增 `case-pipeline.repository.find.test.ts`
+- [x] 新增 `case-pipeline.repository.find.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/repositories/pipeline-artifact.repository.ts`：骨架
+- [x] 新增 `apps/api/src/repositories/pipeline-artifact.repository.ts`：骨架
   - **依赖**：M10 `pipeline_artifacts`
-- [ ] 新增 `apps/api/src/repositories/pipeline-artifact.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/pipeline-artifact.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `upsertArtifactForStep(...)`、`findArtifactByStep(...)`、`patchContentRaw(expectedVersion, ...)`
+- [x] 实现 `upsertArtifactForStep(...)`、`findArtifactByStep(...)`、`patchContentRaw(expectedVersion, ...)`
   - **依赖**：artifact repository 骨架
-- [ ] 新增 `pipeline-artifact.repository.upsert-patch.test.ts`：版本冲突返回 0 行
+- [x] 新增 `pipeline-artifact.repository.upsert-patch.test.ts`：版本冲突返回 0 行
   - **依赖**：上一条
 
-- [ ] 实现 `setArtifactStatus(...)`、`setFinalizedSnapshot(...)`
+- [x] 实现 `setArtifactStatus(...)`、`setFinalizedSnapshot(...)`
   - **依赖**：upsert 已实现
-- [ ] 新增 `pipeline-artifact.repository.status.test.ts`
+- [x] 新增 `pipeline-artifact.repository.status.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/repositories/sop-step-snapshot.repository.ts`：按 `template_version_id` 读 `sop_steps`（只读快照）
+- [x] 新增 `apps/api/src/repositories/sop-step-snapshot.repository.ts`：按 `template_version_id` 读 `sop_steps`（只读快照）
   - **依赖**：M10 `sop_steps`
-- [ ] 新增 `apps/api/src/repositories/sop-step-snapshot.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/sop-step-snapshot.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/repositories/sop-upload-session.repository.ts`：扩展 `upload_sessions`（`pipeline_id` 非空、`task_id` 空）创建/完成
+- [x] 新增 `apps/api/src/repositories/sop-upload-session.repository.ts`：扩展 `upload_sessions`（`pipeline_id` 非空、`task_id` 空）创建/完成
   - **依赖**：M10 `upload_sessions_sop` 迁移
-- [ ] 新增 `apps/api/src/repositories/sop-upload-session.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/sop-upload-session.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 扩展 `apps/api/src/repositories/outbox.repository.ts`：新增 `insertSopOutboxInTransaction(client, { aggregateType: 'case_pipeline', stage, ...})`
+- [x] 扩展 `apps/api/src/repositories/outbox.repository.ts`：新增 `insertSopOutboxInTransaction(client, { aggregateType: 'case_pipeline', stage, ...})`
   - **依赖**：M4 `outbox.repository` 已存在
-- [ ] 新增 `apps/api/src/repositories/outbox.repository.sop.test.ts`
+- [x] 新增 `apps/api/src/repositories/outbox.repository.sop.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/repositories/sop-verified.repository.ts`：导出 `hasAutoVerification(pipelineId, stepCode)`（查 `ai_invocation_logs`）；`hasManualVerification(artifactId)`（查 `audit_logs` `sop.artifact.verify`）
+- [x] 新增 `apps/api/src/repositories/sop-verified.repository.ts`：导出 `hasAutoVerification(pipelineId, stepCode)`（查 `ai_invocation_logs`）；`hasManualVerification(artifactId)`（查 `audit_logs` `sop.artifact.verify`）
   - **依赖**：M11 metadata 列；M10 audit_action 扩展
-- [ ] 新增 `apps/api/src/repositories/sop-verified.repository.test.ts`
+- [x] 新增 `apps/api/src/repositories/sop-verified.repository.test.ts`
   - **依赖**：上一条
 
 ---

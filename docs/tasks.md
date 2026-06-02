@@ -192,7 +192,7 @@ M* → M9
 - [x] 更新 `m10-upload-sessions-sop.migration.test.ts` 断言 `upload_sessions_task_or_pipeline_chk`（或等价约束名）
   - **依赖**：上一条
 
-- [ ] 在 `rls_sop.sql` 中为 `sop_templates` / `sop_template_versions` / `sop_steps` 写入 **admin CRUD** 策略（`is_admin()`）
+- [x] 在 `rls_sop.sql` 中为 `sop_templates` / `sop_template_versions` / `sop_steps` 写入 **admin CRUD** 策略（`is_admin()`）
   - **依赖**：SOP 三表迁移正文已写入
 - [ ] 为上述三表写入 **lawyer SELECT** 策略：仅 `is_published = true` 的版本及其步骤（`database.md` §3.16.6）
   - **依赖**：上一条

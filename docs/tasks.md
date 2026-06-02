@@ -135,7 +135,7 @@ M* → M9
 - [x] 扩展 `enums_sop.sql` 测试：更新 `m10-enums-sop.migration.test.ts` 断言 `sync_llm` 三字面值均存在
   - **依赖**：上一条
 
-- [ ] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.case_pipeline_status AS ENUM ('in_progress','completed','suspended')`
+- [x] 在 `enums_sop.sql` 中写入 `CREATE TYPE public.case_pipeline_status AS ENUM ('in_progress','completed','suspended')`
   - **依赖**：M10-B1 第一条
 - [ ] 新增断言 `case_pipeline_status` 的 `m10-enums-sop.migration.test.ts` 用例
   - **依赖**：上一条

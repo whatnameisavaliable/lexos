@@ -165,7 +165,7 @@ M* → M9
 - [x] 更新 `m10-tables-sop-templates.migration.test.ts` 断言 `case_type VARCHAR`
   - **依赖**：上一条
 
-- [ ] 在 `tables_sop_template_versions.sql` 中写入 `CREATE TABLE public.sop_template_versions` 及 `UNIQUE (template_id, version_number)`
+- [x] 在 `tables_sop_template_versions.sql` 中写入 `CREATE TABLE public.sop_template_versions` 及 `UNIQUE (template_id, version_number)`
   - **依赖**：`tables_sop_templates.sql` 正文已写入
 - [ ] 更新 `m10-tables-sop-template-versions.migration.test.ts` 断言 `is_published`
   - **依赖**：上一条

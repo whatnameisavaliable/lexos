@@ -1172,14 +1172,14 @@ M* → M9
 
 #### M13-E `apps/api` — Service：卷宗 TUS（init / complete）
 
-- [ ] 新增 `apps/api/src/services/sop-upload-init.service.ts`：校验限额；`upload_sessions` + 前缀 `{ownerId}/sops/{pipelineId}/`；返回 TUS 参数（**禁止**走转写 init）
+- [x] 新增 `apps/api/src/services/sop-upload-init.service.ts`：校验限额；`upload_sessions` + 前缀 `{ownerId}/sops/{pipelineId}/`；返回 TUS 参数（**禁止**走转写 init）
   - **依赖**：M13-B `build-sop-storage-key-prefix`；M13-C upload session repo；M4 Storage adapter
-- [ ] 新增 `apps/api/src/services/sop-upload-init.service.test.ts`：律师 B 无法为律师 A 的 `pipelineId` init
+- [x] 新增 `apps/api/src/services/sop-upload-init.service.test.ts`：律师 B 无法为律师 A 的 `pipelineId` init
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/services/sop-upload-complete.service.ts`：校验 Storage 前缀 → 标记 session 完成 → **同事务**插入 Outbox `sop.media.ocr`（`prd.md` §3.8.4）
+- [x] 新增 `apps/api/src/services/sop-upload-complete.service.ts`：校验 Storage 前缀 → 标记 session 完成 → **同事务**插入 Outbox `sop.media.ocr`（`prd.md` §3.8.4）
   - **依赖**：M13-B `build-sop-media-ocr-outbox-payload`；outbox repository
-- [ ] 新增 `apps/api/src/services/sop-upload-complete.service.test.ts`：完成后期望未发布 Outbox 行存在
+- [x] 新增 `apps/api/src/services/sop-upload-complete.service.test.ts`：完成后期望未发布 Outbox 行存在
   - **依赖**：上一条
 
 ---

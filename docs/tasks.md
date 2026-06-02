@@ -116,7 +116,7 @@ M* → M9
 - [x] 新增 `packages/shared/src/migrations/m10-rls-sop.migration.test.ts`：断言含 `sop_templates`、`case_pipelines`、`pipeline_artifacts` 的 `ENABLE ROW LEVEL SECURITY`
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new storage_exports_sop_path`
+- [x] 执行 `npx supabase migration new storage_exports_sop_path`
   - **依赖**：Part A `storage_buckets_policies` 已应用
 - [ ] 新增 `packages/shared/src/migrations/m10-storage-exports-sop-path.migration.test.ts`：断言 `exports` 策略校验路径含 `sops` 段（`database.md` §3.16.8）
   - **依赖**：上一条

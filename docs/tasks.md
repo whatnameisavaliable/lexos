@@ -377,7 +377,7 @@ M* → M9
 - [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M10** 小节：验收人、日期、环境、上述项通过/失败备注
   - **依赖**：上列黑盒项均通过
 
-- [ ] 执行 `git commit`：`feat(db): sop schema enums rls storage seed and shared types`
+- [x] 执行 `git commit`：`feat(db): sop schema enums rls storage seed and shared types`
   - **依赖**：测试全绿；**人工黑盒验收签收**；`git status` 无未提交 M10 变更
 - [ ] 将下方进度表 **M10** 状态更新为「已完成」
   - **依赖**：`git commit` 成功

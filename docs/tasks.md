@@ -160,7 +160,7 @@ M* → M9
 - [x] 运行 `m10-audit-action-sop.migration.test.ts` 全绿
   - **依赖**：上一条
 
-- [ ] 在 `tables_sop_templates.sql` 中写入 `CREATE TABLE public.sop_templates`（`id`,`name`,`case_type`,`created_by`,`created_at` + FK/index）
+- [x] 在 `tables_sop_templates.sql` 中写入 `CREATE TABLE public.sop_templates`（`id`,`name`,`case_type`,`created_by`,`created_at` + FK/index）
   - **依赖**：`enums_sop` 迁移**已写入磁盘**（本地 `migration up` 前可仅依赖文件顺序）
 - [ ] 更新 `m10-tables-sop-templates.migration.test.ts` 断言 `case_type VARCHAR`
   - **依赖**：上一条

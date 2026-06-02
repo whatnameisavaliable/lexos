@@ -184,7 +184,7 @@ M* → M9
   - **依赖**：`tables_case_pipelines.sql` 正文已写入
 - [x] 在 `tables_pipeline_artifacts.sql` 中挂载 `BEFORE UPDATE` 触发器 `pipeline_artifacts_set_updated_at` → `public.set_updated_at()`
   - **依赖**：上一条
-- [ ] 更新 `m10-tables-pipeline-artifacts.migration.test.ts` 断言 `linked_drive_node_id` FK → `drive_nodes`
+- [x] 更新 `m10-tables-pipeline-artifacts.migration.test.ts` 断言 `linked_drive_node_id` FK → `drive_nodes`
   - **依赖**：上一条
 
 - [ ] 在 `upload_sessions_sop.sql` 中新增 `pipeline_id UUID NULL REFERENCES public.case_pipelines(id)`；将 `task_id` 改为 **NULLABLE**；增加 `CHECK`（`task_id` 与 `pipeline_id` 恰有一个非空）

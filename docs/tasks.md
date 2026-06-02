@@ -113,7 +113,7 @@ M* → M9
 
 - [x] 执行 `npx supabase migration new rls_sop`
   - **依赖**：全部 SOP 表迁移文件已创建
-- [ ] 新增 `packages/shared/src/migrations/m10-rls-sop.migration.test.ts`：断言含 `sop_templates`、`case_pipelines`、`pipeline_artifacts` 的 `ENABLE ROW LEVEL SECURITY`
+- [x] 新增 `packages/shared/src/migrations/m10-rls-sop.migration.test.ts`：断言含 `sop_templates`、`case_pipelines`、`pipeline_artifacts` 的 `ENABLE ROW LEVEL SECURITY`
   - **依赖**：上一条
 
 - [ ] 执行 `npx supabase migration new storage_exports_sop_path`

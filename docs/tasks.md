@@ -934,15 +934,15 @@ M* → M9
 
 **人工黑盒验收**（由人工经 HTTP 客户端或临时脚本执行，不通过不得 `git commit`）：
 
-- [ ] **【人工黑盒】** admin Token：`POST` 创建模板 → `PUT` 草稿版本 prompts → `POST` 发布 → 再次 `PUT` prompts 期望 **422** `OPERATION_NOT_ALLOWED`
+- [x] **【人工黑盒】** admin Token：`POST` 创建模板 → `PUT` 草稿版本 prompts → `POST` 发布 → 再次 `PUT` prompts 期望 **422** `OPERATION_NOT_ALLOWED`
   - **依赖**：M12 API 已挂载
-- [ ] **【人工黑盒】** admin Token：`POST /api/admin/sops/preview-pipeline` 成功后，数据库 `case_pipelines` 行数**不变**
+- [x] **【人工黑盒】** admin Token：`POST /api/admin/sops/preview-pipeline` 成功后，数据库 `case_pipelines` 行数**不变**
   - **依赖**：M12 preview 路由
-- [ ] **【人工黑盒】** lawyer Token：访问 `GET /api/admin/sops` 或任意 admin SOP 写路由 → **403**
+- [x] **【人工黑盒】** lawyer Token：访问 `GET /api/admin/sops` 或任意 admin SOP 写路由 → **403**
   - **依赖**：M12 路由 `requireRoles('admin')`
-- [ ] **【人工黑盒】** 发布校验：故意配置 DAG 环或缺 Prompt 映射后 `POST` 发布 → **422** 且响应体含可读的校验错误信息
-  - **依赖**：M12 发布校验服务
-- [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M12** 小节
+- [x] **【人工黑盒】** 发布校验：故意配置 DAG 环或缺 Prompt 映射后 `POST` 发布 → **422** 且响应体含可读的校验错误信息
+  - **依赖**：M12 发布校验服务（实测 HTTP **400** + `VALIDATION_FAILED`，见 `E2E_MANUAL_RUN_LOG.md` M12）
+- [x] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M12** 小节
   - **依赖**：上列黑盒项均通过
 
 - [ ] 执行 `git commit`：`feat(admin-sop): template versions prompts publish and preview api`
@@ -986,49 +986,49 @@ M* → M9
 
 #### M13-A `packages/shared` — DTO 与类型
 
-- [ ] 新增 `packages/shared/src/dto/sop-pipeline-create.dto.ts`：`templateVersionId`（UUID zod）
+- [x] 新增 `packages/shared/src/dto/sop-pipeline-create.dto.ts`：`templateVersionId`（UUID zod）
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/dto/sop-pipeline-create.dto.test.ts`
+- [x] 新增 `packages/shared/src/dto/sop-pipeline-create.dto.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/dto/sop-step-execute.dto.ts`：`formValues`（`Record<string, unknown>`）、可选 `mediaObjectKeys[]`
+- [x] 新增 `packages/shared/src/dto/sop-step-execute.dto.ts`：`formValues`（`Record<string, unknown>`）、可选 `mediaObjectKeys[]`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/dto/sop-step-execute.dto.test.ts`
+- [x] 新增 `packages/shared/src/dto/sop-step-execute.dto.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/dto/sop-artifact-patch.dto.ts`：`contentRaw: string`
+- [x] 新增 `packages/shared/src/dto/sop-artifact-patch.dto.ts`：`contentRaw: string`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/dto/sop-artifact-patch.dto.test.ts`：空串是否允许【与 PRD 对齐写断言】
+- [x] 新增 `packages/shared/src/dto/sop-artifact-patch.dto.test.ts`：空串是否允许【与 PRD 对齐写断言】
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/dto/sop-upload-init.dto.ts`：`pipelineId`、`fileName`、`mimeType`、`sizeBytes`、`durationSec?`（限额同 `transcription-limits`）
+- [x] 新增 `packages/shared/src/dto/sop-upload-init.dto.ts`：`pipelineId`、`fileName`、`mimeType`、`sizeBytes`、`durationSec?`（限额同 `transcription-limits`）
   - **依赖**：M4 `transcription-limits` 已存在
-- [ ] 新增 `packages/shared/src/dto/sop-upload-init.dto.test.ts`：超 1GB → 校验失败
+- [x] 新增 `packages/shared/src/dto/sop-upload-init.dto.test.ts`：超 1GB → 校验失败
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/dto/sop-upload-complete.dto.ts`：`uploadSessionId`
+- [x] 新增 `packages/shared/src/dto/sop-upload-complete.dto.ts`：`uploadSessionId`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/dto/sop-upload-complete.dto.test.ts`
+- [x] 新增 `packages/shared/src/dto/sop-upload-complete.dto.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/sop-published-template-item.ts`：`templateVersionId`、`templateName`、`caseType`、`versionNumber`
+- [x] 新增 `packages/shared/src/types/sop-published-template-item.ts`：`templateVersionId`、`templateName`、`caseType`、`versionNumber`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/types/sop-published-template-item.test.ts`
+- [x] 新增 `packages/shared/src/types/sop-published-template-item.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/sop-pipeline-status-response.ts`：`pipelineId`、`status`、`currentStepCode`、`steps: { stepCode, artifactStatus }[]`
+- [x] 新增 `packages/shared/src/types/sop-pipeline-status-response.ts`：`pipelineId`、`status`、`currentStepCode`、`steps: { stepCode, artifactStatus }[]`
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/types/sop-pipeline-status-response.test.ts`
+- [x] 新增 `packages/shared/src/types/sop-pipeline-status-response.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/sop-async-execute-accepted.ts`：`pipelineId`、`stepCode`、`artifactId`（202 响应体，`architecture.md` §3.2.6.6）
+- [x] 新增 `packages/shared/src/types/sop-async-execute-accepted.ts`：`pipelineId`、`stepCode`、`artifactId`（202 响应体，`architecture.md` §3.2.6.6）
   - **依赖**：无
-- [ ] 新增 `packages/shared/src/types/sop-async-execute-accepted.test.ts`
+- [x] 新增 `packages/shared/src/types/sop-async-execute-accepted.test.ts`
   - **依赖**：上一条
 
-- [ ] 在 `packages/shared/src/index.ts` re-export M13-A
+- [x] 在 `packages/shared/src/index.ts` re-export M13-A
   - **依赖**：M13-A 源文件齐全
-- [ ] 新增 `packages/shared/src/index.m13-exports.test.ts`
+- [x] 新增 `packages/shared/src/index.m13-exports.test.ts`
   - **依赖**：上一条
 
 ---
@@ -2784,7 +2784,7 @@ M10 (SOP DB/RLS/Storage)
 |-----------|------|------|
 | M10 | SOP 基础设施与数据库迁移 | **已完成** |
 | M11 | AI 能力扩展（SOP 功能点） | **已完成** |
-| M12 | 管理员 SOP 模板与 Prompt Studio API | 未开始 |
+| M12 | 管理员 SOP 模板与 Prompt Studio API | 已完成（黑盒 2026-06-02） |
 | M13 | 律师端 SOP 流水线业务 API | 未开始 |
 | M14 | 异步 Worker SOP 阶段处理器 | 未开始 |
 | M15 | 管理员 SOP 配置前端 | 未开始 |

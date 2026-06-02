@@ -167,7 +167,7 @@ M* → M9
 
 - [x] 在 `tables_sop_template_versions.sql` 中写入 `CREATE TABLE public.sop_template_versions` 及 `UNIQUE (template_id, version_number)`
   - **依赖**：`tables_sop_templates.sql` 正文已写入
-- [ ] 更新 `m10-tables-sop-template-versions.migration.test.ts` 断言 `is_published`
+- [x] 更新 `m10-tables-sop-template-versions.migration.test.ts` 断言 `is_published`
   - **依赖**：上一条
 
 - [ ] 在 `tables_sop_steps.sql` 中写入 `CREATE TABLE public.sop_steps`（含 `input_schema`、`depends_on` 默认 `'[]'`、`requires_verification` 默认 `false`）

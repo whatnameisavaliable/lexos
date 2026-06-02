@@ -206,7 +206,7 @@ M* → M9
 
 - [x] 在 `storage_exports_sop_path.sql` 中 **替换或增补** `exports` 的 `INSERT` 策略：路径须匹配 `{uuid}/sops/{uuid}/{uuid}.pdf`（`database.md` §3.16.8；保留首段 `auth.uid()`）
   - **依赖**：Part A `storage_buckets_policies` 已应用
-- [ ] 运行 `m10-storage-exports-sop-path.migration.test.ts` 全绿
+- [x] 运行 `m10-storage-exports-sop-path.migration.test.ts` 全绿
   - **依赖**：上一条
 
 - [ ] 在 `seed_system_settings_sop.sql` 中 `INSERT ... ON CONFLICT` 写入 `sop.deep_research_enabled` = `true`（JSONB 布尔）

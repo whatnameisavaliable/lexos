@@ -86,7 +86,7 @@ M* → M9
 - [x] 新增 `packages/shared/src/migrations/m10-tables-sop-templates.migration.test.ts`：断言含 `CREATE TABLE public.sop_templates`
   - **依赖**：上一条
 
-- [ ] 执行 `npx supabase migration new tables_sop_template_versions`
+- [x] 执行 `npx supabase migration new tables_sop_template_versions`
   - **依赖**：`tables_sop_templates` 迁移文件已创建
 - [ ] 新增 `packages/shared/src/migrations/m10-tables-sop-template-versions.migration.test.ts`：断言含 `UNIQUE (template_id, version_number)`
   - **依赖**：上一条

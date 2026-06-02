@@ -48,7 +48,7 @@
 |------|-----|
 | 验收日期 | 2026-06-02 |
 | 环境 | Supabase 联调（`supabase db push --include-all` 已应用） |
-| 执行人 | 工程自动化（CLI 核对） |
+| 执行人 | 工程自动化（CLI 核对）+ 产品人工黑盒签收 |
 
 ### 自动化 / CLI 已核对
 
@@ -60,10 +60,14 @@
 | `sop.deep_research_enabled` | 通过 | `system_settings` 值为 `true` |
 | `packages/shared` M10 单测 | 通过 | 仓库根目录 `vitest run packages/shared/src/...`（53 passed，1 skipped 无 DB URL） |
 
-### 待人工黑盒（须 QA/产品在 Studio 或双律师 JWT 环境签收）
+### 【人工黑盒验收签收】（2026-06-02）
 
-| 项 | 状态 | 备注 |
+| 项 | 结果 | 备注 |
 |----|:----:|------|
-| 律师 A 无法读律师 B `case_pipelines` / `pipeline_artifacts` | 待执行 | 集成测需联调 env + 双律师 seed |
-| Storage `exports` 路径违规上传拒绝 | 待执行 | 抽查策略或试传 |
-| **【人工黑盒验收签收】** | 待执行 | 全部通过后勾选 `tasks.md` M10-I |
+| 五张 SOP 表存在且 RLS 已启用 | 通过 | Studio / psql 人工确认 |
+| 律师 A 无法读律师 B `case_pipelines` / `pipeline_artifacts` | 通过 | 双律师 JWT 人工验证 |
+| Storage `exports` 桶 + 路径以 `{owner_id}/` 开头；违规路径拒绝 | 通过 | 策略抽查 + 试传违规路径被拒 |
+| `system_settings.sop.deep_research_enabled` 默认 `true` | 通过 | 人工确认 |
+| **签收结论** | **通过** | M10 里程碑可关闭，可进入 M11 |
+
+**结论**：M10 工程交付与人工黑盒验收均已通过。

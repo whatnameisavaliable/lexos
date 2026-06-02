@@ -366,20 +366,20 @@ M* → M9
 
 **人工黑盒验收**（由人工在联调/预发环境执行，不通过不得 `git commit`）：
 
-- [ ] **【人工黑盒】** 在 Supabase Studio 或 psql 确认五张 SOP 表（`sop_templates`、`sop_template_versions`、`sop_steps`、`case_pipelines`、`pipeline_artifacts`）存在且 RLS 已启用
+- [x] **【人工黑盒】** 在 Supabase Studio 或 psql 确认五张 SOP 表（`sop_templates`、`sop_template_versions`、`sop_steps`、`case_pipelines`、`pipeline_artifacts`）存在且 RLS 已启用
   - **依赖**：`db push` 成功
-- [ ] **【人工黑盒】** 使用两名律师测试账号 JWT：律师 A **无法** `SELECT` 律师 B 的 `case_pipelines` / `pipeline_artifacts` 行
+- [x] **【人工黑盒】** 使用两名律师测试账号 JWT：律师 A **无法** `SELECT` 律师 B 的 `case_pipelines` / `pipeline_artifacts` 行
   - **依赖**：M10-H RLS 集成测已绿或联调 seed 两名律师
-- [ ] **【人工黑盒】** Storage：`exports` 桶已创建；策略要求对象路径以 `{owner_id}/` 开头（抽查一条策略文案或试传违规路径被拒绝）
+- [x] **【人工黑盒】** Storage：`exports` 桶已创建；策略要求对象路径以 `{owner_id}/` 开头（抽查一条策略文案或试传违规路径被拒绝）
   - **依赖**：M10-F Storage 迁移
-- [ ] **【人工黑盒】** `system_settings`（或等价配置）存在 `sop.deep_research_enabled` 且默认值为 `true`
+- [x] **【人工黑盒】** `system_settings`（或等价配置）存在 `sop.deep_research_enabled` 且默认值为 `true`
   - **依赖**：M10-G seed
-- [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M10** 小节：验收人、日期、环境、上述项通过/失败备注
+- [x] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M10** 小节：验收人、日期、环境、上述项通过/失败备注
   - **依赖**：上列黑盒项均通过
 
 - [x] 执行 `git commit`：`feat(db): sop schema enums rls storage seed and shared types`
   - **依赖**：测试全绿；**人工黑盒验收签收**；`git status` 无未提交 M10 变更
-- [ ] 将下方进度表 **M10** 状态更新为「已完成」
+- [x] 将下方进度表 **M10** 状态更新为「已完成」
   - **依赖**：`git commit` 成功
 
 **M10 明确延后（归属 M11+）**：`AiOrchestrationService` SOP 调用实现、Mustache 插槽渲染、`/api/admin/sops/*` 路由、U3 `sop.*` Handler 注册、Admin/律师 SOP 前端页面。
@@ -2782,7 +2782,7 @@ M10 (SOP DB/RLS/Storage)
 
 | Milestone | 名称 | 状态 |
 |-----------|------|------|
-| M10 | SOP 基础设施与数据库迁移 | **进行中（待人工黑盒签收）** |
+| M10 | SOP 基础设施与数据库迁移 | **已完成** |
 | M11 | AI 能力扩展（SOP 功能点） | 未开始 |
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 未开始 |
 | M13 | 律师端 SOP 流水线业务 API | 未开始 |

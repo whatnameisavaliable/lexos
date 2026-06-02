@@ -21,6 +21,10 @@ export const AUDIT_ACTION_VALUES = [
   "file.download",
   "file.delete",
   "file.export",
+  "sop.template.publish",
+  "sop.prompt.update",
+  "sop.artifact.export_pdf",
+  "sop.artifact.verify",
 ] as const;
 
 /** 单条审计动作类型。 */

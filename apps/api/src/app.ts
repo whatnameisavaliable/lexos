@@ -53,6 +53,26 @@ import { handleAdminUsersRoute } from "./routes/admin-users.routes.js";
 import { handleAdminAiRoute } from "./routes/admin-ai.routes.js";
 import { handleAdminAuditRoute } from "./routes/admin-audit.routes.js";
 import { handleAdminSettingsRoute } from "./routes/admin-settings.routes.js";
+import { handleAdminSopsRoute } from "./routes/admin-sops.routes.js";
+import { AdminSopRepository } from "./repositories/admin-sop.repository.js";
+import { SopAiConfigRepository } from "./repositories/sop-ai-config.repository.js";
+import { SopAiOrchestrationService } from "./services/sop-ai-orchestration.service.js";
+import { AdminSopListService } from "./services/admin-sop-list.service.js";
+import { AdminSopTemplateCreateService } from "./services/admin-sop-template-create.service.js";
+import { AdminSopTemplateGetService } from "./services/admin-sop-template-get.service.js";
+import { AdminSopVersionGetService } from "./services/admin-sop-version-get.service.js";
+import { AdminSopVersionPromptsUpsertService } from "./services/admin-sop-version-prompts-upsert.service.js";
+import { AdminSopVersionCreateService } from "./services/admin-sop-version-create.service.js";
+import { AdminSopVersionPublishService } from "./services/admin-sop-version-publish.service.js";
+import { AdminSopPreviewPipelineService } from "./services/admin-sop-preview-pipeline.service.js";
+import { AdminSopsListController } from "./controllers/admin-sops-list.controller.js";
+import { AdminSopsTemplateCreateController } from "./controllers/admin-sops-template-create.controller.js";
+import { AdminSopsTemplateGetController } from "./controllers/admin-sops-template-get.controller.js";
+import { AdminSopsVersionGetController } from "./controllers/admin-sops-version-get.controller.js";
+import { AdminSopsVersionPromptsUpsertController } from "./controllers/admin-sops-version-prompts-upsert.controller.js";
+import { AdminSopsVersionCreateController } from "./controllers/admin-sops-version-create.controller.js";
+import { AdminSopsVersionPublishController } from "./controllers/admin-sops-version-publish.controller.js";
+import { AdminSopsPreviewPipelineController } from "./controllers/admin-sops-preview-pipeline.controller.js";
 import { AuditLogReadRepository } from "./repositories/audit-log-read.repository.js";
 import { SystemSettingsRepository } from "./repositories/system-settings.repository.js";
 import { AuditLogListService } from "./services/audit-log-list.service.js";
@@ -265,6 +285,44 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const aiPromptDeleteService = new AiPromptDeleteService(aiPromptRepository);
   const aiInvocationLogListService = new AiInvocationLogListService(
     aiInvocationLogRepository,
+  );
+
+  const adminSopRepository = AdminSopRepository.fromSupabaseEnv(supabaseEnv);
+  const sopAiConfigRepository = SopAiConfigRepository.fromSupabaseEnv(
+    supabaseEnv,
+    aiEnv,
+  );
+  const sopAiOrchestrationService = new SopAiOrchestrationService(
+    sopAiConfigRepository,
+    aiInvocationLogRepository,
+    aiEnv.aiDefaultTimeoutMs,
+  );
+  const adminSopListService = new AdminSopListService(adminSopRepository);
+  const adminSopTemplateCreateService = new AdminSopTemplateCreateService(
+    adminSopRepository,
+  );
+  const adminSopTemplateGetService = new AdminSopTemplateGetService(
+    adminSopRepository,
+  );
+  const adminSopVersionGetService = new AdminSopVersionGetService(
+    adminSopRepository,
+  );
+  const adminSopVersionPromptsUpsertService =
+    new AdminSopVersionPromptsUpsertService(
+      adminSopRepository,
+      auditWriterService,
+    );
+  const adminSopVersionCreateService = new AdminSopVersionCreateService(
+    adminSopRepository,
+  );
+  const adminSopVersionPublishService = new AdminSopVersionPublishService(
+    adminSopRepository,
+    auditWriterService,
+  );
+  const adminSopPreviewPipelineService = new AdminSopPreviewPipelineService(
+    adminSopRepository,
+    aiPromptRepository,
+    sopAiOrchestrationService,
   );
 
   const auditLogReadRepository = new AuditLogReadRepository(supabaseEnv);
@@ -510,6 +568,39 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   );
   const aiInvocationLogsListController = new AiInvocationLogsListController(
     aiInvocationLogListService,
+    env.requestIdHeader,
+  );
+  const adminSopsListController = new AdminSopsListController(
+    adminSopListService,
+    env.requestIdHeader,
+  );
+  const adminSopsTemplateCreateController = new AdminSopsTemplateCreateController(
+    adminSopTemplateCreateService,
+    env.requestIdHeader,
+  );
+  const adminSopsTemplateGetController = new AdminSopsTemplateGetController(
+    adminSopTemplateGetService,
+    env.requestIdHeader,
+  );
+  const adminSopsVersionGetController = new AdminSopsVersionGetController(
+    adminSopVersionGetService,
+    env.requestIdHeader,
+  );
+  const adminSopsVersionPromptsUpsertController =
+    new AdminSopsVersionPromptsUpsertController(
+      adminSopVersionPromptsUpsertService,
+      env.requestIdHeader,
+    );
+  const adminSopsVersionCreateController = new AdminSopsVersionCreateController(
+    adminSopVersionCreateService,
+    env.requestIdHeader,
+  );
+  const adminSopsVersionPublishController = new AdminSopsVersionPublishController(
+    adminSopVersionPublishService,
+    env.requestIdHeader,
+  );
+  const adminSopsPreviewPipelineController = new AdminSopsPreviewPipelineController(
+    adminSopPreviewPipelineService,
     env.requestIdHeader,
   );
   const auditLogsListController = new AuditLogsListController(
@@ -881,6 +972,33 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               list: settingsListController,
               get: settingsGetController,
               upsert: settingsUpsertController,
+            });
+            if (!handled) {
+              adminRes.statusCode = 404;
+              adminRes.setHeader("content-type", "application/json; charset=utf-8");
+              adminRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/admin/sops")) {
+          let handled = false;
+          await protectedAdminRoute(async (adminReq, adminRes) => {
+            handled = await handleAdminSopsRoute(adminReq, adminRes, path, {
+              list: adminSopsListController,
+              templateCreate: adminSopsTemplateCreateController,
+              templateGet: adminSopsTemplateGetController,
+              versionGet: adminSopsVersionGetController,
+              versionPromptsUpsert: adminSopsVersionPromptsUpsertController,
+              versionCreate: adminSopsVersionCreateController,
+              versionPublish: adminSopsVersionPublishController,
+              previewPipeline: adminSopsPreviewPipelineController,
             });
             if (!handled) {
               adminRes.statusCode = 404;

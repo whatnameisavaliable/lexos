@@ -196,7 +196,7 @@ M* → M9
   - **依赖**：SOP 三表迁移正文已写入
 - [x] 为上述三表写入 **lawyer SELECT** 策略：仅 `is_published = true` 的版本及其步骤（`database.md` §3.16.6）
   - **依赖**：上一条
-- [ ] 更新 `m10-rls-sop.migration.test.ts` 断言 `sop_template_versions` 律师策略含 `is_published`
+- [x] 更新 `m10-rls-sop.migration.test.ts` 断言 `sop_template_versions` 律师策略含 `is_published`
   - **依赖**：上一条
 
 - [ ] 在 `rls_sop.sql` 中为 `case_pipelines` / `pipeline_artifacts` 写入律师 **CRUD** 策略：`lawyer_id = auth.uid()`（经 `case_pipelines` 连接）

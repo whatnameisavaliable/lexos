@@ -150,7 +150,7 @@ M* → M9
 - [x] 新增断言 `artifact_content_type` 的测试用例
   - **依赖**：上一条
 
-- [ ] 在 `enums_sop.sql` 中执行 `ALTER TYPE public.ai_feature_key ADD VALUE IF NOT EXISTS 'sop.fact_extract'`（其余三条 SOP 值同理，共四次）
+- [x] 在 `enums_sop.sql` 中执行 `ALTER TYPE public.ai_feature_key ADD VALUE IF NOT EXISTS 'sop.fact_extract'`（其余三条 SOP 值同理，共四次）
   - **依赖**：M10-B4 第一条
 - [ ] 更新 `m10-enums-sop.migration.test.ts`：断言四个 `ADD VALUE` 子串均存在
   - **依赖**：上一条

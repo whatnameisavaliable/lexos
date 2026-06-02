@@ -199,7 +199,7 @@ M* → M9
 - [x] 更新 `m10-rls-sop.migration.test.ts` 断言 `sop_template_versions` 律师策略含 `is_published`
   - **依赖**：上一条
 
-- [ ] 在 `rls_sop.sql` 中为 `case_pipelines` / `pipeline_artifacts` 写入律师 **CRUD** 策略：`lawyer_id = auth.uid()`（经 `case_pipelines` 连接）
+- [x] 在 `rls_sop.sql` 中为 `case_pipelines` / `pipeline_artifacts` 写入律师 **CRUD** 策略：`lawyer_id = auth.uid()`（经 `case_pipelines` 连接）
   - **依赖**：M10-B12 第三条
 - [ ] 更新 `m10-rls-sop.migration.test.ts` 断言 `case_pipelines` 无 `is_admin()` 读律师业务数据策略
   - **依赖**：上一条

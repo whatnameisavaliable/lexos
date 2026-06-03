@@ -12,6 +12,7 @@ describe("SopPipelineStatusService", () => {
       casePipelineRepository as never,
       {} as never,
       {} as never,
+      { isDeepResearchEnabled: vi.fn().mockResolvedValue(true) } as never,
     );
     const actor = createAuthContext({
       userId: "u1",

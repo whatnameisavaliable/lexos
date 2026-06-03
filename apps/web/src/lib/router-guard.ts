@@ -16,6 +16,7 @@ export const LAWYER_BUSINESS_PATH_PREFIXES = [
   "/transcription",
   "/drive",
   "/lawyer",
+  "/sops",
 ] as const;
 
 /**

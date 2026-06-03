@@ -57,6 +57,7 @@ describe("M13-A package exports", () => {
       pipelineId: "p",
       status: "in_progress",
       currentStepCode: null,
+      deepResearchEnabled: true,
       steps: [],
     };
     const accepted: SopAsyncExecuteAccepted = {

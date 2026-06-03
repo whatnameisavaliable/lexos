@@ -2051,358 +2051,358 @@ M* → M9
 
 #### M16-B `apps/web` — API 客户端（每条函数一个任务 + 测试）
 
-- [ ] 新增 `apps/web/src/lib/lawyer-sops-api.ts`：文件骨架 + 复用 `apiFetch` / `ApiClientError`
+- [x] 新增 `apps/web/src/lib/lawyer-sops-api.ts`：文件骨架 + 复用 `apiFetch` / `ApiClientError`
   - **依赖**：M13 API 可联调
-- [ ] 新增 `apps/web/src/lib/lawyer-sops-api.types.ts`：定义 `SopPublishedTemplateItem`、`SopPipelineStatusResponse` 等（对齐 `@lexos/shared` 或 M13 响应）
+- [x] 新增 `apps/web/src/lib/lawyer-sops-api.types.ts`：定义 `SopPublishedTemplateItem`、`SopPipelineStatusResponse` 等（对齐 `@lexos/shared` 或 M13 响应）
   - **依赖**：上一条
-- [ ] 新增 `apps/web/src/lib/lawyer-sops-api.types.test.ts`
+- [x] 新增 `apps/web/src/lib/lawyer-sops-api.types.test.ts`
   - **依赖**：上一条
 
-- [ ] 在 `lawyer-sops-api.ts` 实现 `listSopTemplates(query?)` → `GET /api/sops/templates`
+- [x] 在 `lawyer-sops-api.ts` 实现 `listSopTemplates(query?)` → `GET /api/sops/templates`
   - **依赖**：types 已定义
-- [ ] 新增 `apps/web/src/lib/lawyer-sops-api.list-templates.test.ts`
+- [x] 新增 `apps/web/src/lib/lawyer-sops-api.list-templates.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `createSopPipeline(body)` → `POST /api/sops/pipelines`（Body `templateVersionId`）
+- [x] 实现 `createSopPipeline(body)` → `POST /api/sops/pipelines`（Body `templateVersionId`）
   - **依赖**：list 已实现
-- [ ] 新增 `lawyer-sops-api.create-pipeline.test.ts`：未发布版本 Mock 422
+- [x] 新增 `lawyer-sops-api.create-pipeline.test.ts`：未发布版本 Mock 422
   - **依赖**：上一条
 
-- [ ] 实现 `getSopPipelineStatus(pipelineId)` → `GET /api/sops/pipelines/:id/status`
+- [x] 实现 `getSopPipelineStatus(pipelineId)` → `GET /api/sops/pipelines/:id/status`
   - **依赖**：create 已实现
-- [ ] 新增 `lawyer-sops-api.get-status.test.ts`
+- [x] 新增 `lawyer-sops-api.get-status.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `resumeSopPipeline(pipelineId)` → `POST .../resume`
+- [x] 实现 `resumeSopPipeline(pipelineId)` → `POST .../resume`
   - **依赖**：get status 已实现
-- [ ] 新增 `lawyer-sops-api.resume.test.ts`
+- [x] 新增 `lawyer-sops-api.resume.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `closeSopPipeline(pipelineId)` → `POST .../close`
+- [x] 实现 `closeSopPipeline(pipelineId)` → `POST .../close`
   - **依赖**：resume 已实现
-- [ ] 新增 `lawyer-sops-api.close.test.ts`
+- [x] 新增 `lawyer-sops-api.close.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `initSopUpload(body)` → `POST /api/sops/uploads/init`
+- [x] 实现 `initSopUpload(body)` → `POST /api/sops/uploads/init`
   - **依赖**：无
-- [ ] 新增 `lawyer-sops-api.init-upload.test.ts`
+- [x] 新增 `lawyer-sops-api.init-upload.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `completeSopUpload(body)` → `POST /api/sops/uploads/complete`
+- [x] 实现 `completeSopUpload(body)` → `POST /api/sops/uploads/complete`
   - **依赖**：init 已实现
-- [ ] 新增 `lawyer-sops-api.complete-upload.test.ts`
+- [x] 新增 `lawyer-sops-api.complete-upload.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `executeSopStep(pipelineId, stepCode, body)` → `POST .../steps/:code/execute`（解析 200/202）
+- [x] 实现 `executeSopStep(pipelineId, stepCode, body)` → `POST .../steps/:code/execute`（解析 200/202）
   - **依赖**：status API 已实现
-- [ ] 新增 `lawyer-sops-api.execute.test.ts`：202 时返回 `artifactId`
+- [x] 新增 `lawyer-sops-api.execute.test.ts`：202 时返回 `artifactId`
   - **依赖**：上一条
 
-- [ ] 实现 `finalizeSopStep(pipelineId, stepCode)` → `POST .../steps/:code/finalize`
+- [x] 实现 `finalizeSopStep(pipelineId, stepCode)` → `POST .../steps/:code/finalize`
   - **依赖**：execute 已实现
-- [ ] 新增 `lawyer-sops-api.finalize.test.ts`：未 Verified Mock 422
+- [x] 新增 `lawyer-sops-api.finalize.test.ts`：未 Verified Mock 422
   - **依赖**：上一条
 
-- [ ] 实现 `getSopArtifact(artifactId)` → `GET /api/sops/artifacts/:id`
+- [x] 实现 `getSopArtifact(artifactId)` → `GET /api/sops/artifacts/:id`
   - **依赖**：无
-- [ ] 新增 `lawyer-sops-api.get-artifact.test.ts`
+- [x] 新增 `lawyer-sops-api.get-artifact.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `patchSopArtifact(artifactId, version, body)` → `PATCH` + Header `If-Match`
+- [x] 实现 `patchSopArtifact(artifactId, version, body)` → `PATCH` + Header `If-Match`
   - **依赖**：get artifact 已实现
-- [ ] 新增 `lawyer-sops-api.patch-artifact.test.ts`：409 `RESOURCE_CONFLICT`
+- [x] 新增 `lawyer-sops-api.patch-artifact.test.ts`：409 `RESOURCE_CONFLICT`
   - **依赖**：上一条
 
-- [ ] 实现 `verifySopArtifact(artifactId)` → `POST .../verify`
+- [x] 实现 `verifySopArtifact(artifactId)` → `POST .../verify`
   - **依赖**：patch 已实现
-- [ ] 新增 `lawyer-sops-api.verify-artifact.test.ts`
+- [x] 新增 `lawyer-sops-api.verify-artifact.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `regenerateSopArtifactPdf(artifactId)` → `POST .../regenerate-pdf`
+- [x] 实现 `regenerateSopArtifactPdf(artifactId)` → `POST .../regenerate-pdf`
   - **依赖**：verify 已实现
-- [ ] 新增 `lawyer-sops-api.regenerate-pdf.test.ts`
+- [x] 新增 `lawyer-sops-api.regenerate-pdf.test.ts`
   - **依赖**：上一条
 
 ---
 
 #### M16-C `apps/web` — 纯函数与 Hook（单导出单文件）
 
-- [ ] 新增 `apps/web/src/lib/sop-pipeline-poll-interval-ms.ts`：导出常量 `SOP_PIPELINE_POLL_INTERVAL_MS = 2000`（`prd.md` §3.8.1、`architecture.md` §3.2.6.5）
+- [x] 新增 `apps/web/src/lib/sop-pipeline-poll-interval-ms.ts`：导出常量 `SOP_PIPELINE_POLL_INTERVAL_MS = 2000`（`prd.md` §3.8.1、`architecture.md` §3.2.6.5）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/sop-pipeline-poll-interval-ms.test.ts`：断言 `>= 2000`
+- [x] 新增 `apps/web/src/lib/sop-pipeline-poll-interval-ms.test.ts`：断言 `>= 2000`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/hooks/use-sop-pipeline-status-poll.ts`：导出 `useSopPipelineStatusPoll(pipelineId, { enabled })`；内部 `setInterval` 调用 `getSopPipelineStatus`；卸载清理
+- [x] 新增 `apps/web/src/hooks/use-sop-pipeline-status-poll.ts`：导出 `useSopPipelineStatusPoll(pipelineId, { enabled })`；内部 `setInterval` 调用 `getSopPipelineStatus`；卸载清理
   - **依赖**：M16-B；M16-C 常量
-- [ ] 新增 `apps/web/src/hooks/use-sop-pipeline-status-poll.test.ts`：Mock 两次轮询间隔 ≥2000ms（fake timers）
+- [x] 新增 `apps/web/src/hooks/use-sop-pipeline-status-poll.test.ts`：Mock 两次轮询间隔 ≥2000ms（fake timers）
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/hooks/use-debounced-value.ts`：导出 `useDebouncedValue<T>(value, delayMs)`（通用 500ms 供 iframe 刷新）
+- [x] 新增 `apps/web/src/hooks/use-debounced-value.ts`：导出 `useDebouncedValue<T>(value, delayMs)`（通用 500ms 供 iframe 刷新）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/hooks/use-debounced-value.test.ts`
+- [x] 新增 `apps/web/src/hooks/use-debounced-value.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/lib/build-iframe-srcdoc.ts`：导出 `buildIframeSrcdoc(html: string): string`（包裹最小 HTML 文档，**不**注入 script）
+- [x] 新增 `apps/web/src/lib/build-iframe-srcdoc.ts`：导出 `buildIframeSrcdoc(html: string): string`（包裹最小 HTML 文档，**不**注入 script）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/build-iframe-srcdoc.test.ts`：输出不含 `<script`
+- [x] 新增 `apps/web/src/lib/build-iframe-srcdoc.test.ts`：输出不含 `<script`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/lib/sanitize-sop-html-snippet.ts`：导出 `sanitizeSopHtmlSnippet(html)`（DOMPurify，禁止 `script`/`on*`）
+- [x] 新增 `apps/web/src/lib/sanitize-sop-html-snippet.ts`：导出 `sanitizeSopHtmlSnippet(html)`（DOMPurify，禁止 `script`/`on*`）
   - **依赖**：`isomorphic-dompurify` 已安装
-- [ ] 新增 `apps/web/src/lib/sanitize-sop-html-snippet.test.ts`：剥离 `<script>alert(1)</script>`
+- [x] 新增 `apps/web/src/lib/sanitize-sop-html-snippet.test.ts`：剥离 `<script>alert(1)</script>`
   - **依赖**：上一条
 
 ---
 
 #### M16-D `apps/web` — TUS 卷宗上传 Hook（独立于转写）
 
-- [ ] 在 `apps/web/src/contexts/active-upload-context.tsx` 扩展 `ActiveUploadState`：增加可选 `kind: 'transcription' | 'sop'` 与 `pipelineId?`
+- [x] 在 `apps/web/src/contexts/active-upload-context.tsx` 扩展 `ActiveUploadState`：增加可选 `kind: 'transcription' | 'sop'` 与 `pipelineId?`
   - **依赖**：M4 `ActiveUploadProvider` 已存在
-- [ ] 新增 `apps/web/src/contexts/active-upload-context.sop.test.tsx`：`kind=sop` 时 `hasActiveUpload` 为 true
+- [x] 新增 `apps/web/src/contexts/active-upload-context.sop.test.tsx`：`kind=sop` 时 `hasActiveUpload` 为 true
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/hooks/use-sop-tus-upload.ts`：导出 `uploadSopMedia(file, { pipelineId, fileName, ... })`；调用 `initSopUpload` → `buildTusUploadOptions` → TUS → `completeSopUpload`（**禁止**调用 `transcription-api`）
+- [x] 新增 `apps/web/src/hooks/use-sop-tus-upload.ts`：导出 `uploadSopMedia(file, { pipelineId, fileName, ... })`；调用 `initSopUpload` → `buildTusUploadOptions` → TUS → `completeSopUpload`（**禁止**调用 `transcription-api`）
   - **依赖**：M16-B init/complete；`tus-upload.ts`；`active-upload-context`
-- [ ] 新增 `apps/web/src/hooks/use-sop-tus-upload.test.ts`：Mock 未调用 `initUpload`（转写路径）
+- [x] 新增 `apps/web/src/hooks/use-sop-tus-upload.test.ts`：Mock 未调用 `initUpload`（转写路径）
   - **依赖**：上一条
 
-- [ ] 在 `use-sop-tus-upload.ts` 注册 `registerUpload({ kind: 'sop', pipelineId, fileName })` 与 `beforeunload` 提示（复用转写 §6.3.4 模式）
+- [x] 在 `use-sop-tus-upload.ts` 注册 `registerUpload({ kind: 'sop', pipelineId, fileName })` 与 `beforeunload` 提示（复用转写 §6.3.4 模式）
   - **依赖**：Hook 骨架
-- [ ] 新增 `use-sop-tus-upload.register.test.ts`
+- [x] 新增 `use-sop-tus-upload.register.test.ts`
   - **依赖**：上一条
 
 ---
 
 #### M16-E `apps/web` — 展示辅助（标签/徽章）
 
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-status-label.ts`：导出 `pipelineStatusLabel(status)`（`in_progress` / `completed` / `suspended`）
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-status-label.ts`：导出 `pipelineStatusLabel(status)`（`in_progress` / `completed` / `suspended`）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-status-label.test.ts`
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-status-label.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-status-badge.tsx`：`running` / `draft` / `failed` / `finalized` Badge
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-status-badge.tsx`：`running` / `draft` / `failed` / `finalized` Badge
   - **依赖**：Shadcn `badge`
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-status-badge.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-status-badge.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-execution-type-hint.tsx`：按 `executionType` 展示「同步 LLM ≤60s」「异步检索」「人工表单」说明
+- [x] 新增 `apps/web/src/components/sops/sop-execution-type-hint.tsx`：按 `executionType` 展示「同步 LLM ≤60s」「异步检索」「人工表单」说明
   - **依赖**：无
-- [ ] 新增 `apps/web/src/components/sops/sop-execution-type-hint.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-execution-type-hint.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-deep-research-offline-banner.tsx`：固定文案「外网检索不可用，幻觉风险上升」（`architecture.md` §3.2.6.7）
+- [x] 新增 `apps/web/src/components/sops/sop-deep-research-offline-banner.tsx`：固定文案「外网检索不可用，幻觉风险上升」（`architecture.md` §3.2.6.7）
   - **依赖**：Shadcn `alert`
-- [ ] 新增 `apps/web/src/components/sops/sop-deep-research-offline-banner.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-deep-research-offline-banner.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-F `apps/web` — 导航与路由
 
-- [ ] 在 `apps/web/src/lib/menus.ts` 增加 `{ href: "/sops", label: "SOP 流水线", allowedRoles: ["lawyer"] }`
+- [x] 在 `apps/web/src/lib/menus.ts` 增加 `{ href: "/sops", label: "SOP 流水线", allowedRoles: ["lawyer"] }`
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/menus.sops-lawyer.test.ts`
+- [x] 新增 `apps/web/src/lib/menus.sops-lawyer.test.ts`
   - **依赖**：上一条
 
-- [ ] 确认 `router-guard.ts`：`/sops` 仅 `lawyer`；`admin` 访问 → `/unauthorized`（admin **不可**读律师 SOP 数据，`prd.md` §2.3）
+- [x] 确认 `router-guard.ts`：`/sops` 仅 `lawyer`；`admin` 访问 → `/unauthorized`（admin **不可**读律师 SOP 数据，`prd.md` §2.3）
   - **依赖**：menus 已更新
-- [ ] 新增 `apps/web/src/lib/router-guard.sops-lawyer.test.ts`（若项目无 guard 单测则记入 M17 E2E）
+- [x] 新增 `apps/web/src/lib/router-guard.sops-lawyer.test.ts`（若项目无 guard 单测则记入 M17 E2E）
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/app/(app)/sops/page.tsx`：挂载 `LawyerSopsEntryPanel`
+- [x] 新增 `apps/web/src/app/(app)/sops/page.tsx`：挂载 `LawyerSopsEntryPanel`
   - **依赖**：M16-G 入口面板
-- [ ] 新增 `apps/web/src/app/(app)/sops/page.test.tsx`
+- [x] 新增 `apps/web/src/app/(app)/sops/page.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/app/(app)/sops/pipelines/[pipelineId]/page.tsx`：挂载 `LawyerSopPipelineWorkspace`
+- [x] 新增 `apps/web/src/app/(app)/sops/pipelines/[pipelineId]/page.tsx`：挂载 `LawyerSopPipelineWorkspace`
   - **依赖**：M16-H 工作区壳
-- [ ] 新增 `apps/web/src/app/(app)/sops/pipelines/[pipelineId]/page.test.tsx`
+- [x] 新增 `apps/web/src/app/(app)/sops/pipelines/[pipelineId]/page.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-G `apps/web` — 模板选择与创建流水线
 
-- [ ] 新增 `apps/web/src/components/sops/LawyerSopsEntryPanel.tsx`：Flex 列；调用 `listSopTemplates`；表格 +「新建流水线」
+- [x] 新增 `apps/web/src/components/sops/LawyerSopsEntryPanel.tsx`：Flex 列；调用 `listSopTemplates`；表格 +「新建流水线」
   - **依赖**：M16-B list API
-- [ ] 新增 `apps/web/src/components/sops/LawyerSopsEntryPanel.test.tsx`：Loading Skeleton
+- [x] 新增 `apps/web/src/components/sops/LawyerSopsEntryPanel.test.tsx`：Loading Skeleton
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-published-templates-table.tsx`：列：`templateName`、`caseType`、`versionNumber`、操作
+- [x] 新增 `apps/web/src/components/sops/sop-published-templates-table.tsx`：列：`templateName`、`caseType`、`versionNumber`、操作
   - **依赖**：EntryPanel
-- [ ] 新增 `apps/web/src/components/sops/sop-published-templates-table.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-published-templates-table.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/create-pipeline-from-template-dialog.tsx`：`AlertDialog` 确认 → `createSopPipeline` → `router.push(/sops/pipelines/:id)`
+- [x] 新增 `apps/web/src/components/sops/create-pipeline-from-template-dialog.tsx`：`AlertDialog` 确认 → `createSopPipeline` → `router.push(/sops/pipelines/:id)`
   - **依赖**：M16-B create API
-- [ ] 新增 `apps/web/src/components/sops/create-pipeline-from-template-dialog.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/create-pipeline-from-template-dialog.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-H `apps/web` — 流水线工作区壳与步骤看板
 
-- [ ] 新增 `apps/web/src/components/sops/LawyerSopPipelineWorkspace.tsx`：Grid（侧栏步骤 + 主区）；挂载 `useSopPipelineStatusPoll`；`suspended` 时展示恢复条
+- [x] 新增 `apps/web/src/components/sops/LawyerSopPipelineWorkspace.tsx`：Grid（侧栏步骤 + 主区）；挂载 `useSopPipelineStatusPoll`；`suspended` 时展示恢复条
   - **依赖**：M16-C poll；M16-I 恢复条
-- [ ] 新增 `apps/web/src/components/sops/LawyerSopPipelineWorkspace.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/LawyerSopPipelineWorkspace.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-steps-board.tsx`：按 `status.steps` 渲染步骤行 + `SopArtifactStatusBadge`；高亮 `currentStepCode`
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-steps-board.tsx`：按 `status.steps` 渲染步骤行 + `SopArtifactStatusBadge`；高亮 `currentStepCode`
   - **依赖**：poll 数据形状
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-steps-board.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-steps-board.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-resume-banner.tsx`：`status=suspended` 时「恢复流水线」→ `resumeSopPipeline`
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-resume-banner.tsx`：`status=suspended` 时「恢复流水线」→ `resumeSopPipeline`
   - **依赖**：M16-B resume
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-resume-banner.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-resume-banner.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-close-dialog.tsx`：显式「结案」→ `closeSopPipeline`（**禁止**自动结案，`prd.md` §3.8.3）
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-close-dialog.tsx`：显式「结案」→ `closeSopPipeline`（**禁止**自动结案，`prd.md` §3.8.3）
   - **依赖**：M16-B close
-- [ ] 新增 `apps/web/src/components/sops/sop-pipeline-close-dialog.test.tsx`：`completed` 后按钮隐藏
+- [x] 新增 `apps/web/src/components/sops/sop-pipeline-close-dialog.test.tsx`：`completed` 后按钮隐藏
   - **依赖**：上一条
 
 ---
 
 #### M16-I `apps/web` — JSON Schema 动态表单（`manual` / `execute` 前置）
 
-- [ ] 新增 `apps/web/src/components/sops/sop-json-schema-form.tsx`：接收 `inputSchema` + `onSubmit`；`@rjsf` 渲染；校验失败阻止提交
+- [x] 新增 `apps/web/src/components/sops/sop-json-schema-form.tsx`：接收 `inputSchema` + `onSubmit`；`@rjsf` 渲染；校验失败阻止提交
   - **依赖**：M16-A RJSF 依赖
-- [ ] 新增 `apps/web/src/components/sops/sop-json-schema-form.test.tsx`：必填缺失时不调用 `onSubmit`
+- [x] 新增 `apps/web/src/components/sops/sop-json-schema-form.test.tsx`：必填缺失时不调用 `onSubmit`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/lib/coerce-sop-form-values.ts`：导出 `coerceSopFormValues(formData)` → `Record<string, unknown>`（execute Body）
+- [x] 新增 `apps/web/src/lib/coerce-sop-form-values.ts`：导出 `coerceSopFormValues(formData)` → `Record<string, unknown>`（execute Body）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/coerce-sop-form-values.test.ts`
+- [x] 新增 `apps/web/src/lib/coerce-sop-form-values.test.ts`
   - **依赖**：上一条
 
 ---
 
 #### M16-J `apps/web` — 卷宗 TUS 上传区
 
-- [ ] 新增 `apps/web/src/components/sops/sop-media-upload-zone.tsx`：拖拽/选择文件；调用 `useSopTusUpload`；展示 `Progress`；限额提示（1GB/5h 同转写）
+- [x] 新增 `apps/web/src/components/sops/sop-media-upload-zone.tsx`：拖拽/选择文件；调用 `useSopTusUpload`；展示 `Progress`；限额提示（1GB/5h 同转写）
   - **依赖**：M16-D Hook
-- [ ] 新增 `apps/web/src/components/sops/sop-media-upload-zone.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-media-upload-zone.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `sop-media-upload-zone.tsx` 上传进行中挂载路由离开 `AlertDialog`（复用 `active-upload-context` + 现有 Guard 组件）
+- [x] 在 `sop-media-upload-zone.tsx` 上传进行中挂载路由离开 `AlertDialog`（复用 `active-upload-context` + 现有 Guard 组件）
   - **依赖**：zone 骨架；M4 路由 Guard
-- [ ] 新增 `sop-media-upload-zone.leave-guard.test.tsx`
+- [x] 新增 `sop-media-upload-zone.leave-guard.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-K `apps/web` — 步骤执行与定稿操作
 
-- [ ] 新增 `apps/web/src/components/sops/sop-step-action-panel.tsx`：聚合当前步骤 UI 容器（表单 + 上传 + 按钮区）
+- [x] 新增 `apps/web/src/components/sops/sop-step-action-panel.tsx`：聚合当前步骤 UI 容器（表单 + 上传 + 按钮区）
   - **依赖**：M16-I/J；步骤看板选中态
-- [ ] 新增 `apps/web/src/components/sops/sop-step-action-panel.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-step-action-panel.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-execute-step-button.tsx`：收集 `formValues` → `executeSopStep`；`sync_llm` Loading；`async` 收到 202 后 Toast「已提交，请等待轮询」
+- [x] 新增 `apps/web/src/components/sops/sop-execute-step-button.tsx`：收集 `formValues` → `executeSopStep`；`sync_llm` Loading；`async` 收到 202 后 Toast「已提交，请等待轮询」
   - **依赖**：M16-B execute
-- [ ] 新增 `apps/web/src/components/sops/sop-execute-step-button.test.tsx`：Mock 202 不清除轮询
+- [x] 新增 `apps/web/src/components/sops/sop-execute-step-button.test.tsx`：Mock 202 不清除轮询
   - **依赖**：上一条
 
-- [ ] 在 `sop-execute-step-button.tsx` 处理 `OPERATION_NOT_ALLOWED` / `CONTEXT_LIMIT_EXCEEDED` Toast 文案
+- [x] 在 `sop-execute-step-button.tsx` 处理 `OPERATION_NOT_ALLOWED` / `CONTEXT_LIMIT_EXCEEDED` Toast 文案
   - **依赖**：按钮骨架
-- [ ] 新增 `sop-execute-step-button.errors.test.tsx`
+- [x] 新增 `sop-execute-step-button.errors.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-finalize-step-button.tsx`：`AlertDialog` 确认 → `finalizeSopStep`；成功后刷新 poll
+- [x] 新增 `apps/web/src/components/sops/sop-finalize-step-button.tsx`：`AlertDialog` 确认 → `finalizeSopStep`；成功后刷新 poll
   - **依赖**：M16-B finalize
-- [ ] 新增 `apps/web/src/components/sops/sop-finalize-step-button.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-finalize-step-button.test.tsx`
   - **依赖**：上一条
 
-- [ ] 当 `execution_type=async_deep_research` 且系统设置关闭时，禁用执行按钮并 Tooltip（读 `GET /api/admin/settings` 或 BFF 公开只读 flag【与 M8 settings 对齐】）
+- [x] 当 `execution_type=async_deep_research` 且系统设置关闭时，禁用执行按钮并 Tooltip（读 `GET /api/admin/settings` 或 BFF 公开只读 flag【与 M8 settings 对齐】）
   - **依赖**：execute 按钮；M8 设置 API 字段 `sop.deep_research_enabled`
-- [ ] 新增 `sop-execute-step-button.dr-disabled.test.tsx`
+- [x] 新增 `sop-execute-step-button.dr-disabled.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-L `apps/web` — 产出物编辑（JSON / HTML 分支）
 
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-json-viewer.tsx`：`content_type=json` 只读/可编辑 `Textarea`；`PATCH` 保存 draft
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-json-viewer.tsx`：`content_type=json` 只读/可编辑 `Textarea`；`PATCH` 保存 draft
   - **依赖**：M16-B patch
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-json-viewer.test.tsx`：`finalized` 时只读
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-json-viewer.test.tsx`：`finalized` 时只读
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-editor-shell.tsx`：按 `contentType` 切换 JSON 编辑器 vs HTML 双栏
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-editor-shell.tsx`：按 `contentType` 切换 JSON 编辑器 vs HTML 双栏
   - **依赖**：M16-L json viewer；M16-M html editor
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-editor-shell.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-editor-shell.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `sop-artifact-editor-shell.tsx` 实现乐观锁：保存时带 `If-Match`；409 时 Toast「版本冲突，请刷新」
+- [x] 在 `sop-artifact-editor-shell.tsx` 实现乐观锁：保存时带 `If-Match`；409 时 Toast「版本冲突，请刷新」
   - **依赖**：shell 骨架
-- [ ] 新增 `sop-artifact-editor-shell.conflict.test.tsx`
+- [x] 新增 `sop-artifact-editor-shell.conflict.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-M `apps/web` — Monaco + iframe 沙盒预览（`content_type=html`）
 
-- [ ] 新增 `apps/web/src/components/sops/sop-monaco-html-editor.tsx`：`dynamic(() => import('@monaco-editor/react'), { ssr: false })`；`language=html`
+- [x] 新增 `apps/web/src/components/sops/sop-monaco-html-editor.tsx`：`dynamic(() => import('@monaco-editor/react'), { ssr: false })`；`language=html`
   - **依赖**：M16-A Monaco
-- [ ] 新增 `apps/web/src/components/sops/sop-monaco-html-editor.test.tsx`：Mock Monaco 渲染 textarea 占位
+- [x] 新增 `apps/web/src/components/sops/sop-monaco-html-editor.test.tsx`：Mock Monaco 渲染 textarea 占位
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-html-iframe-preview.tsx`：`<iframe sandbox="allow-same-origin">` **禁止** `allow-scripts`；`srcDoc={buildIframeSrcdoc(debouncedHtml)}`
+- [x] 新增 `apps/web/src/components/sops/sop-html-iframe-preview.tsx`：`<iframe sandbox="allow-same-origin">` **禁止** `allow-scripts`；`srcDoc={buildIframeSrcdoc(debouncedHtml)}`
   - **依赖**：M16-C debounce + buildIframeSrcdoc
-- [ ] 新增 `apps/web/src/components/sops/sop-html-iframe-preview.test.tsx`：断言 sandbox 属性不含 `allow-scripts`
+- [x] 新增 `apps/web/src/components/sops/sop-html-iframe-preview.test.tsx`：断言 sandbox 属性不含 `allow-scripts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-html-preview-toolbar.tsx`：Toggle 黑白模式（`filter: grayscale(100%)`）；A3/A4 纸张比例容器 + 红色虚线出血框（纯 CSS Grid/Flex，`prd.md` §3.8.5）
+- [x] 新增 `apps/web/src/components/sops/sop-html-preview-toolbar.tsx`：Toggle 黑白模式（`filter: grayscale(100%)`）；A3/A4 纸张比例容器 + 红色虚线出血框（纯 CSS Grid/Flex，`prd.md` §3.8.5）
   - **依赖**：iframe 预览组件
-- [ ] 新增 `apps/web/src/components/sops/sop-html-preview-toolbar.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-html-preview-toolbar.test.tsx`
   - **依赖**：上一条
 
-- [ ] 组装 `apps/web/src/components/sops/sop-artifact-html-split-pane.tsx`：左 Monaco + 右 iframe + 工具栏；Debounce **500ms** 刷新预览
+- [x] 组装 `apps/web/src/components/sops/sop-artifact-html-split-pane.tsx`：左 Monaco + 右 iframe + 工具栏；Debounce **500ms** 刷新预览
   - **依赖**：M16-M 子组件
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-html-split-pane.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-html-split-pane.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-N `apps/web` — 幻觉校验门禁与 PDF 重试
 
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-verify-button.tsx`：展示 [Verified] 状态；人工 → `verifySopArtifact`
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-verify-button.tsx`：展示 [Verified] 状态；人工 → `verifySopArtifact`
   - **依赖**：M16-B verify；`requires_verification` 来自 status/步骤元数据【若 status 未含则从 GET artifact 推断】
-- [ ] 新增 `apps/web/src/components/sops/sop-artifact-verify-button.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-artifact-verify-button.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `sop-finalize-step-button.tsx` 未 Verified 时禁用并 Tooltip（`prd.md` §3.8.3）
+- [x] 在 `sop-finalize-step-button.tsx` 未 Verified 时禁用并 Tooltip（`prd.md` §3.8.3）
   - **依赖**：verify 按钮；finalize 按钮
-- [ ] 新增 `sop-finalize-step-button.verify-gate.test.tsx`
+- [x] 新增 `sop-finalize-step-button.verify-gate.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-regenerate-pdf-button.tsx`：仅 `finalized` 显示 → `regenerateSopArtifactPdf`；Toast 已入队
+- [x] 新增 `apps/web/src/components/sops/sop-regenerate-pdf-button.tsx`：仅 `finalized` 显示 → `regenerateSopArtifactPdf`；Toast 已入队
   - **依赖**：M16-B regenerate
-- [ ] 新增 `apps/web/src/components/sops/sop-regenerate-pdf-button.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-regenerate-pdf-button.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/sops/sop-pdf-link-status.tsx`：展示 `linked_drive_node_id` 空/非空；引导至云盘路径（只读链接，不写 Supabase）
+- [x] 新增 `apps/web/src/components/sops/sop-pdf-link-status.tsx`：展示 `linked_drive_node_id` 空/非空；引导至云盘路径（只读链接，不写 Supabase）
   - **依赖**：artifact GET 字段
-- [ ] 新增 `apps/web/src/components/sops/sop-pdf-link-status.test.tsx`
+- [x] 新增 `apps/web/src/components/sops/sop-pdf-link-status.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M16-O `apps/web` — 异步步骤轮询 UX
 
-- [ ] 在 `LawyerSopPipelineWorkspace` 中：当任一步骤 `artifactStatus=running` 时强制 `enabled=true` 轮询（间隔 `SOP_PIPELINE_POLL_INTERVAL_MS`）
+- [x] 在 `LawyerSopPipelineWorkspace` 中：当任一步骤 `artifactStatus=running` 时强制 `enabled=true` 轮询（间隔 `SOP_PIPELINE_POLL_INTERVAL_MS`）
   - **依赖**：M16-C poll；M16-H workspace
-- [ ] 新增 `LawyerSopPipelineWorkspace.running-poll.test.tsx`：`running` 时 poll 函数调用 ≥2 次
+- [x] 新增 `LawyerSopPipelineWorkspace.running-poll.test.tsx`：`running` 时 poll 函数调用 ≥2 次
   - **依赖**：上一条
 
-- [ ] 当步骤 `running→draft` 时 Toast「步骤已完成，请审阅定稿」；`→failed` 时 Toast 错误（**禁止** WebSocket，`prd.md` §4.2.4 SOP L3）
+- [x] 当步骤 `running→draft` 时 Toast「步骤已完成，请审阅定稿」；`→failed` 时 Toast 错误（**禁止** WebSocket，`prd.md` §4.2.4 SOP L3）
   - **依赖**：workspace poll 副作用
-- [ ] 新增 `LawyerSopPipelineWorkspace.status-transition.test.tsx`
+- [x] 新增 `LawyerSopPipelineWorkspace.status-transition.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `async_deep_research` 步骤执行后展示 `SopDeepResearchOfflineBanner`（可由 BFF 设置或 status 扩展字段驱动；缺省不展示）
+- [x] 在 `async_deep_research` 步骤执行后展示 `SopDeepResearchOfflineBanner`（可由 BFF 设置或 status 扩展字段驱动；缺省不展示）
   - **依赖**：M16-E banner；execute 202 流程
-- [ ] 新增 `sop-step-action-panel.dr-banner.test.tsx`
+- [x] 新增 `sop-step-action-panel.dr-banner.test.tsx`
   - **依赖**：上一条
 
 ---
@@ -2788,7 +2788,7 @@ M10 (SOP DB/RLS/Storage)
 | M13 | 律师端 SOP 流水线业务 API | 代码完成（待人工黑盒签收） |
 | M14 | 异步 Worker SOP 阶段处理器 | 已完成 |
 | M15 | 管理员 SOP 配置前端 | **已完成**（黑盒 2026-06-03） |
-| M16 | 律师端 SOP 流水线前端 | 未开始 |
+| M16 | 律师端 SOP 流水线前端 | 开发完成（待 M16-P 人工黑盒） |
 | M17 | SOP 集成验收与基线回归 | 未开始 |
 
 | Milestone | 名称 | 状态 |

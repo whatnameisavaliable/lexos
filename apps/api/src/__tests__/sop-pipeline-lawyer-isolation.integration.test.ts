@@ -14,6 +14,8 @@ import { CasePipelineRepository } from "../repositories/case-pipeline.repository
 import { SopPipelineStatusService } from "../services/sop-pipeline-status.service.js";
 import { SopStepSnapshotRepository } from "../repositories/sop-step-snapshot.repository.js";
 import { PipelineArtifactRepository } from "../repositories/pipeline-artifact.repository.js";
+import { SystemSettingReadRepository } from "../repositories/system-setting-read.repository.js";
+import { SystemSettingReadService } from "../services/system-setting-read.service.js";
 
 interface LawyerFixture {
   readonly userId: string;
@@ -115,10 +117,14 @@ describe("sop pipeline lawyer isolation (integration)", () => {
       );
 
       const pipelineRepo = new CasePipelineRepository(appEnv);
+      const systemSettingReadService = new SystemSettingReadService(
+        new SystemSettingReadRepository(appEnv),
+      );
       const statusService = new SopPipelineStatusService(
         pipelineRepo,
         new SopStepSnapshotRepository(appEnv),
         new PipelineArtifactRepository(appEnv),
+        systemSettingReadService,
       );
 
       try {
@@ -166,6 +172,7 @@ describe("sop pipeline lawyer isolation (integration)", () => {
       pipelineRepo as never,
       { listStepsByTemplateVersionId: async () => [] } as never,
       { findArtifactByStep: async () => null } as never,
+      { isDeepResearchEnabled: async () => true } as never,
     );
     const actor = createAuthContext({
       userId: "u1",

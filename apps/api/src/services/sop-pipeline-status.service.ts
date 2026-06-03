@@ -8,12 +8,14 @@ import { AppHttpError } from "../middleware/error-handler.middleware.js";
 import type { CasePipelineRepository } from "../repositories/case-pipeline.repository.js";
 import type { PipelineArtifactRepository } from "../repositories/pipeline-artifact.repository.js";
 import type { SopStepSnapshotRepository } from "../repositories/sop-step-snapshot.repository.js";
+import type { SystemSettingReadService } from "./system-setting-read.service.js";
 
 export class SopPipelineStatusService {
   constructor(
     private readonly casePipelineRepository: CasePipelineRepository,
     private readonly stepSnapshotRepository: SopStepSnapshotRepository,
     private readonly artifactRepository: PipelineArtifactRepository,
+    private readonly systemSettingReadService: SystemSettingReadService,
   ) {}
 
   async getStatus(
@@ -33,6 +35,8 @@ export class SopPipelineStatusService {
       accessToken,
       pipeline.templateVersionId,
     );
+    const deepResearchEnabled =
+      await this.systemSettingReadService.isDeepResearchEnabled();
     const resultSteps: SopPipelineStepStatusItem[] = [];
     for (const step of steps) {
       const artifact = await this.artifactRepository.findArtifactByStep(
@@ -42,7 +46,12 @@ export class SopPipelineStatusService {
       );
       resultSteps.push({
         stepCode: step.stepCode,
+        name: step.name,
+        executionType: step.executionType,
+        inputSchema: step.inputSchema,
+        requiresVerification: step.requiresVerification,
         artifactStatus: artifact?.status ?? null,
+        artifactId: artifact?.id ?? null,
       });
     }
 
@@ -51,6 +60,7 @@ export class SopPipelineStatusService {
       status: pipeline.status,
       currentStepCode: pipeline.currentStepCode,
       steps: resultSteps,
+      deepResearchEnabled,
     };
   }
 }

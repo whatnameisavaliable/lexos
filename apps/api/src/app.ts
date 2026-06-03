@@ -498,6 +498,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     casePipelineRepository,
     sopStepSnapshotRepository,
     pipelineArtifactRepository,
+    systemSettingReadService,
   );
   const sopPipelineResumeService = new SopPipelineResumeService(casePipelineRepository);
   const sopPipelineCloseService = new SopPipelineCloseService(casePipelineRepository);

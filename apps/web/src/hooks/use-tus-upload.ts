@@ -76,7 +76,7 @@ export function useTusUpload(
     async (file: File, meta: TusUploadMeta): Promise<string | undefined> => {
       setIsUploading(true);
       setProgress(0);
-      registerUpload({ taskId: null, fileName: file.name });
+      registerUpload({ kind: "transcription", taskId: null, fileName: file.name });
 
       try {
         const init = await initUpload({
@@ -89,7 +89,11 @@ export function useTusUpload(
           maxSpeakers: meta.maxSpeakers,
         });
 
-        registerUpload({ taskId: init.taskId, fileName: file.name });
+        registerUpload({
+          kind: "transcription",
+          taskId: init.taskId,
+          fileName: file.name,
+        });
         const tusOptions = buildTusUploadOptions(init, file);
 
         await new Promise<void>((resolve, reject) => {

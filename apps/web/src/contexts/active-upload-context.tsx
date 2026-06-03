@@ -10,11 +10,28 @@ import {
   type ReactNode,
 } from "react";
 
+/** 进行中 TUS 上传种类（转写卷宗 vs SOP 卷宗）。 */
+export type ActiveUploadKind = "transcription" | "sop";
+
 /** 进行中的 TUS 上传状态（供路由 Guard · `ui_design.md` §6.3.4.2）。 */
 export interface ActiveUploadState {
+  readonly kind: ActiveUploadKind;
   readonly taskId: string | null;
   readonly fileName: string;
   readonly startedAt: number;
+  readonly pipelineId?: string;
+}
+
+export type RegisterActiveUploadPartial = Pick<
+  ActiveUploadState,
+  "taskId" | "fileName" | "kind" | "pipelineId"
+>;
+
+/** 是否存在未完成上传（含 `kind=sop` 与转写）。 */
+export function deriveHasActiveUpload(
+  activeUpload: ActiveUploadState | null,
+): boolean {
+  return activeUpload !== null;
 }
 
 export interface ActiveUploadContextValue {
@@ -22,7 +39,7 @@ export interface ActiveUploadContextValue {
   /** 是否存在未完成的上传（含 init 后、complete 前）。 */
   readonly hasActiveUpload: boolean;
   /** 注册/更新进行中上传；M4-J 布局层挂载 Provider 后生效。 */
-  registerUpload: (partial: Pick<ActiveUploadState, "taskId" | "fileName">) => void;
+  registerUpload: (partial: RegisterActiveUploadPartial) => void;
   /** 由 `useTusUpload` 注册 TUS `abort` 回调（§6.3.4.3）。 */
   registerAbortHandler: (handler: (() => void) | null) => void;
   /** 用户确认离开页面时中止上传。 */
@@ -57,16 +74,15 @@ export function ActiveUploadProvider({
   );
   const abortHandlerRef = useRef<(() => void) | null>(null);
 
-  const registerUpload = useCallback(
-    (partial: Pick<ActiveUploadState, "taskId" | "fileName">) => {
-      setActiveUpload({
-        taskId: partial.taskId,
-        fileName: partial.fileName,
-        startedAt: Date.now(),
-      });
-    },
-    [],
-  );
+  const registerUpload = useCallback((partial: RegisterActiveUploadPartial) => {
+    setActiveUpload({
+      kind: partial.kind ?? "transcription",
+      taskId: partial.taskId,
+      fileName: partial.fileName,
+      pipelineId: partial.pipelineId,
+      startedAt: Date.now(),
+    });
+  }, []);
 
   const registerAbortHandler = useCallback((handler: (() => void) | null) => {
     abortHandlerRef.current = handler;
@@ -86,7 +102,7 @@ export function ActiveUploadProvider({
   const value = useMemo(
     (): ActiveUploadContextValue => ({
       activeUpload,
-      hasActiveUpload: activeUpload !== null,
+      hasActiveUpload: deriveHasActiveUpload(activeUpload),
       registerUpload,
       registerAbortHandler,
       abortActiveUpload,

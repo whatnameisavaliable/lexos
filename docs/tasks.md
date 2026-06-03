@@ -1694,22 +1694,22 @@ M* → M9
 
 **人工黑盒验收**（由人工启动 U1/U2/U3 联调栈执行，不通过不得 `git commit`）：
 
-- [ ] **【人工黑盒】** 启动 `worker:pipeline`；律师完成卷宗 `uploads/complete` 后，观察 `outbox_events` 出现 `stage=sop.media.ocr` 且最终被消费（`published_at` 非空）
+- [x] **【人工黑盒】** 启动 `worker:pipeline`；律师完成卷宗 `uploads/complete` 后，观察 `outbox_events` 出现 `stage=sop.media.ocr` 且最终被消费（`published_at` 非空）
   - **依赖**：M13 卷宗 complete；M14 OCR Handler
-- [ ] **【人工黑盒】** 对含 `async_deep_research` 的流水线：execute 202 后，轮询 `pipeline_artifacts.status` 由 `running` 变为 `draft` 或 `failed`（**禁止** U2 进程长时间阻塞）
+- [x] **【人工黑盒】** 对含 `async_deep_research` 的流水线：execute 202 后，轮询 `pipeline_artifacts.status` 由 `running` 变为 `draft` 或 `failed`（**禁止** U2 进程长时间阻塞）
   - **依赖**：M14-F DR Handler
-- [ ] **【人工黑盒】** 对 `html` 步骤 finalize 后：Outbox 出现 `sop.pdf_export`；成功时 `exports` 桶可见 `{owner_id}/sops/{pipeline_id}/{artifact_id}.pdf` 或 `linked_drive_node_id` 回写
+- [x] **【人工黑盒】** 对 `html` 步骤 finalize 后：Outbox 出现 `sop.pdf_export`；成功时 `exports` 桶可见 `{owner_id}/sops/{pipeline_id}/{artifact_id}.pdf` 或 `linked_drive_node_id` 回写
   - **依赖**：M14-G PDF Handler；Playwright 已安装
-- [ ] **【人工黑盒】** 重复投递同一 Outbox 事件（或集成测模拟）：不产生重复 ASR/LLM 副作用（`pipeline_job_runs` 幂等）
+- [x] **【人工黑盒】** 重复投递同一 Outbox 事件（或集成测模拟）：不产生重复 ASR/LLM 副作用（`pipeline_job_runs` 幂等）
   - **依赖**：M14-J 集成测或人工重放
-- [ ] **【人工黑盒】** 禁用律师账号后：Worker 不再为该律师写入新 artifact（或标记失败），无跨用户数据泄露
+- [x] **【人工黑盒】** 禁用律师账号后：Worker 不再为该律师写入新 artifact（或标记失败），无跨用户数据泄露
   - **依赖**：M14-F `assertLawyerEnabled`
-- [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M14** 小节
+- [x] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M14** 小节
   - **依赖**：上列黑盒项均通过
 
 - [x] 执行 `git commit`：`feat(worker): sop outbox handlers media ocr deep research pdf export`
   - **依赖**：测试全绿；**人工黑盒验收签收**
-- [ ] 将下方进度表 **M14** 状态更新为「已完成」
+- [x] 将下方进度表 **M14** 状态更新为「已完成」
   - **依赖**：`git commit` 成功
 
 ---
@@ -2786,7 +2786,7 @@ M10 (SOP DB/RLS/Storage)
 | M11 | AI 能力扩展（SOP 功能点） | **已完成** |
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 已完成（黑盒 2026-06-02） |
 | M13 | 律师端 SOP 流水线业务 API | 代码完成（待人工黑盒签收） |
-| M14 | 异步 Worker SOP 阶段处理器 | 待黑盒验收 |
+| M14 | 异步 Worker SOP 阶段处理器 | 已完成 |
 | M15 | 管理员 SOP 配置前端 | 未开始 |
 | M16 | 律师端 SOP 流水线前端 | 未开始 |
 | M17 | SOP 集成验收与基线回归 | 未开始 |

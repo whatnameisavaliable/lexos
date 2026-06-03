@@ -81,6 +81,14 @@ async function seedLawyerWithDriveRoot(suffix: string) {
   });
 
   const cleanup = async () => {
+    const { data: tasks } = await admin
+      .from("transcription_tasks")
+      .select("id")
+      .eq("created_by", data.user!.id);
+    const taskIds = (tasks ?? []).map((row) => row.id as string);
+    if (taskIds.length > 0) {
+      await admin.from("outbox_events").delete().in("aggregate_id", taskIds);
+    }
     await admin.from("transcription_tasks").delete().eq("created_by", data.user!.id);
     await admin.from("drive_nodes").delete().eq("created_by", data.user!.id);
     await admin.auth.admin.deleteUser(data.user!.id);

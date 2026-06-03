@@ -57,6 +57,26 @@ export class PipelineStageProcessorService implements OutboxStageProcessor {
     event: OutboxEventRow,
     payload: PipelineStageOutboxPayload,
   ): Promise<StageProcessOutcome> {
+    const taskExists = await withPgClient(pool, async (client) => {
+      const { rows } = await client.query<{ id: string }>(
+        `SELECT id
+         FROM public.transcription_tasks
+         WHERE id = $1::uuid
+           AND deleted_at IS NULL`,
+        [payload.taskId],
+      );
+      return rows.length > 0;
+    });
+    if (!taskExists) {
+      await withPgClient(pool, (client) =>
+        this.outboxRepository.markPublished(client, event.id),
+      );
+      console.warn(
+        `[pipeline-worker] stage skipped (orphan task) task=${payload.taskId} stage=${payload.stage} — transcription_tasks row missing`,
+      );
+      return { kind: "skipped_duplicate" };
+    }
+
     const idem = await withPgClient(pool, (client) =>
       this.idempotency.tryBeginRun(client, {
         stage: payload.stage,

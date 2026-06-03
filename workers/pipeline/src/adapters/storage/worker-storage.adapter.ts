@@ -8,6 +8,13 @@ import type {
   SupabaseEnvConfig,
 } from "@lexos/shared/config";
 
+/** Storage 对象列表项（`listObjectsByPrefix` 返回）。 */
+export interface StorageObjectSummary {
+  readonly name: string;
+  readonly sizeBytes: number | null;
+  readonly mimeType: string | null;
+}
+
 /**
  * Worker 专用 Storage 下载适配器（流式落盘 · `architecture.md` §3.2.2.1）。
  */
@@ -105,4 +112,45 @@ export class WorkerStorageAdapter {
       );
     }
   }
+
+  /** 列举前缀下文件对象（跳过文件夹占位项）。 */
+  async listObjectsByPrefix(prefix: string): Promise<StorageObjectSummary[]> {
+    const normalizedPrefix = normalizePrefix(prefix);
+    const { data, error } = await this.client.storage
+      .from(this.bucket)
+      .list(normalizedPrefix, {
+        limit: 1000,
+        sortBy: { column: "name", order: "asc" },
+      });
+
+    if (error) {
+      throw new Error(`Storage list failed: ${error.message}`);
+    }
+
+    return (data ?? [])
+      .filter((entry) => entry.id != null)
+      .map((entry) => {
+        const name = joinStorageKey(normalizedPrefix, entry.name);
+        const metadata = entry.metadata as {
+          size?: number;
+          mimetype?: string;
+        } | null;
+        return {
+          name,
+          sizeBytes:
+            typeof metadata?.size === "number" ? metadata.size : null,
+          mimeType:
+            typeof metadata?.mimetype === "string" ? metadata.mimetype : null,
+        };
+      });
+  }
+}
+
+function normalizePrefix(prefix: string): string {
+  const trimmed = prefix.trim().replace(/^\/+/, "");
+  return trimmed.endsWith("/") ? trimmed : `${trimmed}/`;
+}
+
+function joinStorageKey(prefix: string, name: string): string {
+  return `${normalizePrefix(prefix)}${name.replace(/^\/+/, "")}`;
 }

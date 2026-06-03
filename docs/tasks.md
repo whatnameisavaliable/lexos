@@ -1482,44 +1482,44 @@ M* → M9
 
 #### M14-D `workers/pipeline` — Repository（`service_role`）
 
-- [ ] 新增 `workers/pipeline/src/repositories/worker-case-pipeline.repository.ts`：骨架（`pg` + Supabase service_role）
+- [x] 新增 `workers/pipeline/src/repositories/worker-case-pipeline.repository.ts`：骨架（`pg` + Supabase service_role）
   - **依赖**：M10 `case_pipelines`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-case-pipeline.repository.test.ts`
+- [x] 新增 `workers/pipeline/src/repositories/worker-case-pipeline.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `assertLawyerPipelineWritable(pipelineId)`：校验 `lawyer_id` 对应 `profiles.status=enabled`（`architecture.md` §5.6.2 / `prd.md` §2.3）
+- [x] 实现 `assertLawyerPipelineWritable(pipelineId)`：校验 `lawyer_id` 对应 `profiles.status=enabled`（`architecture.md` §5.6.2 / `prd.md` §2.3）
   - **依赖**：Repository 骨架
-- [ ] 新增 `worker-case-pipeline.repository.assert-writable.test.ts`
+- [x] 新增 `worker-case-pipeline.repository.assert-writable.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `findPipelineWithLawyer(pipelineId)`、`updateCurrentStepCode(...)`
+- [x] 实现 `findPipelineWithLawyer(pipelineId)`、`updateCurrentStepCode(...)`
   - **依赖**：assert 已实现
-- [ ] 新增 `worker-case-pipeline.repository.find.test.ts`
+- [x] 新增 `worker-case-pipeline.repository.find.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/repositories/worker-pipeline-artifact.repository.ts`：骨架
+- [x] 新增 `workers/pipeline/src/repositories/worker-pipeline-artifact.repository.ts`：骨架
   - **依赖**：M10 `pipeline_artifacts`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-pipeline-artifact.repository.test.ts`
+- [x] 新增 `workers/pipeline/src/repositories/worker-pipeline-artifact.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `findArtifactById`、`setArtifactStatus`、`setContentRaw`、`setLinkedDriveNodeId`
+- [x] 实现 `findArtifactById`、`setArtifactStatus`、`setContentRaw`、`setLinkedDriveNodeId`
   - **依赖**：artifact repo 骨架
-- [ ] 新增 `worker-pipeline-artifact.repository.mutations.test.ts`
+- [x] 新增 `worker-pipeline-artifact.repository.mutations.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `loadFinalizedSnapshotHtml(artifactId)`（读 `finalized_snapshot_raw` 或 `content_raw`）
+- [x] 实现 `loadFinalizedSnapshotHtml(artifactId)`（读 `finalized_snapshot_raw` 或 `content_raw`）
   - **依赖**：find 已实现
-- [ ] 新增 `worker-pipeline-artifact.repository.load-html.test.ts`
+- [x] 新增 `worker-pipeline-artifact.repository.load-html.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/repositories/worker-sop-media.repository.ts`：列出 `storageKeyPrefix` 下对象键（`media` 桶）
+- [x] 新增 `workers/pipeline/src/repositories/worker-sop-media.repository.ts`：列出 `storageKeyPrefix` 下对象键（`media` 桶）
   - **依赖**：`WorkerStorageAdapter`
-- [ ] 新增 `workers/pipeline/src/repositories/worker-sop-media.repository.test.ts`
+- [x] 新增 `workers/pipeline/src/repositories/worker-sop-media.repository.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/repositories/worker-system-settings.repository.ts`：读 `sop.deep_research_enabled`
+- [x] 新增 `workers/pipeline/src/repositories/worker-system-settings.repository.ts`：读 `sop.deep_research_enabled`
   - **依赖**：M10 seed
-- [ ] 新增 `workers/pipeline/src/repositories/worker-system-settings.repository.test.ts`
+- [x] 新增 `workers/pipeline/src/repositories/worker-system-settings.repository.test.ts`
   - **依赖**：上一条
 
 ---

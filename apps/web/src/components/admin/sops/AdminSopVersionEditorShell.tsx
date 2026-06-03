@@ -22,6 +22,8 @@ import { SopInputSchemaEditor } from "@/components/admin/sops/sop-input-schema-e
 import {
   buildStepsUpsertBody,
   isVersionEditorReadOnly,
+  localizeSopDagSaveError,
+  validateSopStepsDagForSave,
 } from "@/components/admin/sops/sop-version-editor-utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +33,10 @@ export interface AdminSopVersionEditorShellProps {
   readonly versionId: string;
 }
 
-function createEmptyStep(index: number): AdminSopTemplateStepDetail {
+function createEmptyStep(
+  index: number,
+  previousStepCode?: string,
+): AdminSopTemplateStepDetail {
   const code = `step_${index + 1}`;
   return {
     id: code,
@@ -41,7 +46,7 @@ function createEmptyStep(index: number): AdminSopTemplateStepDetail {
     aiFeatureKey: null,
     promptTemplateId: null,
     inputSchema: { type: "object", properties: {} },
-    dependsOn: [],
+    dependsOn: previousStepCode ? [previousStepCode] : [],
     requiresVerification: false,
     createdAt: new Date().toISOString(),
   };
@@ -121,7 +126,8 @@ export function AdminSopVersionEditorShell({
   }
 
   function handleAddStep() {
-    const next = createEmptyStep(steps.length);
+    const previousStepCode = steps[steps.length - 1]?.stepCode;
+    const next = createEmptyStep(steps.length, previousStepCode);
     setSteps((prev) => [...prev, next]);
     setSelectedStepCode(next.stepCode);
   }
@@ -149,8 +155,9 @@ export function AdminSopVersionEditorShell({
       toast.error(schemaError);
       return;
     }
-    if (steps.length === 0) {
-      toast.error("至少需要一个步骤");
+    const dagError = validateSopStepsDagForSave(steps);
+    if (dagError) {
+      toast.error(dagError);
       return;
     }
 
@@ -164,7 +171,7 @@ export function AdminSopVersionEditorShell({
       toast.error(
         apiErr.code === "OPERATION_NOT_ALLOWED"
           ? "已发布版本只读，请新建版本草稿"
-          : apiErr.message,
+          : localizeSopDagSaveError(apiErr.message),
       );
     } finally {
       setSaving(false);

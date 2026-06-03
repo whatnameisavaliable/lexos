@@ -1993,20 +1993,20 @@ M* → M9
 
 **人工黑盒验收**（由产品在浏览器中执行，不通过不得 `git commit`）：
 
-- [ ] **【人工黑盒】** admin 登录 → `/admin/sops` 新建模板 → 进入版本编辑 → 添加 2 步 DAG（含 `depends_on`）→ 保存 → 发布 → 新建草稿版本 → 再编辑并发布
+- [x] **【人工黑盒】** admin 登录 → `/admin/sops` 新建模板 → 进入版本编辑 → 添加 2 步 DAG（含 `depends_on`）→ 保存 → 发布 → 新建草稿版本 → 再编辑并发布
   - **依赖**：M15-A～M15-K 完成
-- [ ] **【人工黑盒】** 已发布版本打开编辑页：保存/发布按钮 **disabled**；DevTools 强制调用保存 API 时界面 Toast 展示 422 友好文案
+- [x] **【人工黑盒】** 已发布版本打开编辑页：保存/发布按钮 **disabled**；DevTools 强制调用保存 API 时界面 Toast 展示 422 友好文案
   - **依赖**：上一条
-- [ ] **【人工黑盒】** lawyer 账号访问 `/admin/sops` → `/unauthorized` 或等价拒绝页
+- [x] **【人工黑盒】** lawyer 账号访问 `/admin/sops` → `/unauthorized` 或等价拒绝页
   - **依赖**：M15-D guard
-- [ ] **【人工黑盒】** Prompt 沙盒预览：输入模拟表单与上游文本，预览区仅展示纯文本/Markdown，**无** Mermaid/图表库渲染
+- [x] **【人工黑盒】** Prompt 沙盒预览：输入模拟表单与上游文本，预览区仅展示纯文本/Markdown，**无** Mermaid/图表库渲染
   - **依赖**：M15-K
-- [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M15** 小节
+- [x] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M15** 小节
   - **依赖**：上列黑盒项均通过
 
-- [ ] 执行 `git commit`：`feat(web): admin sop prompt studio and template versioning ui`
+- [x] 执行 `git commit`：`feat(web): admin sop prompt studio and template versioning ui`
   - **依赖**：**人工黑盒验收签收**
-- [ ] 将下方进度表 **M15** 状态更新为「已完成」
+- [x] 将下方进度表 **M15** 状态更新为「已完成」
   - **依赖**：`git commit` 成功
 
 ---
@@ -2787,7 +2787,7 @@ M10 (SOP DB/RLS/Storage)
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 已完成（黑盒 2026-06-02） |
 | M13 | 律师端 SOP 流水线业务 API | 代码完成（待人工黑盒签收） |
 | M14 | 异步 Worker SOP 阶段处理器 | 已完成 |
-| M15 | 管理员 SOP 配置前端 | 未开始 |
+| M15 | 管理员 SOP 配置前端 | **已完成**（黑盒 2026-06-03） |
 | M16 | 律师端 SOP 流水线前端 | 未开始 |
 | M17 | SOP 集成验收与基线回归 | 未开始 |
 

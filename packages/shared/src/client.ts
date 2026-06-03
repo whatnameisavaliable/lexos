@@ -33,6 +33,10 @@ export * from "./types/auth-context.js";
 export * from "./errors/auth-error-codes.js";
 export * from "./validation/username.js";
 export * from "./enums/ai-feature-key.js";
+export {
+  ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES,
+  type AdminConfigurableFeatureKey,
+} from "./ai/admin-configurable-feature-keys.js";
 export * from "./enums/ai-provider-kind.js";
 export * from "./types/ai-model-public.js";
 export type { AiModelCreateBody } from "./dto/ai-model-create.dto.js";
@@ -99,3 +103,28 @@ export {
   parseSystemSettingUpsert,
   type SystemSettingUpsert,
 } from "./dto/system-setting-upsert.dto.js";
+export { SOP_DEEP_RESEARCH_ENABLED_KEY } from "./constants/sop-system-settings-keys.js";
+export {
+  SopExecutionType,
+  SOP_EXECUTION_TYPE_VALUES,
+  type SopExecutionType as SopExecutionTypeValue,
+} from "./enums/sop-execution-type.js";
+export {
+  SOP_AI_FEATURE_KEY_VALUES,
+  type SopAiFeatureKey,
+} from "./enums/sop-ai-feature-keys.js";
+export { stepCodeToMustacheArtifactPrefix } from "./sop/step-code-to-mustache-token.js";
+export {
+  parseAdminSopTemplateCreateBody,
+  type AdminSopTemplateCreateBody,
+} from "./dto/admin-sop-template-create.dto.js";
+export type { AdminSopStepUpsert } from "./dto/admin-sop-step-upsert.dto.js";
+export type { AdminSopVersionPromptsUpsertBody } from "./dto/admin-sop-version-prompts-upsert.dto.js";
+export type { AdminSopCreateVersionBody } from "./dto/admin-sop-create-version.dto.js";
+export type { AdminSopPreviewPipelineBody } from "./dto/admin-sop-preview-pipeline.dto.js";
+export type { AdminSopTemplateListItem } from "./types/admin-sop-template-list-item.js";
+export type { AdminSopTemplateVersionSummary } from "./types/admin-sop-template-list-item.js";
+export type {
+  AdminSopTemplateStepDetail,
+  AdminSopTemplateVersionDetail,
+} from "./types/admin-sop-template-version-detail.js";

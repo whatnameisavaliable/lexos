@@ -169,3 +169,38 @@
 - PDF 路径：`{owner_id}/sops/{pipeline_id}/{artifact_id}.pdf`（`exports` 桶）。
 
 **结论**：M14 工程交付与黑盒验收均已通过。
+
+---
+
+## M15 — 管理员 SOP 配置前端（Prompt Studio）（2026-06-03）
+
+| 字段 | 值 |
+|------|-----|
+| 验收日期 | 2026-06-03 |
+| 环境 | development（`http://localhost:3000` Web + `http://localhost:4000` API） |
+| 执行人 | 产品人工黑盒签收 |
+
+### 自动化（验收前已绿）
+
+| 项 | 结果 | 说明 |
+|----|:----:|------|
+| `apps/web` 单测 | 通过 | 含 `admin-sops-api.*`、`sop-version-editor-utils.dag` 等 |
+| 路由守卫 `router-guard.sop.test.ts` | 通过 | lawyer 不可访问 `/admin/sops` |
+
+### 【人工黑盒验收签收】（2026-06-03）
+
+| 项 | 结果 | 备注 |
+|----|:----:|------|
+| admin：新建模板 → 编辑 2 步 DAG（`step_2` 依赖 `step_1`）→ 保存 → 发布 → 新建草稿 → 再发布 | 通过 | 草稿显示 **v0**，发布后 **v1**；DAG 单入口规则已确认 |
+| 已发布版本：保存/发布 **disabled**；强制 API 保存 Toast 422 友好文案 | 通过 | 只读横幅「已发布只读，请新建版本草稿」 |
+| lawyer 访问 `/admin/sops` → `/unauthorized` | 通过 | RBAC 与 `resolveGuardRedirect` 一致 |
+| Prompt 沙盒预览：纯文本/Markdown `<pre>`，无 Mermaid/图表库 | 通过 | M15-K 预览 Dialog |
+| **签收结论** | **通过** | M15 里程碑可关闭，可进入 M16 |
+
+**说明**：
+
+- 新建模板初始 `version_number=0`（界面 **v0**）；首次发布写入 **v1**。
+- 保存步骤须满足 **单 DAG 入口**：仅第一步 `depends_on` 为空，后续步骤须勾选前置步骤。
+- `@lexos/shared` 浏览器入口已导出 `parseAdminSopTemplateCreateBody` 等 SOP DTO，修复新建模板报错。
+
+**结论**：M15 工程交付与人工黑盒验收均已通过。

@@ -40,3 +40,50 @@ export function adminSopVersionEditorPath(versionId: string): string {
 export function adminSopTemplateDetailPath(templateId: string): string {
   return `/admin/sops/templates/${templateId}`;
 }
+
+/**
+ * 保存前 DAG 校验（与 U2 `validateSopStepsDag` 单入口规则一致，`prd.md` §3.4.1）。
+ * @returns 中文错误文案；通过时返回 `null`
+ */
+export function validateSopStepsDagForSave(
+  steps: readonly Pick<AdminSopTemplateStepDetail, "stepCode" | "dependsOn">[],
+): string | null {
+  if (steps.length === 0) {
+    return "至少需要一个步骤";
+  }
+
+  const entrySteps = steps.filter((s) => s.dependsOn.length === 0);
+  if (entrySteps.length !== 1) {
+    const names = entrySteps.map((s) => s.stepCode).join("、");
+    return entrySteps.length === 0
+      ? "须指定一个入口步骤（depends_on 为空）"
+      : `流水线只能有一个入口步骤（depends_on 为空），当前入口有 ${entrySteps.length} 个：${names}。请为后续步骤勾选前置步骤，例如让 step_2 依赖 step_1。`;
+  }
+
+  const codes = new Set(steps.map((s) => s.stepCode));
+  for (const step of steps) {
+    for (const dep of step.dependsOn) {
+      if (!codes.has(dep)) {
+        return `步骤「${step.stepCode}」的前置「${dep}」不存在`;
+      }
+      if (dep === step.stepCode) {
+        return `步骤「${step.stepCode}」不能依赖自身`;
+      }
+    }
+  }
+
+  return null;
+}
+
+/** 将 API 英文 DAG 错误转为中文 Toast。 */
+export function localizeSopDagSaveError(message: string): string {
+  if (message.includes("exactly one DAG entry")) {
+    const match = /found (\d+)/.exec(message);
+    const count = match?.[1] ?? "多";
+    return `流水线只能有一个入口步骤（depends_on 为空），当前有 ${count} 个。请为 step_2 及之后的步骤勾选前置步骤。`;
+  }
+  if (message.includes("depends_on cycle")) {
+    return "步骤依赖存在环，请检查 depends_on 配置";
+  }
+  return message;
+}

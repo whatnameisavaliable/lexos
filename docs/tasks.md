@@ -2036,9 +2036,9 @@ M* → M9
 
 - [x] 在 `apps/web/package.json` 增加 `@monaco-editor/react` 依赖（HTML 源码编辑，`prd.md` §3.8.5）
   - **依赖**：无
-- [ ] 在 `apps/web/package.json` 增加 `@rjsf/core`、`@rjsf/utils`、`@rjsf/validator-ajv8`（`input_schema` 动态表单，`prd.md` §3.8.4）
+- [x] 在 `apps/web/package.json` 增加 `@rjsf/core`、`@rjsf/utils`、`@rjsf/validator-ajv8`（`input_schema` 动态表单，`prd.md` §3.8.4）
   - **依赖**：无
-- [ ] 在 `apps/web/package.json` 增加 `isomorphic-dompurify`（非 iframe 场景的 HTML 片段展示，`prd.md` §3.10）
+- [x] 在 `apps/web/package.json` 增加 `isomorphic-dompurify`（非 iframe 场景的 HTML 片段展示，`prd.md` §3.10）
   - **依赖**：无
 - [ ] 执行 `npm install`（workspace 根目录）并确认 lockfile 更新
   - **依赖**：上三条 package.json 变更

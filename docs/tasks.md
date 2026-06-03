@@ -1738,253 +1738,253 @@ M* → M9
 
 #### M15-A Shadcn 组件引入（每条命令一项）
 
-- [ ] 执行 `npx shadcn@latest add scroll-area`（步骤编辑区长列表；若 M6 已引入则跳过并勾选）
+- [x] 执行 `npx shadcn@latest add scroll-area`（步骤编辑区长列表；若 M6 已引入则跳过并勾选）
   - **依赖**：M1 Shadcn 基建已存在
-- [ ] 执行 `npx shadcn@latest add accordion`（版本折叠面板，若已存在则跳过）
+- [x] 执行 `npx shadcn@latest add accordion`（版本折叠面板，若已存在则跳过）
   - **依赖**：无
-- [ ] 执行 `npx shadcn@latest add textarea`（JSON Schema / Mustache 说明；若已存在则跳过）
+- [x] 执行 `npx shadcn@latest add textarea`（JSON Schema / Mustache 说明；若已存在则跳过）
   - **依赖**：无
 
 ---
 
 #### M15-B `apps/web` — API 客户端（每条函数一个任务 + 测试）
 
-- [ ] 新增 `apps/web/src/lib/admin-sops-api.ts`：文件骨架 + 复用 `apiFetch` / `ApiSuccess` 类型
+- [x] 新增 `apps/web/src/lib/admin-sops-api.ts`：文件骨架 + 复用 `apiFetch` / `ApiSuccess` 类型
   - **依赖**：M12 API 已部署或 Mock 联调
-- [ ] 新增 `apps/web/src/lib/admin-sops-api.types.ts`：定义 `AdminSopTemplateListItem`、`AdminSopVersionDetail` 等（对齐 M12 shared 类型或本地映射）
+- [x] 新增 `apps/web/src/lib/admin-sops-api.types.ts`：定义 `AdminSopTemplateListItem`、`AdminSopVersionDetail` 等（对齐 M12 shared 类型或本地映射）
   - **依赖**：上一条
-- [ ] 新增 `apps/web/src/lib/admin-sops-api.types.test.ts`：类型构造 smoke
+- [x] 新增 `apps/web/src/lib/admin-sops-api.types.test.ts`：类型构造 smoke
   - **依赖**：上一条
 
-- [ ] 在 `admin-sops-api.ts` 实现 `listAdminSops(query?)` → `GET /api/admin/sops`
+- [x] 在 `admin-sops-api.ts` 实现 `listAdminSops(query?)` → `GET /api/admin/sops`
   - **依赖**：types 已定义
-- [ ] 新增 `apps/web/src/lib/admin-sops-api.list.test.ts`：Mock `fetch` 解析 `items` 数组
+- [x] 新增 `apps/web/src/lib/admin-sops-api.list.test.ts`：Mock `fetch` 解析 `items` 数组
   - **依赖**：上一条
 
-- [ ] 实现 `createAdminSopTemplate(body)` → `POST /api/admin/sops/templates`
+- [x] 实现 `createAdminSopTemplate(body)` → `POST /api/admin/sops/templates`
   - **依赖**：`listAdminSops`
-- [ ] 新增 `admin-sops-api.create-template.test.ts`
+- [x] 新增 `admin-sops-api.create-template.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `getAdminSopTemplate(templateId)` → `GET /api/admin/sops/templates/:id`
+- [x] 实现 `getAdminSopTemplate(templateId)` → `GET /api/admin/sops/templates/:id`
   - **依赖**：create 已实现
-- [ ] 新增 `admin-sops-api.get-template.test.ts`
+- [x] 新增 `admin-sops-api.get-template.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `getAdminSopTemplateVersion(versionId)` → `GET /api/admin/sops/template-versions/:id`
+- [x] 实现 `getAdminSopTemplateVersion(versionId)` → `GET /api/admin/sops/template-versions/:id`
   - **依赖**：get template 已实现
-- [ ] 新增 `admin-sops-api.get-version.test.ts`
+- [x] 新增 `admin-sops-api.get-version.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `upsertAdminSopVersionPrompts(versionId, body)` → `PUT .../prompts`
+- [x] 实现 `upsertAdminSopVersionPrompts(versionId, body)` → `PUT .../prompts`
   - **依赖**：get version 已实现
-- [ ] 新增 `admin-sops-api.upsert-prompts.test.ts`：422 时抛出 `ApiClientError`
+- [x] 新增 `admin-sops-api.upsert-prompts.test.ts`：422 时抛出 `ApiClientError`
   - **依赖**：上一条
 
-- [ ] 实现 `publishAdminSopTemplateVersion(versionId)` → `POST .../publish`
+- [x] 实现 `publishAdminSopTemplateVersion(versionId)` → `POST .../publish`
   - **依赖**：upsert 已实现
-- [ ] 新增 `admin-sops-api.publish.test.ts`
+- [x] 新增 `admin-sops-api.publish.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `createAdminSopTemplateVersion(templateId, body?)` → `POST .../templates/:id/versions`
+- [x] 实现 `createAdminSopTemplateVersion(templateId, body?)` → `POST .../templates/:id/versions`
   - **依赖**：publish 已实现
-- [ ] 新增 `admin-sops-api.create-version.test.ts`
+- [x] 新增 `admin-sops-api.create-version.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `previewAdminSopPipeline(body)` → `POST /api/admin/sops/preview-pipeline`
+- [x] 实现 `previewAdminSopPipeline(body)` → `POST /api/admin/sops/preview-pipeline`
   - **依赖**：create version 已实现
-- [ ] 新增 `apps/web/src/lib/admin-sops-api.preview.test.ts`
+- [x] 新增 `apps/web/src/lib/admin-sops-api.preview.test.ts`
   - **依赖**：上一条
 
 ---
 
 #### M15-C `apps/web` — 展示辅助（标签/徽章，单文件）
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-execution-type-label.ts`：导出 `executionTypeLabel(type)`（`sync_llm` / `async_deep_research` / `manual`）
+- [x] 新增 `apps/web/src/components/admin/sops/sop-execution-type-label.ts`：导出 `executionTypeLabel(type)`（`sync_llm` / `async_deep_research` / `manual`）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-execution-type-label.test.ts`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-execution-type-label.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-version-status-badge.tsx`：已发布/草稿 Badge（令牌色，禁止 hex）
+- [x] 新增 `apps/web/src/components/admin/sops/sop-version-status-badge.tsx`：已发布/草稿 Badge（令牌色，禁止 hex）
   - **依赖**：Shadcn `badge`
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-version-status-badge.test.tsx`：渲染「已发布」
+- [x] 新增 `apps/web/src/components/admin/sops/sop-version-status-badge.test.tsx`：渲染「已发布」
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-published-readonly-banner.tsx`：`isPublished` 时顶部 Alert 文案「已发布只读，请新建版本草稿」
+- [x] 新增 `apps/web/src/components/admin/sops/sop-published-readonly-banner.tsx`：`isPublished` 时顶部 Alert 文案「已发布只读，请新建版本草稿」
   - **依赖**：Shadcn `alert`
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-published-readonly-banner.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-published-readonly-banner.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-D `apps/web` — 导航与路由守卫
 
-- [ ] 在 `apps/web/src/lib/menus.ts` 增加 `{ href: "/admin/sops", label: "SOP 模板", allowedRoles: ["admin"] }`（`ui_design.md` §5.1）
+- [x] 在 `apps/web/src/lib/menus.ts` 增加 `{ href: "/admin/sops", label: "SOP 模板", allowedRoles: ["admin"] }`（`ui_design.md` §5.1）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/menus.sop.test.ts`：admin 角色可见该项
+- [x] 新增 `apps/web/src/lib/menus.sop.test.ts`：admin 角色可见该项
   - **依赖**：上一条
 
-- [ ] 确认 `middleware.ts` / `router-guard`：`/admin/sops` 仅 `admin`（lawyer → `/unauthorized`）
+- [x] 确认 `middleware.ts` / `router-guard`：`/admin/sops` 仅 `admin`（lawyer → `/unauthorized`）
   - **依赖**：menus 已更新
-- [ ] 新增 `apps/web/src/lib/router-guard.sop.test.ts`（若项目有 guard 单测；否则记入 M17 E2E）
+- [x] 新增 `apps/web/src/lib/router-guard.sop.test.ts`（若项目有 guard 单测；否则记入 M17 E2E）
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/page.tsx`：挂载 `AdminSopsPagePanel`；Skeleton/Error/Empty
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/page.tsx`：挂载 `AdminSopsPagePanel`；Skeleton/Error/Empty
   - **依赖**：M15-E 面板
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/page.test.tsx`：导出默认组件 smoke
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/page.test.tsx`：导出默认组件 smoke
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/templates/[templateId]/page.tsx`：版本列表页
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/templates/[templateId]/page.tsx`：版本列表页
   - **依赖**：M15-F 时间线组件
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/templates/[templateId]/page.test.tsx`
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/templates/[templateId]/page.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/template-versions/[versionId]/page.tsx`：版本编辑页
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/template-versions/[versionId]/page.tsx`：版本编辑页
   - **依赖**：M15-G 编辑壳
-- [ ] 新增 `apps/web/src/app/(app)/admin/sops/template-versions/[versionId]/page.test.tsx`
+- [x] 新增 `apps/web/src/app/(app)/admin/sops/template-versions/[versionId]/page.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-E `apps/web` — 模板列表页组件
 
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopsPagePanel.tsx`：Flex 列；工具栏 + 表格（`ui_design.md` §6.5）
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopsPagePanel.tsx`：Flex 列；工具栏 + 表格（`ui_design.md` §6.5）
   - **依赖**：M15-B `listAdminSops`
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopsPagePanel.test.tsx`：Loading 显示 Skeleton
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopsPagePanel.test.tsx`：Loading 显示 Skeleton
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/admin-sops-templates-table.tsx`：列：模板名、`case_type`、最新版本、是否已发布、操作
+- [x] 新增 `apps/web/src/components/admin/sops/admin-sops-templates-table.tsx`：列：模板名、`case_type`、最新版本、是否已发布、操作
   - **依赖**：Panel 骨架
-- [ ] 新增 `apps/web/src/components/admin/sops/admin-sops-templates-table.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/admin-sops-templates-table.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/create-sop-template-dialog.tsx`：Dialog + Form（`name`、`caseType`）；提交 `createAdminSopTemplate`
+- [x] 新增 `apps/web/src/components/admin/sops/create-sop-template-dialog.tsx`：Dialog + Form（`name`、`caseType`）；提交 `createAdminSopTemplate`
   - **依赖**：M15-B create API
-- [ ] 新增 `apps/web/src/components/admin/sops/create-sop-template-dialog.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/create-sop-template-dialog.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-F `apps/web` — 版本时间线（模板详情页）
 
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopTemplateDetailPanel.tsx`：加载 `getAdminSopTemplate`；展示版本列表
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopTemplateDetailPanel.tsx`：加载 `getAdminSopTemplate`；展示版本列表
   - **依赖**：M15-B get template
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopTemplateDetailPanel.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopTemplateDetailPanel.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-template-versions-table.tsx`：列：`version_number`、`is_published`、`published_at`、操作「编辑/查看」
+- [x] 新增 `apps/web/src/components/admin/sops/sop-template-versions-table.tsx`：列：`version_number`、`is_published`、`published_at`、操作「编辑/查看」
   - **依赖**：DetailPanel
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-template-versions-table.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-template-versions-table.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/create-sop-version-dialog.tsx`：`AlertDialog` 确认后 `createAdminSopTemplateVersion`
+- [x] 新增 `apps/web/src/components/admin/sops/create-sop-version-dialog.tsx`：`AlertDialog` 确认后 `createAdminSopTemplateVersion`
   - **依赖**：M15-B create version API
-- [ ] 新增 `apps/web/src/components/admin/sops/create-sop-version-dialog.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/create-sop-version-dialog.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-G `apps/web` — 版本编辑壳（只读态）
 
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopVersionEditorShell.tsx`：Grid 布局（侧栏步骤列表 + 主区）；挂载 `SopPublishedReadonlyBanner`
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopVersionEditorShell.tsx`：Grid 布局（侧栏步骤列表 + 主区）；挂载 `SopPublishedReadonlyBanner`
   - **依赖**：M15-C banner；`ui_design.md` §3 Grid
-- [ ] 新增 `apps/web/src/components/admin/sops/AdminSopVersionEditorShell.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/AdminSopVersionEditorShell.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-version-editor-toolbar.tsx`：按钮「保存步骤」「发布」「新建版本草稿」「预览 Prompt」；`isPublished` 时禁用保存/发布
+- [x] 新增 `apps/web/src/components/admin/sops/sop-version-editor-toolbar.tsx`：按钮「保存步骤」「发布」「新建版本草稿」「预览 Prompt」；`isPublished` 时禁用保存/发布
   - **依赖**：EditorShell
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-version-editor-toolbar.test.tsx`：已发布时保存按钮 `disabled`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-version-editor-toolbar.test.tsx`：已发布时保存按钮 `disabled`
   - **依赖**：上一条
 
-- [ ] 在 `AdminSopVersionEditorShell` 内调用 `getAdminSopTemplateVersion(versionId)` 加载数据
+- [x] 在 `AdminSopVersionEditorShell` 内调用 `getAdminSopTemplateVersion(versionId)` 加载数据
   - **依赖**：M15-B；子组件骨架
-- [ ] 新增 `AdminSopVersionEditorShell.load.test.tsx`：Error 时 Toast
+- [x] 新增 `AdminSopVersionEditorShell.load.test.tsx`：Error 时 Toast
   - **依赖**：上一条
 
 ---
 
 #### M15-H `apps/web` — 步骤列表与 DAG `depends_on` 编辑
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-steps-list.tsx`：左侧步骤 `step_code` 列表；选中高亮
+- [x] 新增 `apps/web/src/components/admin/sops/sop-steps-list.tsx`：左侧步骤 `step_code` 列表；选中高亮
   - **依赖**：EditorShell
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-steps-list.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-steps-list.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-step-editor-form.tsx`：RHF + zod：`stepCode`、`name`、`executionType` Select、`requiresVerification` Switch
+- [x] 新增 `apps/web/src/components/admin/sops/sop-step-editor-form.tsx`：RHF + zod：`stepCode`、`name`、`executionType` Select、`requiresVerification` Switch
   - **依赖**：Shadcn `form`/`select`/`switch`
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-step-editor-form.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-step-editor-form.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `sop-step-editor-form.tsx` 增加 `aiFeatureKey` Select（选项来自 `ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES` 中四个 `sop.*`）
+- [x] 在 `sop-step-editor-form.tsx` 增加 `aiFeatureKey` Select（选项来自 `ADMIN_CONFIGURABLE_FEATURE_KEY_VALUES` 中四个 `sop.*`）
   - **依赖**：M11 shared 导出
-- [ ] 新增 `sop-step-editor-form.ai-feature.test.tsx`：`manual` 时隐藏 AI 字段
+- [x] 新增 `sop-step-editor-form.ai-feature.test.tsx`：`manual` 时隐藏 AI 字段
   - **依赖**：上一条
 
-- [ ] 在 `sop-step-editor-form.tsx` 增加 `promptTemplateId` Select（`listPrompts` 过滤对应 `featureKey`）
+- [x] 在 `sop-step-editor-form.tsx` 增加 `promptTemplateId` Select（`listPrompts` 过滤对应 `featureKey`）
   - **依赖**：`admin-ai-api.ts` `listPrompts`
-- [ ] 新增 `sop-step-editor-form.prompt-template.test.tsx`
+- [x] 新增 `sop-step-editor-form.prompt-template.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-depends-on-multi-select.tsx`：多选前置 `step_code`（禁止选自身）
+- [x] 新增 `apps/web/src/components/admin/sops/sop-depends-on-multi-select.tsx`：多选前置 `step_code`（禁止选自身）
   - **依赖**：步骤列表数据
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-depends-on-multi-select.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-depends-on-multi-select.test.tsx`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-mustache-hint.tsx`：静态说明 `{{artifact_{step_code}_*}}` 须列入 `depends_on`（`prd.md` §2.4）
+- [x] 新增 `apps/web/src/components/admin/sops/sop-mustache-hint.tsx`：静态说明 `{{artifact_{step_code}_*}}` 须列入 `depends_on`（`prd.md` §2.4）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-mustache-hint.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-mustache-hint.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-I `apps/web` — JSON Schema 编辑器（`input_schema`）
 
-- [ ] 新增 `apps/web/src/lib/validate-json-schema-text.ts`：导出 `validateJsonSchemaText(text): { ok, error? }`（`JSON.parse` + 最小对象校验）
+- [x] 新增 `apps/web/src/lib/validate-json-schema-text.ts`：导出 `validateJsonSchemaText(text): { ok, error? }`（`JSON.parse` + 最小对象校验）
   - **依赖**：无
-- [ ] 新增 `apps/web/src/lib/validate-json-schema-text.test.ts`：非法 JSON 返回错误
+- [x] 新增 `apps/web/src/lib/validate-json-schema-text.test.ts`：非法 JSON 返回错误
   - **依赖**：上一条
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-input-schema-editor.tsx`：`Textarea` 绑定 `input_schema`；保存前校验
+- [x] 新增 `apps/web/src/components/admin/sops/sop-input-schema-editor.tsx`：`Textarea` 绑定 `input_schema`；保存前校验
   - **依赖**：validate 工具
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-input-schema-editor.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-input-schema-editor.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在工具栏「保存步骤」点击时聚合全部步骤为 `upsertAdminSopVersionPrompts` body
+- [x] 在工具栏「保存步骤」点击时聚合全部步骤为 `upsertAdminSopVersionPrompts` body
   - **依赖**：step form + schema editor + depends_on
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-save-version-prompts.test.tsx`：Mock API 被调用一次
+- [x] 新增 `apps/web/src/components/admin/sops/sop-save-version-prompts.test.tsx`：Mock API 被调用一次
   - **依赖**：上一条
 
 ---
 
 #### M15-J `apps/web` — 发布与新建版本交互
 
-- [ ] 新增 `apps/web/src/components/admin/sops/publish-sop-version-alert-dialog.tsx`：二次确认 → `publishAdminSopTemplateVersion`；成功 Toast
+- [x] 新增 `apps/web/src/components/admin/sops/publish-sop-version-alert-dialog.tsx`：二次确认 → `publishAdminSopTemplateVersion`；成功 Toast
   - **依赖**：M15-B publish API
-- [ ] 新增 `apps/web/src/components/admin/sops/publish-sop-version-alert-dialog.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/publish-sop-version-alert-dialog.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在 `publish-sop-version-alert-dialog` 处理 API 422：Toast 展示发布校验错误（缺映射/DAG）
+- [x] 在 `publish-sop-version-alert-dialog` 处理 API 422：Toast 展示发布校验错误（缺映射/DAG）
   - **依赖**：dialog 骨架
-- [ ] 新增 `publish-sop-version-alert-dialog.error.test.tsx`
+- [x] 新增 `publish-sop-version-alert-dialog.error.test.tsx`
   - **依赖**：上一条
 
-- [ ] 将 `create-sop-version-dialog` 在已发布版本工具栏挂载；成功后 `router.push` 新 `versionId`
+- [x] 将 `create-sop-version-dialog` 在已发布版本工具栏挂载；成功后 `router.push` 新 `versionId`
   - **依赖**：M15-F dialog；Next router
-- [ ] 新增 `create-sop-version-dialog.navigate.test.tsx`
+- [x] 新增 `create-sop-version-dialog.navigate.test.tsx`
   - **依赖**：上一条
 
 ---
 
 #### M15-K `apps/web` — Prompt 沙盒预览
 
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-preview-pipeline-dialog.tsx`：Dialog；表单 `stepCode` + 模拟 `formValues` JSON + 可选上游 artifact 文本
+- [x] 新增 `apps/web/src/components/admin/sops/sop-preview-pipeline-dialog.tsx`：Dialog；表单 `stepCode` + 模拟 `formValues` JSON + 可选上游 artifact 文本
   - **依赖**：M15-B `previewAdminSopPipeline`
-- [ ] 新增 `apps/web/src/components/admin/sops/sop-preview-pipeline-dialog.test.tsx`
+- [x] 新增 `apps/web/src/components/admin/sops/sop-preview-pipeline-dialog.test.tsx`
   - **依赖**：上一条
 
-- [ ] 在预览 Dialog 展示 LLM 输出只读 `ScrollArea`（**禁止** Mermaid/图表库渲染）
+- [x] 在预览 Dialog 展示 LLM 输出只读 `ScrollArea`（**禁止** Mermaid/图表库渲染）
   - **依赖**：dialog 骨架
-- [ ] 新增 `sop-preview-pipeline-dialog.result.test.tsx`：Mock 返回 markdown 文本渲染为 `<pre>`
+- [x] 新增 `sop-preview-pipeline-dialog.result.test.tsx`：Mock 返回 markdown 文本渲染为 `<pre>`
   - **依赖**：上一条
 
 ---

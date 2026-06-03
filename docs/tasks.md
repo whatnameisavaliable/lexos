@@ -1458,24 +1458,24 @@ M* → M9
 
 #### M14-C `workers/pipeline` — 领域纯函数
 
-- [ ] 新增 `workers/pipeline/src/domain/sop/format-media-filename-header.ts`：导出 `formatMediaFilenameHeader(fileName: string): string`（`--- ${fileName} ---`，`prd.md` §3.8.4）
+- [x] 新增 `workers/pipeline/src/domain/sop/format-media-filename-header.ts`：导出 `formatMediaFilenameHeader(fileName: string): string`（`--- ${fileName} ---`，`prd.md` §3.8.4）
   - **依赖**：无
-- [ ] 新增 `workers/pipeline/src/domain/sop/format-media-filename-header.test.ts`
+- [x] 新增 `workers/pipeline/src/domain/sop/format-media-filename-header.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/domain/sop/concat-sop-media-text.ts`：导出 `concatSopMediaText(chunks: readonly { fileName; text }[]): string`
+- [x] 新增 `workers/pipeline/src/domain/sop/concat-sop-media-text.ts`：导出 `concatSopMediaText(chunks: readonly { fileName; text }[]): string`
   - **依赖**：`format-media-filename-header.ts`
-- [ ] 新增 `workers/pipeline/src/domain/sop/concat-sop-media-text.test.ts`：多文件顺序拼接
+- [x] 新增 `workers/pipeline/src/domain/sop/concat-sop-media-text.test.ts`：多文件顺序拼接
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/domain/sop/build-exports-pdf-storage-key.ts`：导出 `buildExportsPdfStorageKey(ownerId, pipelineId, artifactId)` → `{ownerId}/sops/{pipelineId}/{artifactId}.pdf`
+- [x] 新增 `workers/pipeline/src/domain/sop/build-exports-pdf-storage-key.ts`：导出 `buildExportsPdfStorageKey(ownerId, pipelineId, artifactId)` → `{ownerId}/sops/{pipelineId}/{artifactId}.pdf`
   - **依赖**：无
-- [ ] 新增 `workers/pipeline/src/domain/sop/build-exports-pdf-storage-key.test.ts`：首段为 `ownerId`
+- [x] 新增 `workers/pipeline/src/domain/sop/build-exports-pdf-storage-key.test.ts`：首段为 `ownerId`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/domain/sop/is-external-search-available.ts`：导出 `isExternalSearchAvailable(): Promise<boolean>`（探测配置端点；失败→ false，`architecture.md` §3.2.6.7）
+- [x] 新增 `workers/pipeline/src/domain/sop/is-external-search-available.ts`：导出 `isExternalSearchAvailable(): Promise<boolean>`（探测配置端点；失败→ false，`architecture.md` §3.2.6.7）
   - **依赖**：无
-- [ ] 新增 `workers/pipeline/src/domain/sop/is-external-search-available.test.ts`：Mock fetch 超时返回 false
+- [x] 新增 `workers/pipeline/src/domain/sop/is-external-search-available.test.ts`：Mock fetch 超时返回 false
   - **依赖**：上一条
 
 ---

@@ -1249,100 +1249,100 @@ M* → M9
 
 #### M13-H `apps/api` — Controller（每条路由一个文件）
 
-- [ ] 新增 `apps/api/src/controllers/sop-templates-list.controller.ts`：`GET /api/sops/templates`
+- [x] 新增 `apps/api/src/controllers/sop-templates-list.controller.ts`：`GET /api/sops/templates`
   - **依赖**：`sop-published-templates-list.service`
-- [ ] 新增 `apps/api/src/controllers/sop-templates-list.controller.test.ts`：admin 可调 lawyer 路由【若禁止 admin 则 403】
+- [x] 新增 `apps/api/src/controllers/sop-templates-list.controller.test.ts`：admin 可调 lawyer 路由【若禁止 admin 则 403】
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-uploads-init.controller.ts`：`POST /api/sops/uploads/init`
+- [x] 新增 `apps/api/src/controllers/sop-uploads-init.controller.ts`：`POST /api/sops/uploads/init`
   - **依赖**：`sop-upload-init.service`
-- [ ] 新增 `apps/api/src/controllers/sop-uploads-init.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-uploads-init.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-uploads-complete.controller.ts`：`POST /api/sops/uploads/complete`
+- [x] 新增 `apps/api/src/controllers/sop-uploads-complete.controller.ts`：`POST /api/sops/uploads/complete`
   - **依赖**：`sop-upload-complete.service`
-- [ ] 新增 `apps/api/src/controllers/sop-uploads-complete.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-uploads-complete.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-create.controller.ts`：`POST /api/sops/pipelines`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-create.controller.ts`：`POST /api/sops/pipelines`
   - **依赖**：`sop-pipeline-create.service`
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-create.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-create.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-status.controller.ts`：`GET /api/sops/pipelines/:id/status`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-status.controller.ts`：`GET /api/sops/pipelines/:id/status`
   - **依赖**：`sop-pipeline-status.service`
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-status.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-status.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-resume.controller.ts`：`POST .../resume`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-resume.controller.ts`：`POST .../resume`
   - **依赖**：`sop-pipeline-resume.service`
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-resume.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-resume.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-close.controller.ts`：`POST .../close`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-close.controller.ts`：`POST .../close`
   - **依赖**：`sop-pipeline-close.service`
-- [ ] 新增 `apps/api/src/controllers/sop-pipelines-close.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-pipelines-close.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-step-execute.controller.ts`：`POST .../steps/:code/execute`（async 时 `res.status(202)`）
+- [x] 新增 `apps/api/src/controllers/sop-step-execute.controller.ts`：`POST .../steps/:code/execute`（async 时 `res.status(202)`）
   - **依赖**：`sop-step-execute.service`
-- [ ] 新增 `apps/api/src/controllers/sop-step-execute.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-step-execute.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-step-finalize.controller.ts`：`POST .../steps/:code/finalize`
+- [x] 新增 `apps/api/src/controllers/sop-step-finalize.controller.ts`：`POST .../steps/:code/finalize`
   - **依赖**：`sop-step-finalize.service`
-- [ ] 新增 `apps/api/src/controllers/sop-step-finalize.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-step-finalize.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-get.controller.ts`：`GET /api/sops/artifacts/:id`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-get.controller.ts`：`GET /api/sops/artifacts/:id`
   - **依赖**：`sop-artifact-get.service`
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-get.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-get.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-patch.controller.ts`：`PATCH` + `If-Match` 头校验
+- [x] 新增 `apps/api/src/controllers/sop-artifact-patch.controller.ts`：`PATCH` + `If-Match` 头校验
   - **依赖**：`sop-artifact-patch.service`
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-patch.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-patch.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-verify.controller.ts`：`POST /api/sops/artifacts/:id/verify`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-verify.controller.ts`：`POST /api/sops/artifacts/:id/verify`
   - **依赖**：`sop-artifact-verify.service`
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-verify.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-verify.controller.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-regenerate-pdf.controller.ts`：`POST .../regenerate-pdf`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-regenerate-pdf.controller.ts`：`POST .../regenerate-pdf`
   - **依赖**：`sop-artifact-regenerate-pdf.service`
-- [ ] 新增 `apps/api/src/controllers/sop-artifact-regenerate-pdf.controller.test.ts`
+- [x] 新增 `apps/api/src/controllers/sop-artifact-regenerate-pdf.controller.test.ts`
   - **依赖**：上一条
 
 ---
 
 #### M13-I `apps/api` — 路由挂载与集成
 
-- [ ] 新增 `apps/api/src/routes/sops.routes.ts`：导出 `handleSopsRoute`；分发 M13-H 全部路径；`requireRoles('lawyer')`（admin **不可**读律师业务数据，转写路由同理则拒绝）
+- [x] 新增 `apps/api/src/routes/sops.routes.ts`：导出 `handleSopsRoute`；分发 M13-H 全部路径；`requireRoles('lawyer')`（admin **不可**读律师业务数据，转写路由同理则拒绝）
   - **依赖**：M13-H Controllers
-- [ ] 新增 `apps/api/src/routes/sops.routes.test.ts`：未登录 401；admin 访问律师 SOP → 403
+- [x] 新增 `apps/api/src/routes/sops.routes.test.ts`：未登录 401；admin 访问律师 SOP → 403
   - **依赖**：上一条
 
-- [ ] 在 `apps/api/src/app.ts` 挂载 `/api/sops`：`auth` + `password-change-gate` + `lawyer`
+- [x] 在 `apps/api/src/app.ts` 挂载 `/api/sops`：`auth` + `password-change-gate` + `lawyer`
   - **依赖**：`sops.routes.ts`
-- [ ] 新增 `apps/api/src/__tests__/sops-route-mount.test.ts`
+- [x] 新增 `apps/api/src/__tests__/sops-route-mount.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `apps/api/src/__tests__/sop-pipeline-lawyer-isolation.integration.test.ts`：律师 A 无法 `GET status` 律师 B 流水线（`skip` 无 env）
+- [x] 新增 `apps/api/src/__tests__/sop-pipeline-lawyer-isolation.integration.test.ts`：律师 A 无法 `GET status` 律师 B 流水线（`skip` 无 env）
   - **依赖**：M13-I 挂载
-- [ ] 新增 `apps/api/src/__tests__/sop-execute-async-202.integration.test.ts`：Deep Research 步骤 → 202 + Outbox 行（`skip` 无 env）
+- [x] 新增 `apps/api/src/__tests__/sop-execute-async-202.integration.test.ts`：Deep Research 步骤 → 202 + Outbox 行（`skip` 无 env）
   - **依赖**：M13-F async 分支
 
-- [ ] 新增 `apps/api/src/__tests__/sop-context-limit.integration.test.ts`：超大 Prompt 组装 → 422 `CONTEXT_LIMIT_EXCEEDED`（Mock）
+- [x] 新增 `apps/api/src/__tests__/sop-context-limit.integration.test.ts`：超大 Prompt 组装 → 422 `CONTEXT_LIMIT_EXCEEDED`（Mock）
   - **依赖**：M11 Token guard
-- [ ] 新增 `apps/api/src/__tests__/sop-upload-prefix.integration.test.ts`：init 返回前缀以 `auth.uid()` 开头（`skip` 无 env）
+- [x] 新增 `apps/api/src/__tests__/sop-upload-prefix.integration.test.ts`：init 返回前缀以 `auth.uid()` 开头（`skip` 无 env）
   - **依赖**：M13-E
 
 ---
 
 #### M13-J Milestone 13 完成门禁
 
-- [ ] 运行 `apps/api` M13 相关测试全绿；连续失败 **>2** 次则停止汇报
+- [x] 运行 `apps/api` M13 相关测试全绿；连续失败 **>2** 次则停止汇报
   - **依赖**：M13-A～M13-I 全部 checkbox 已完成
 
 **人工黑盒验收**（由人工经 BFF/HTTP 执行，不通过不得 `git commit`）：
@@ -1364,7 +1364,7 @@ M* → M9
 - [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M13** 小节
   - **依赖**：上列黑盒项均通过
 
-- [ ] 执行 `git commit`：`feat(sop): lawyer pipeline execute finalize uploads and artifacts api`
+- [x] 执行 `git commit`：`feat(sop): lawyer pipeline execute finalize uploads and artifacts api`
   - **依赖**：测试全绿；**人工黑盒验收签收**
 - [ ] 将下方进度表 **M13** 状态更新为「已完成」
   - **依赖**：`git commit` 成功
@@ -2785,7 +2785,7 @@ M10 (SOP DB/RLS/Storage)
 | M10 | SOP 基础设施与数据库迁移 | **已完成** |
 | M11 | AI 能力扩展（SOP 功能点） | **已完成** |
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 已完成（黑盒 2026-06-02） |
-| M13 | 律师端 SOP 流水线业务 API | 未开始 |
+| M13 | 律师端 SOP 流水线业务 API | 代码完成（待人工黑盒签收） |
 | M14 | 异步 Worker SOP 阶段处理器 | 未开始 |
 | M15 | 管理员 SOP 配置前端 | 未开始 |
 | M16 | 律师端 SOP 流水线前端 | 未开始 |

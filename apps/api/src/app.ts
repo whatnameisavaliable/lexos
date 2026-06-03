@@ -177,6 +177,42 @@ import { DriveNodePatchController } from "./controllers/drive-node-patch.control
 import { DriveNodeDeleteController } from "./controllers/drive-node-delete.controller.js";
 import { DriveSearchController } from "./controllers/drive-search.controller.js";
 import { DriveFileDownloadController } from "./controllers/drive-file-download.controller.js";
+import { CasePipelineRepository } from "./repositories/case-pipeline.repository.js";
+import { SopTemplateReadRepository } from "./repositories/sop-template-read.repository.js";
+import { SopStepSnapshotRepository } from "./repositories/sop-step-snapshot.repository.js";
+import { PipelineArtifactRepository } from "./repositories/pipeline-artifact.repository.js";
+import { SopUploadSessionRepository } from "./repositories/sop-upload-session.repository.js";
+import { SopVerifiedRepository } from "./repositories/sop-verified.repository.js";
+import { SystemSettingReadRepository } from "./repositories/system-setting-read.repository.js";
+import { SopPublishedTemplatesListService } from "./services/sop-published-templates-list.service.js";
+import { SopUploadInitService } from "./services/sop-upload-init.service.js";
+import { SopUploadCompleteService } from "./services/sop-upload-complete.service.js";
+import { SopPipelineCreateService } from "./services/sop-pipeline-create.service.js";
+import { SopPipelineStatusService } from "./services/sop-pipeline-status.service.js";
+import { SopPipelineResumeService } from "./services/sop-pipeline-resume.service.js";
+import { SopPipelineCloseService } from "./services/sop-pipeline-close.service.js";
+import { SopStepExecuteService } from "./services/sop-step-execute.service.js";
+import { SopStepFinalizeService } from "./services/sop-step-finalize.service.js";
+import { SopArtifactGetService } from "./services/sop-artifact-get.service.js";
+import { SopArtifactPatchService } from "./services/sop-artifact-patch.service.js";
+import { SopArtifactVerifyService } from "./services/sop-artifact-verify.service.js";
+import { SopArtifactRegeneratePdfService } from "./services/sop-artifact-regenerate-pdf.service.js";
+import { SystemSettingReadService } from "./services/system-setting-read.service.js";
+import { SopDeepResearchGuardService } from "./services/sop-deep-research-guard.service.js";
+import { SopTemplatesListController } from "./controllers/sop-templates-list.controller.js";
+import { SopUploadsInitController } from "./controllers/sop-uploads-init.controller.js";
+import { SopUploadsCompleteController } from "./controllers/sop-uploads-complete.controller.js";
+import { SopPipelinesCreateController } from "./controllers/sop-pipelines-create.controller.js";
+import { SopPipelinesStatusController } from "./controllers/sop-pipelines-status.controller.js";
+import { SopPipelinesResumeController } from "./controllers/sop-pipelines-resume.controller.js";
+import { SopPipelinesCloseController } from "./controllers/sop-pipelines-close.controller.js";
+import { SopStepExecuteController } from "./controllers/sop-step-execute.controller.js";
+import { SopStepFinalizeController } from "./controllers/sop-step-finalize.controller.js";
+import { SopArtifactGetController } from "./controllers/sop-artifact-get.controller.js";
+import { SopArtifactPatchController } from "./controllers/sop-artifact-patch.controller.js";
+import { SopArtifactVerifyController } from "./controllers/sop-artifact-verify.controller.js";
+import { SopArtifactRegeneratePdfController } from "./controllers/sop-artifact-regenerate-pdf.controller.js";
+import { handleSopsRoute } from "./routes/sops.routes.js";
 
 /** 已组装的 U2 HTTP 应用上下文。 */
 export interface LexosApiApp {
@@ -423,6 +459,86 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     auditWriterService,
   );
 
+  const sopTemplateReadRepository = new SopTemplateReadRepository(supabaseEnv);
+  const casePipelineRepository = new CasePipelineRepository(supabaseEnv);
+  const sopStepSnapshotRepository = new SopStepSnapshotRepository(supabaseEnv);
+  const pipelineArtifactRepository = new PipelineArtifactRepository(supabaseEnv);
+  const sopUploadSessionRepository = new SopUploadSessionRepository(supabaseEnv);
+  const sopVerifiedRepository = SopVerifiedRepository.fromSupabaseEnv(supabaseEnv);
+  const systemSettingReadRepository =
+    SystemSettingReadRepository.fromSupabaseEnv(supabaseEnv);
+  const systemSettingReadService = new SystemSettingReadService(
+    systemSettingReadRepository,
+  );
+  const sopDeepResearchGuardService = new SopDeepResearchGuardService(
+    systemSettingReadService,
+  );
+  const sopPublishedTemplatesListService = new SopPublishedTemplatesListService(
+    sopTemplateReadRepository,
+  );
+  const sopUploadInitService = new SopUploadInitService(
+    casePipelineRepository,
+    sopUploadSessionRepository,
+    storageAdapter,
+    storageEnv.storageBucketMedia,
+  );
+  const sopUploadCompleteService = new SopUploadCompleteService(
+    supabaseEnv,
+    casePipelineRepository,
+    sopUploadSessionRepository,
+    storageAdapter,
+    outboxRepository,
+  );
+  const sopPipelineCreateService = new SopPipelineCreateService(
+    sopTemplateReadRepository,
+    sopStepSnapshotRepository,
+    casePipelineRepository,
+  );
+  const sopPipelineStatusService = new SopPipelineStatusService(
+    casePipelineRepository,
+    sopStepSnapshotRepository,
+    pipelineArtifactRepository,
+  );
+  const sopPipelineResumeService = new SopPipelineResumeService(casePipelineRepository);
+  const sopPipelineCloseService = new SopPipelineCloseService(casePipelineRepository);
+  const sopStepExecuteService = new SopStepExecuteService(
+    supabaseEnv,
+    casePipelineRepository,
+    sopStepSnapshotRepository,
+    pipelineArtifactRepository,
+    outboxRepository,
+    sopDeepResearchGuardService,
+    aiPromptRepository,
+    sopAiOrchestrationService,
+  );
+  const sopStepFinalizeService = new SopStepFinalizeService(
+    supabaseEnv,
+    casePipelineRepository,
+    sopStepSnapshotRepository,
+    pipelineArtifactRepository,
+    sopVerifiedRepository,
+    outboxRepository,
+  );
+  const sopArtifactGetService = new SopArtifactGetService(
+    pipelineArtifactRepository,
+    casePipelineRepository,
+  );
+  const sopArtifactPatchService = new SopArtifactPatchService(
+    pipelineArtifactRepository,
+    casePipelineRepository,
+  );
+  const sopArtifactVerifyService = new SopArtifactVerifyService(
+    pipelineArtifactRepository,
+    casePipelineRepository,
+    auditWriterService,
+  );
+  const sopArtifactRegeneratePdfService = new SopArtifactRegeneratePdfService(
+    supabaseEnv,
+    pipelineArtifactRepository,
+    casePipelineRepository,
+    outboxRepository,
+  );
+
   const driveNodeRepository = new DriveNodeRepository(supabaseEnv);
   const driveNodeAdminRepository = new DriveNodeAdminRepository(supabaseEnv);
   const driveSearchRepository = new DriveSearchRepository(env.supabaseDbUrl);
@@ -455,6 +571,7 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   const authMiddleware = new AuthMiddleware(supabaseEnv, profileRepository);
   const requireAdmin = requireRoles("admin");
   const requireTranscriptionAccess = requireRoles("lawyer");
+  const requireLawyerSopAccess = requireRoles("lawyer");
   const requireDriveAccess = requireRoles("lawyer");
   const requireDriveDeleteAccess = requireRoles("lawyer", "admin");
 
@@ -679,6 +796,58 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
     transcriptionTaskRetryService,
     env.requestIdHeader,
   );
+  const sopTemplatesListController = new SopTemplatesListController(
+    sopPublishedTemplatesListService,
+    env.requestIdHeader,
+  );
+  const sopUploadsInitController = new SopUploadsInitController(
+    sopUploadInitService,
+    env.requestIdHeader,
+  );
+  const sopUploadsCompleteController = new SopUploadsCompleteController(
+    sopUploadCompleteService,
+    env.requestIdHeader,
+  );
+  const sopPipelinesCreateController = new SopPipelinesCreateController(
+    sopPipelineCreateService,
+    env.requestIdHeader,
+  );
+  const sopPipelinesStatusController = new SopPipelinesStatusController(
+    sopPipelineStatusService,
+    env.requestIdHeader,
+  );
+  const sopPipelinesResumeController = new SopPipelinesResumeController(
+    sopPipelineResumeService,
+    env.requestIdHeader,
+  );
+  const sopPipelinesCloseController = new SopPipelinesCloseController(
+    sopPipelineCloseService,
+    env.requestIdHeader,
+  );
+  const sopStepExecuteController = new SopStepExecuteController(
+    sopStepExecuteService,
+    env.requestIdHeader,
+  );
+  const sopStepFinalizeController = new SopStepFinalizeController(
+    sopStepFinalizeService,
+    env.requestIdHeader,
+  );
+  const sopArtifactGetController = new SopArtifactGetController(
+    sopArtifactGetService,
+    env.requestIdHeader,
+  );
+  const sopArtifactPatchController = new SopArtifactPatchController(
+    sopArtifactPatchService,
+    env.requestIdHeader,
+  );
+  const sopArtifactVerifyController = new SopArtifactVerifyController(
+    sopArtifactVerifyService,
+    env.requestIdHeader,
+  );
+  const sopArtifactRegeneratePdfController = new SopArtifactRegeneratePdfController(
+    sopArtifactRegeneratePdfService,
+    env.requestIdHeader,
+  );
   const driveRootController = new DriveRootController(
     driveRootService,
     env.requestIdHeader,
@@ -749,6 +918,17 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
   ) => {
     return protectedRoute(async (req, res) => {
       if (!requireTranscriptionAccess(res)) {
+        return;
+      }
+      await handler(req, res);
+    });
+  };
+
+  const protectedSopsRoute = (
+    handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>,
+  ) => {
+    return protectedRoute(async (req, res) => {
+      if (!requireLawyerSopAccess(res)) {
         return;
       }
       await handler(req, res);
@@ -898,6 +1078,38 @@ export function createLexosApiApp(env: AppRuntimeEnvConfig): LexosApiApp {
               txRes.statusCode = 404;
               txRes.setHeader("content-type", "application/json; charset=utf-8");
               txRes.end(
+                JSON.stringify({
+                  success: false,
+                  error: { code: "RESOURCE_NOT_FOUND" },
+                }),
+              );
+            }
+          })(req, res);
+          return;
+        }
+
+        if (path.startsWith("/api/sops")) {
+          let handled = false;
+          await protectedSopsRoute(async (sopReq, sopRes) => {
+            handled = await handleSopsRoute(sopReq, sopRes, path, {
+              templatesList: sopTemplatesListController,
+              uploadsInit: sopUploadsInitController,
+              uploadsComplete: sopUploadsCompleteController,
+              pipelinesCreate: sopPipelinesCreateController,
+              pipelinesStatus: sopPipelinesStatusController,
+              pipelinesResume: sopPipelinesResumeController,
+              pipelinesClose: sopPipelinesCloseController,
+              stepExecute: sopStepExecuteController,
+              stepFinalize: sopStepFinalizeController,
+              artifactGet: sopArtifactGetController,
+              artifactPatch: sopArtifactPatchController,
+              artifactVerify: sopArtifactVerifyController,
+              artifactRegeneratePdf: sopArtifactRegeneratePdfController,
+            });
+            if (!handled) {
+              sopRes.statusCode = 404;
+              sopRes.setHeader("content-type", "application/json; charset=utf-8");
+              sopRes.end(
                 JSON.stringify({
                   success: false,
                   error: { code: "RESOURCE_NOT_FOUND" },

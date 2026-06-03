@@ -2034,7 +2034,7 @@ M* → M9
 
 #### M16-A `apps/web` 依赖与 Shadcn（单包/单命令一项）
 
-- [ ] 在 `apps/web/package.json` 增加 `@monaco-editor/react` 依赖（HTML 源码编辑，`prd.md` §3.8.5）
+- [x] 在 `apps/web/package.json` 增加 `@monaco-editor/react` 依赖（HTML 源码编辑，`prd.md` §3.8.5）
   - **依赖**：无
 - [ ] 在 `apps/web/package.json` 增加 `@rjsf/core`、`@rjsf/utils`、`@rjsf/validator-ajv8`（`input_schema` 动态表单，`prd.md` §3.8.4）
   - **依赖**：无

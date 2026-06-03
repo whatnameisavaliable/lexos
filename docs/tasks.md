@@ -1526,170 +1526,170 @@ M* → M9
 
 #### M14-E `workers/pipeline` — Service：`sop.media.ocr`（按函数拆分）
 
-- [ ] 新增 `workers/pipeline/src/services/sop-media-ocr.service.ts`：类骨架 `SopMediaOcrService`
+- [x] 新增 `workers/pipeline/src/services/sop-media-ocr.service.ts`：类骨架 `SopMediaOcrService`
   - **依赖**：M14-D repos；M14-C concat
-- [ ] 新增 `workers/pipeline/src/services/sop-media-ocr.service.test.ts`
+- [x] 新增 `workers/pipeline/src/services/sop-media-ocr.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `downloadMediaObjectToTemp(storageKey, localPath)` 私有方法
+- [x] 提取 `downloadMediaObjectToTemp(storageKey, localPath)` 私有方法
   - **依赖**：service 骨架
-- [ ] 新增 `sop-media-ocr.service.download.test.ts`（Mock storage）
+- [x] 新增 `sop-media-ocr.service.download.test.ts`（Mock storage）
   - **依赖**：上一条
 
-- [ ] 提取 `transcribeMediaFile(localPath): Promise<string>`（复用 `AiOrchestrationService` + `asr_physical`）
+- [x] 提取 `transcribeMediaFile(localPath): Promise<string>`（复用 `AiOrchestrationService` + `asr_physical`）
   - **依赖**：download 方法
-- [ ] 新增 `sop-media-ocr.service.transcribe.test.ts`
+- [x] 新增 `sop-media-ocr.service.transcribe.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `persistSopMediaExtractedText(pipelineId, stepCode, text)`：写入步骤上下文存储【DB 列/JSON 字段策略与 M13 对齐，如 `pipeline_artifacts` 或专用 KV】
+- [x] 提取 `persistSopMediaExtractedText(pipelineId, stepCode, text)`：写入步骤上下文存储【DB 列/JSON 字段策略与 M13 对齐，如 `pipeline_artifacts` 或专用 KV】
   - **依赖**：transcribe 已实现
-- [ ] 新增 `sop-media-ocr.service.persist.test.ts`
+- [x] 新增 `sop-media-ocr.service.persist.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `run(payload: SopOutboxPayload)`：编排上述步骤；成功 `markPublished`；失败抛错
+- [x] 实现 `run(payload: SopOutboxPayload)`：编排上述步骤；成功 `markPublished`；失败抛错
   - **依赖**：全部子函数
-- [ ] 更新 `sop-media-ocr.service.test.ts` 端到端 Mock
+- [x] 更新 `sop-media-ocr.service.test.ts` 端到端 Mock
   - **依赖**：上一条
 
 ---
 
 #### M14-F `workers/pipeline` — Service：`sop.deep_research`
 
-- [ ] 新增 `workers/pipeline/src/services/sop-deep-research.service.ts`：骨架
+- [x] 新增 `workers/pipeline/src/services/sop-deep-research.service.ts`：骨架
   - **依赖**：M11 `SopLlmOrchestration` 或 `AiOrchestrationService` SOP 路径
-- [ ] 新增 `workers/pipeline/src/services/sop-deep-research.service.test.ts`
+- [x] 新增 `workers/pipeline/src/services/sop-deep-research.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `assertDeepResearchEnabled()`：读 `worker-system-settings`；false 时 artifact `failed` 并返回（Worker 防御，U2 已拦）
+- [x] 提取 `assertDeepResearchEnabled()`：读 `worker-system-settings`；false 时 artifact `failed` 并返回（Worker 防御，U2 已拦）
   - **依赖**：service 骨架
-- [ ] 新增 `sop-deep-research.service.settings.test.ts`
+- [x] 新增 `sop-deep-research.service.settings.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `runWithTimeout(promise, SOP_DEEP_RESEARCH_TIMEOUT_MS)` 包装
+- [x] 提取 `runWithTimeout(promise, SOP_DEEP_RESEARCH_TIMEOUT_MS)` 包装
   - **依赖**：M11 env
-- [ ] 新增 `sop-deep-research.service.timeout.test.ts`：超时 → `failed`
+- [x] 新增 `sop-deep-research.service.timeout.test.ts`：超时 → `failed`
   - **依赖**：上一条
 
-- [ ] 提取 `runExternalSearchOrSkip()`：外网不可用则降级 LLM-only（`is-external-search-available`）
+- [x] 提取 `runExternalSearchOrSkip()`：外网不可用则降级 LLM-only（`is-external-search-available`）
   - **依赖**：M14-C
-- [ ] 新增 `sop-deep-research.service.degrade.test.ts`
+- [x] 新增 `sop-deep-research.service.degrade.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `writeDraftArtifact(artifactId, markdown)` / `writeFailedArtifact(...)`
+- [x] 提取 `writeDraftArtifact(artifactId, markdown)` / `writeFailedArtifact(...)`
   - **依赖**：worker-pipeline-artifact repo
-- [ ] 新增 `sop-deep-research.service.artifact-status.test.ts`
+- [x] 新增 `sop-deep-research.service.artifact-status.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `run(payload)`：组装 Prompt（读步骤模板快照）→ 编排 LLM → 更新 artifact；写 `ai_invocation_logs`（`task_id` null + metadata）
+- [x] 实现 `run(payload)`：组装 Prompt（读步骤模板快照）→ 编排 LLM → 更新 artifact；写 `ai_invocation_logs`（`task_id` null + metadata）
   - **依赖**：上述子函数
-- [ ] 更新 `sop-deep-research.service.test.ts` 主路径 Mock
+- [x] 更新 `sop-deep-research.service.test.ts` 主路径 Mock
   - **依赖**：上一条
 
 ---
 
 #### M14-G `workers/pipeline` — Service：`sop.pdf_export`（Playwright）
 
-- [ ] **经用户授权后**在 `workers/pipeline/package.json` 添加 `playwright` 依赖（或文档化系统 `npx playwright install chromium`）
+- [x] **经用户授权后**在 `workers/pipeline/package.json` 添加 `playwright` 依赖（或文档化系统 `npx playwright install chromium`）
   - **依赖**：无
-- [ ] 新增 `workers/pipeline/src/services/sop-pdf-export.service.deps.test.ts`：断言 `package.json` 含 playwright【或 skip 若纯 Mock】
+- [x] 新增 `workers/pipeline/src/services/sop-pdf-export.service.deps.test.ts`：断言 `package.json` 含 playwright【或 skip 若纯 Mock】
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/services/sop-pdf-export.service.ts`：骨架
+- [x] 新增 `workers/pipeline/src/services/sop-pdf-export.service.ts`：骨架
   - **依赖**：M14-D；M14-C `build-exports-pdf-storage-key`
-- [ ] 新增 `workers/pipeline/src/services/sop-pdf-export.service.test.ts`
+- [x] 新增 `workers/pipeline/src/services/sop-pdf-export.service.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `renderHtmlToPdfBuffer(html: string): Promise<Buffer>`（Playwright `page.setContent` + `pdf()`）
+- [x] 提取 `renderHtmlToPdfBuffer(html: string): Promise<Buffer>`（Playwright `page.setContent` + `pdf()`）
   - **依赖**：service 骨架
-- [ ] 新增 `sop-pdf-export.service.render.test.ts`：Mock Playwright API
+- [x] 新增 `sop-pdf-export.service.render.test.ts`：Mock Playwright API
   - **依赖**：上一条
 
-- [ ] 提取 `uploadPdfToExports(buffer, storageKey)`
+- [x] 提取 `uploadPdfToExports(buffer, storageKey)`
   - **依赖**：`WorkerStorageAdapter`
-- [ ] 新增 `sop-pdf-export.service.upload.test.ts`
+- [x] 新增 `sop-pdf-export.service.upload.test.ts`
   - **依赖**：上一条
 
-- [ ] 提取 `linkPdfToDriveNode(pipelineId, artifactId, storageKey)`（创建/更新 `drive_nodes` + `linked_drive_node_id`）
+- [x] 提取 `linkPdfToDriveNode(pipelineId, artifactId, storageKey)`（创建/更新 `drive_nodes` + `linked_drive_node_id`）
   - **依赖**：`WorkerDriveRepository` 或新 `worker-sop-drive.repository.ts`
-- [ ] 新增 `sop-pdf-export.service.drive-link.test.ts`
+- [x] 新增 `sop-pdf-export.service.drive-link.test.ts`
   - **依赖**：上一条
 
-- [ ] 实现 `run(payload)`：失败**不**回滚 `finalized`；仅日志 + 可重试 Outbox（`publish_attempts` 递增，`prd.md` §3.8.5）
+- [x] 实现 `run(payload)`：失败**不**回滚 `finalized`；仅日志 + 可重试 Outbox（`publish_attempts` 递增，`prd.md` §3.8.5）
   - **依赖**：上述子函数
-- [ ] 更新 `sop-pdf-export.service.test.ts`：失败时 `status` 仍为 `finalized`
+- [x] 更新 `sop-pdf-export.service.test.ts`：失败时 `status` 仍为 `finalized`
   - **依赖**：上一条
 
 ---
 
 #### M14-H `workers/pipeline` — Handler 与错误处理（每条一个文件）
 
-- [ ] 新增 `workers/pipeline/src/handlers/sop-stage-handler.ts`：定义 `SopStageHandlerContext`（`SopOutboxPayload`）与 `SopStageHandler` 接口
+- [x] 新增 `workers/pipeline/src/handlers/sop-stage-handler.ts`：定义 `SopStageHandlerContext`（`SopOutboxPayload`）与 `SopStageHandler` 接口
   - **依赖**：M14-A
-- [ ] 新增 `workers/pipeline/src/handlers/sop-stage-handler.test.ts`：类型 smoke
+- [x] 新增 `workers/pipeline/src/handlers/sop-stage-handler.test.ts`：类型 smoke
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/handlers/sop-media-ocr.handler.ts`：实现 `SopStageHandler`；内调 `SopMediaOcrService.run`
+- [x] 新增 `workers/pipeline/src/handlers/sop-media-ocr.handler.ts`：实现 `SopStageHandler`；内调 `SopMediaOcrService.run`
   - **依赖**：M14-E
-- [ ] 新增 `workers/pipeline/src/handlers/sop-media-ocr.handler.test.ts`
+- [x] 新增 `workers/pipeline/src/handlers/sop-media-ocr.handler.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/handlers/sop-deep-research.handler.ts`：包裹 `runWithSopDeepResearchSlot` + `runWithGlobalWorkerSlot`
+- [x] 新增 `workers/pipeline/src/handlers/sop-deep-research.handler.ts`：包裹 `runWithSopDeepResearchSlot` + `runWithGlobalWorkerSlot`
   - **依赖**：M14-F；M14-B limiters
-- [ ] 新增 `workers/pipeline/src/handlers/sop-deep-research.handler.test.ts`
+- [x] 新增 `workers/pipeline/src/handlers/sop-deep-research.handler.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/handlers/sop-pdf-export.handler.ts`：包裹 `runWithSopPdfSlot` + `runWithGlobalWorkerSlot`
+- [x] 新增 `workers/pipeline/src/handlers/sop-pdf-export.handler.ts`：包裹 `runWithSopPdfSlot` + `runWithGlobalWorkerSlot`
   - **依赖**：M14-G；M14-B limiters
-- [ ] 新增 `workers/pipeline/src/handlers/sop-pdf-export.handler.test.ts`
+- [x] 新增 `workers/pipeline/src/handlers/sop-pdf-export.handler.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/handlers/sop-stage-error.handler.ts`：SOP 失败时 `pipeline_artifacts.status=failed`（**不**调用 `transition_task_status`）
+- [x] 新增 `workers/pipeline/src/handlers/sop-stage-error.handler.ts`：SOP 失败时 `pipeline_artifacts.status=failed`（**不**调用 `transition_task_status`）
   - **依赖**：M14-D artifact repo
-- [ ] 新增 `workers/pipeline/src/handlers/sop-stage-error.handler.test.ts`
+- [x] 新增 `workers/pipeline/src/handlers/sop-stage-error.handler.test.ts`
   - **依赖**：上一条
 
-- [ ] 修改 `workers/pipeline/src/services/stage-router.ts`：支持 `PipelineStage | SopPipelineStage` 联合路由（或新增 `SopStageRouter` 类）
+- [x] 修改 `workers/pipeline/src/services/stage-router.ts`：支持 `PipelineStage | SopPipelineStage` 联合路由（或新增 `SopStageRouter` 类）
   - **依赖**：三 Handler 已存在
-- [ ] 新增 `workers/pipeline/src/services/sop-stage-router.test.ts`：解析 `sop.pdf_export` 返回对应 Handler
+- [x] 新增 `workers/pipeline/src/services/sop-stage-router.test.ts`：解析 `sop.pdf_export` 返回对应 Handler
   - **依赖**：上一条
 
 ---
 
 #### M14-I `workers/pipeline` — Bootstrap 装配与完成 Outbox
 
-- [ ] 修改 `workers/pipeline/src/bootstrap/create-pipeline-deps.ts`：实例化 SOP Services/Handlers 并注册到 `SopStageRouter` / 扩展 `StageRouter`
+- [x] 修改 `workers/pipeline/src/bootstrap/create-pipeline-deps.ts`：实例化 SOP Services/Handlers 并注册到 `SopStageRouter` / 扩展 `StageRouter`
   - **依赖**：M14-H
-- [ ] 新增 `workers/pipeline/src/bootstrap/create-pipeline-deps.sop.test.ts`：导出 processor 含 8 个 stage 键
+- [x] 新增 `workers/pipeline/src/bootstrap/create-pipeline-deps.sop.test.ts`：导出 processor 含 8 个 stage 键
   - **依赖**：上一条
 
-- [ ] 在 `Sop*Handler` 成功路径调用 `WorkerOutboxRepository.markPublished`（与转写 Handler 一致）
+- [x] 在 `Sop*Handler` 成功路径调用 `WorkerOutboxRepository.markPublished`（与转写 Handler 一致）
   - **依赖**：bootstrap 已接线
-- [ ] 新增 `workers/pipeline/src/__tests__/sop-handler-marks-published.test.ts`：Mock DB 断言 `published_at` 非空
+- [x] 新增 `workers/pipeline/src/__tests__/sop-handler-marks-published.test.ts`：Mock DB 断言 `published_at` 非空
   - **依赖**：上一条
 
-- [ ] 修改 `workers/pipeline/src/index.ts` 启动日志：输出 `SOP_PDF_MAX_CONCURRENT`、`SOP_DEEP_RESEARCH_MAX_CONCURRENT`
+- [x] 修改 `workers/pipeline/src/index.ts` 启动日志：输出 `SOP_PDF_MAX_CONCURRENT`、`SOP_DEEP_RESEARCH_MAX_CONCURRENT`
   - **依赖**：M11 worker env 合并
-- [ ] 新增 `workers/pipeline/src/index.sop-env-log.test.ts`（可选：捕获 console）
+- [x] 新增 `workers/pipeline/src/index.sop-env-log.test.ts`（可选：捕获 console）
   - **依赖**：上一条
 
 ---
 
 #### M14-J 集成测试与 Milestone 14 完成门禁
 
-- [ ] 新增 `workers/pipeline/src/__tests__/sop-outbox-idempotency.integration.test.ts`：同一 `outbox_event_id` 处理两次 → 第二次 `skipped_duplicate`
+- [x] 新增 `workers/pipeline/src/__tests__/sop-outbox-idempotency.integration.test.ts`：同一 `outbox_event_id` 处理两次 → 第二次 `skipped_duplicate`
   - **依赖**：M14-I
-- [ ] 新增 `workers/pipeline/src/__tests__/sop-deep-research-disabled-lawyer.integration.test.ts`：disabled 律师 → 不写 artifact（Mock）
+- [x] 新增 `workers/pipeline/src/__tests__/sop-deep-research-disabled-lawyer.integration.test.ts`：disabled 律师 → 不写 artifact（Mock）
   - **依赖**：M14-F assert
 
-- [ ] 新增 `workers/pipeline/src/__tests__/sop-pdf-export-path.integration.test.ts`：上传 key 匹配 `{ownerId}/sops/{pipelineId}/{artifactId}.pdf`（Mock storage）
+- [x] 新增 `workers/pipeline/src/__tests__/sop-pdf-export-path.integration.test.ts`：上传 key 匹配 `{ownerId}/sops/{pipelineId}/{artifactId}.pdf`（Mock storage）
   - **依赖**：M14-G
 
-- [ ] 在 `docs/DEPLOYMENT.md` 增加「SOP Worker」小节：`playwright install`、三 stage 环境变量（**不**改其他 Milestone 文件以外内容若用户未要求—本条为部署说明单段）
+- [x] 在 `docs/DEPLOYMENT.md` 增加「SOP Worker」小节：`playwright install`、三 stage 环境变量（**不**改其他 Milestone 文件以外内容若用户未要求—本条为部署说明单段）
   - **依赖**：M14-G
-- [ ] 新增 `tools/compliance/no-u2-sync-sop-pdf.test.ts`：扫描 `apps/api` 禁止 `playwright` 生产 import（`architecture.md` U2 禁止无头 PDF）
+- [x] 新增 `tools/compliance/no-u2-sync-sop-pdf.test.ts`：扫描 `apps/api` 禁止 `playwright` 生产 import（`architecture.md` U2 禁止无头 PDF）
   - **依赖**：无
 
-- [ ] 运行 `workers/pipeline` 测试全绿；连续失败 **>2** 次则停止汇报
+- [x] 运行 `workers/pipeline` 测试全绿；连续失败 **>2** 次则停止汇报
   - **依赖**：M14-A～M14-I 完成
 
 **人工黑盒验收**（由人工启动 U1/U2/U3 联调栈执行，不通过不得 `git commit`）：
@@ -1707,7 +1707,7 @@ M* → M9
 - [ ] **【人工黑盒验收签收】** 在 `docs/E2E_MANUAL_RUN_LOG.md` 追加 **M14** 小节
   - **依赖**：上列黑盒项均通过
 
-- [ ] 执行 `git commit`：`feat(worker): sop outbox handlers media ocr deep research pdf export`
+- [x] 执行 `git commit`：`feat(worker): sop outbox handlers media ocr deep research pdf export`
   - **依赖**：测试全绿；**人工黑盒验收签收**
 - [ ] 将下方进度表 **M14** 状态更新为「已完成」
   - **依赖**：`git commit` 成功
@@ -2786,7 +2786,7 @@ M10 (SOP DB/RLS/Storage)
 | M11 | AI 能力扩展（SOP 功能点） | **已完成** |
 | M12 | 管理员 SOP 模板与 Prompt Studio API | 已完成（黑盒 2026-06-02） |
 | M13 | 律师端 SOP 流水线业务 API | 代码完成（待人工黑盒签收） |
-| M14 | 异步 Worker SOP 阶段处理器 | 未开始 |
+| M14 | 异步 Worker SOP 阶段处理器 | 待黑盒验收 |
 | M15 | 管理员 SOP 配置前端 | 未开始 |
 | M16 | 律师端 SOP 流水线前端 | 未开始 |
 | M17 | SOP 集成验收与基线回归 | 未开始 |

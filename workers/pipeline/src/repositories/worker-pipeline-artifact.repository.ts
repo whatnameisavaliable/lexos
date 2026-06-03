@@ -3,6 +3,9 @@ import type {
   ArtifactContentType,
   PipelineArtifactStatus,
 } from "@lexos/shared";
+import { SOP_MEDIA_EXTRACTED_STEP_CODE } from "../domain/sop/sop-media-extracted.constants.js";
+
+export { SOP_MEDIA_EXTRACTED_STEP_CODE };
 
 /** 流水线产出物行（Worker 读取子集）。 */
 export interface WorkerPipelineArtifactRecord {
@@ -109,6 +112,56 @@ export class WorkerPipelineArtifactRepository {
   /**
    * 读取 PDF 导出用 HTML：优先 `finalized_snapshot_raw`，否则 `content_raw`。
    */
+  /**
+   * 持久化卷宗 OCR/ASR 拼接文本（供 `{{sop_media_extracted_text}}` 插槽读取）。
+   */
+  async upsertMediaExtractedText(
+    client: PoolClient,
+    pipelineId: string,
+    text: string,
+  ): Promise<void> {
+    const contentRaw = JSON.stringify({ text });
+    const result = await client.query(
+      `INSERT INTO public.pipeline_artifacts (
+         pipeline_id,
+         step_code,
+         content_type,
+         content_raw,
+         status
+       ) VALUES ($1::uuid, $2, 'json', $3, 'draft')
+       ON CONFLICT (pipeline_id, step_code)
+       DO UPDATE SET content_raw = EXCLUDED.content_raw, updated_at = now()`,
+      [pipelineId, SOP_MEDIA_EXTRACTED_STEP_CODE, contentRaw],
+    );
+    if (result.rowCount !== 1) {
+      throw new Error("pipeline_artifacts.upsertMediaExtractedText failed");
+    }
+  }
+
+  /** 读取已持久化的卷宗提取文本；不存在时返回空字符串。 */
+  async loadMediaExtractedText(
+    client: PoolClient,
+    pipelineId: string,
+  ): Promise<string> {
+    const result = await client.query<{ content_raw: string }>(
+      `SELECT content_raw
+       FROM public.pipeline_artifacts
+       WHERE pipeline_id = $1::uuid
+         AND step_code = $2`,
+      [pipelineId, SOP_MEDIA_EXTRACTED_STEP_CODE],
+    );
+    const raw = result.rows[0]?.content_raw;
+    if (!raw) {
+      return "";
+    }
+    try {
+      const parsed = JSON.parse(raw) as { text?: string };
+      return typeof parsed.text === "string" ? parsed.text : "";
+    } catch {
+      return raw;
+    }
+  }
+
   async loadFinalizedSnapshotHtml(
     client: PoolClient,
     artifactId: string,

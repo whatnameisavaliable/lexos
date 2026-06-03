@@ -345,6 +345,30 @@ cp .env.production.example .env.production
 
 ---
 
+## 9. SOP Worker（U3 · Milestone 14）
+
+SOP 异步阶段与转写共用 **U3 单进程** Outbox 消费者（`worker:pipeline`），无 Redis。
+
+| 环境变量 | 默认 | 说明 |
+|----------|------|------|
+| `SOP_PDF_MAX_CONCURRENT` | `1` | 无头 PDF 并发上限 |
+| `SOP_DEEP_RESEARCH_MAX_CONCURRENT` | `2` | Deep Research 并发上限 |
+| `SOP_DEEP_RESEARCH_TIMEOUT_MS` | `1800000` | DR 硬性超时（30min） |
+| `SOP_EXTERNAL_SEARCH_PROBE_URL` | （空） | 可选外网 Search 探测 URL；不可达则 LLM-only 降级 |
+
+**Outbox `stage`**：`sop.media.ocr` · `sop.deep_research` · `sop.pdf_export`
+
+**Playwright（PDF 导出）**：Worker 镜像或宿主机需安装 Chromium：
+
+```bash
+cd workers/pipeline
+npx playwright install chromium
+```
+
+PDF 输出桶为 **`exports`**，路径 `{owner_id}/sops/{pipeline_id}/{artifact_id}.pdf`（见 `database.md` §3.16.8）。
+
+---
+
 ## 附录 B. npm 脚本速查
 
 | 脚本 | 说明 |

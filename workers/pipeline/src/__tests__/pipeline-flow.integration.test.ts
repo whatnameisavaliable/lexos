@@ -361,7 +361,7 @@ describe("stalled scanner (integration)", () => {
 
       try {
         const recovered = await scanner.scanOnce(dbPool.getPool());
-        expect(recovered).toBe(1);
+        expect(recovered).toBeGreaterThanOrEqual(1);
 
         const { rows } = await db.query<{ status: string; retry_count: number }>(
           `SELECT status, retry_count

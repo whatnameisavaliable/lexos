@@ -14,6 +14,8 @@ describe("LlmHandler", () => {
     const llmSummary = { summarize: vi.fn().mockResolvedValue("summary") };
     const taskRepository = {
       findById: vi.fn().mockResolvedValue({ id: "task-1", status: "llm_running" }),
+      updateLlmOutcomeFlags: vi.fn().mockResolvedValue(undefined),
+      clearTaskError: vi.fn().mockResolvedValue(undefined),
     };
     const transcriptRepository = {
       upsertTranscript: vi.fn().mockResolvedValue(undefined),
@@ -27,6 +29,7 @@ describe("LlmHandler", () => {
       taskRepository as never,
       transcriptRepository as never,
       transactionService as never,
+      { cleanupTaskDir: vi.fn() } as never,
     );
 
     await handler.handle({

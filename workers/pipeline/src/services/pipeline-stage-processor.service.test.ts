@@ -22,6 +22,7 @@ describe("PipelineStageProcessorService", () => {
       idempotency as never,
       outboxRepository as never,
       stageErrorHandler as never,
+      { handle: vi.fn() } as never,
     );
 
     const pool = createMockPool();

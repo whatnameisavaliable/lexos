@@ -23,8 +23,12 @@ describe("MediaExtractHandler", () => {
     const transactionService = {
       completeStage: vi.fn().mockResolvedValue(undefined),
     };
+    const storage = {
+      removeObject: vi.fn().mockResolvedValue(undefined),
+    };
     const handler = new MediaExtractHandler(
       mediaExtract as never,
+      storage as never,
       taskRepository as never,
       transactionService as never,
     );

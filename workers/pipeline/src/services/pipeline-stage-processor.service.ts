@@ -14,6 +14,7 @@ import type {
 import { StageIdempotencyMiddleware } from "../middleware/stage-idempotency.middleware.js";
 import { WorkerOutboxRepository } from "../repositories/worker-outbox.repository.js";
 import { StageErrorHandler } from "../handlers/stage-error.handler.js";
+import { SopStageErrorHandler } from "../handlers/sop-stage-error.handler.js";
 import type { StageRouter } from "./stage-router.js";
 import type { SopStageRouter } from "./sop-stage-router.js";
 
@@ -33,6 +34,7 @@ export class PipelineStageProcessorService implements OutboxStageProcessor {
     private readonly idempotency = new StageIdempotencyMiddleware(),
     private readonly outboxRepository = new WorkerOutboxRepository(),
     private readonly stageErrorHandler: StageErrorHandler,
+    private readonly sopStageErrorHandler: SopStageErrorHandler,
   ) {}
 
   async processStage(
@@ -121,7 +123,7 @@ export class PipelineStageProcessorService implements OutboxStageProcessor {
       this.idempotency.tryBeginRun(client, {
         stage: payload.stage,
         outboxEventId: event.id,
-        taskId: payload.pipeline_id,
+        taskId: null,
       }),
     );
 
@@ -151,6 +153,9 @@ export class PipelineStageProcessorService implements OutboxStageProcessor {
           this.idempotency.markFailed(client, runId),
         );
       }
+      await withPgClient(pool, (client) =>
+        this.sopStageErrorHandler.handle(client, event, payload, error),
+      );
       throw error;
     }
   }

@@ -22,6 +22,7 @@ describe("PipelineStageProcessorService — SOP", () => {
       idempotency as never,
       outboxRepository as never,
       { handle: vi.fn() } as never,
+      { handle: vi.fn() } as never,
     );
 
     const pool = createMockPool();
@@ -42,7 +43,7 @@ describe("PipelineStageProcessorService — SOP", () => {
     expect(idempotency.tryBeginRun).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        taskId: "pipe-1",
+        taskId: null,
         stage: "sop.deep_research",
       }),
     );
@@ -67,6 +68,7 @@ describe("PipelineStageProcessorService — SOP", () => {
       sopRouter as never,
       idempotency as never,
       { markPublished: vi.fn() } as never,
+      { handle: vi.fn() } as never,
       { handle: vi.fn() } as never,
     );
 

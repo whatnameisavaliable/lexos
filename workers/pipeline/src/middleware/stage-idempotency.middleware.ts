@@ -5,7 +5,8 @@ import type { PoolClient } from "pg";
 export interface StageIdempotencyInput {
   readonly stage: AllWorkerStage;
   readonly outboxEventId: string;
-  readonly taskId: string;
+  /** 转写任务 ID；SOP 阶段为 `null`（幂等键为 `outbox_event_id` + `stage`）。 */
+  readonly taskId?: string | null;
   /** 重试序号；默认 1。 */
   readonly attempt?: number;
 }
@@ -47,7 +48,7 @@ export class StageIdempotencyMiddleware {
            started_at
          ) VALUES ($1, $2::uuid, $3, $4::uuid, 'running', now())
          RETURNING id`,
-        [input.stage, input.outboxEventId, attempt, input.taskId],
+        [input.stage, input.outboxEventId, attempt, input.taskId ?? null],
       );
       return { proceed: true, existingRunId: result.rows[0]?.id };
     } catch (error) {

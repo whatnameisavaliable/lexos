@@ -82,7 +82,7 @@ async function bootstrap(): Promise<void> {
   await assertWorkerDatabaseReachable(dbPool.getPool());
   console.info("[pipeline-worker] database ok");
   console.info(
-    `[pipeline-worker] concurrency=${env.workerMaxConcurrency}, asrRateLimit=${env.asrRateLimitMax}/min`,
+    `[pipeline-worker] concurrency=${env.workerMaxConcurrency}, asrRateLimit=${env.asrRateLimitMax}/min, sopPdfMax=${env.sopPdfMaxConcurrent}, sopDeepResearchMax=${env.sopDeepResearchMaxConcurrent}`,
   );
   void taskConcurrency;
   void asrRateLimiter;

@@ -1395,29 +1395,29 @@ M* → M9
 
 #### M14-A `packages/shared` — SOP Outbox 载荷解析
 
-- [ ] 新增 `packages/shared/src/types/sop-outbox-payload.ts`：定义 `SopOutboxPayload`（`stage` 为 SOP 三阶段之一、`pipelineId`、`lawyerId`、`stepCode?`、`artifactId?`、`storageKeyPrefix?`）
+- [x] 新增 `packages/shared/src/types/sop-outbox-payload.ts`：定义 `SopOutboxPayload`（`stage` 为 SOP 三阶段之一、`pipelineId`、`lawyerId`、`stepCode?`、`artifactId?`、`storageKeyPrefix?`）
   - **依赖**：M10 `SOP_PIPELINE_STAGES` 常量
-- [ ] 新增 `packages/shared/src/types/sop-outbox-payload.test.ts`：必填字段缺失抛错
+- [x] 新增 `packages/shared/src/types/sop-outbox-payload.test.ts`：必填字段缺失抛错
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/parse-sop-outbox-payload.ts`：导出 `parseSopOutboxPayload(unknown): SopOutboxPayload`
+- [x] 新增 `packages/shared/src/types/parse-sop-outbox-payload.ts`：导出 `parseSopOutboxPayload(unknown): SopOutboxPayload`
   - **依赖**：`sop-outbox-payload.ts`
-- [ ] 新增 `packages/shared/src/types/parse-sop-outbox-payload.test.ts`：合法 `sop.deep_research` 样例通过
+- [x] 新增 `packages/shared/src/types/parse-sop-outbox-payload.test.ts`：合法 `sop.deep_research` 样例通过
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/parse-worker-outbox-payload.ts`：导出 `parseWorkerOutboxPayload(unknown): PipelineStageOutboxPayload | SopOutboxPayload`（按 `stage` 前缀/集合分流）
+- [x] 新增 `packages/shared/src/types/parse-worker-outbox-payload.ts`：导出 `parseWorkerOutboxPayload(unknown): PipelineStageOutboxPayload | SopOutboxPayload`（按 `stage` 前缀/集合分流）
   - **依赖**：`parsePipelineStageOutboxPayload`（既有）、`parseSopOutboxPayload`
-- [ ] 新增 `packages/shared/src/types/parse-worker-outbox-payload.test.ts`：转写 `media.extract` 仍解析为转写载荷
+- [x] 新增 `packages/shared/src/types/parse-worker-outbox-payload.test.ts`：转写 `media.extract` 仍解析为转写载荷
   - **依赖**：上一条
 
-- [ ] 新增 `packages/shared/src/types/is-sop-pipeline-stage.ts`：导出 `isSopPipelineStage(stage: string): boolean`
+- [x] 新增 `packages/shared/src/types/is-sop-pipeline-stage.ts`：导出 `isSopPipelineStage(stage: string): boolean`
   - **依赖**：M10 `sop-pipeline-stages.ts`
-- [ ] 新增 `packages/shared/src/types/is-sop-pipeline-stage.test.ts`
+- [x] 新增 `packages/shared/src/types/is-sop-pipeline-stage.test.ts`
   - **依赖**：上一条
 
-- [ ] 在 `packages/shared/src/index.ts` re-export M14-A
+- [x] 在 `packages/shared/src/index.ts` re-export M14-A
   - **依赖**：M14-A 源文件齐全
-- [ ] 新增 `packages/shared/src/index.m14-exports.test.ts`
+- [x] 新增 `packages/shared/src/index.m14-exports.test.ts`
   - **依赖**：上一条
 
 ---

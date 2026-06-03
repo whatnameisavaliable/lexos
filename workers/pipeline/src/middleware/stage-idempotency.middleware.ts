@@ -1,9 +1,9 @@
+import type { AllWorkerStage } from "@lexos/shared";
 import type { PoolClient } from "pg";
-import type { PipelineStage } from "@lexos/shared";
 
 /** 阶段幂等登记入参。 */
 export interface StageIdempotencyInput {
-  readonly stage: PipelineStage;
+  readonly stage: AllWorkerStage;
   readonly outboxEventId: string;
   readonly taskId: string;
   /** 重试序号；默认 1。 */

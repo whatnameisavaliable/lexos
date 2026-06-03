@@ -1424,34 +1424,34 @@ M* → M9
 
 #### M14-B `workers/pipeline` — 基础设施（并发、处理器分支）
 
-- [ ] 新增 `workers/pipeline/src/infra/sop-pdf-concurrency-limiter.ts`：导出 `runWithSopPdfSlot(fn)`（`p-limit(SOP_PDF_MAX_CONCURRENT)`）
+- [x] 新增 `workers/pipeline/src/infra/sop-pdf-concurrency-limiter.ts`：导出 `runWithSopPdfSlot(fn)`（`p-limit(SOP_PDF_MAX_CONCURRENT)`）
   - **依赖**：M11 `loadSopWorkerRuntimeEnvFromProcess`
-- [ ] 新增 `workers/pipeline/src/infra/sop-pdf-concurrency-limiter.test.ts`：并发 2 任务仅 1 同时执行（PDF=1）
+- [x] 新增 `workers/pipeline/src/infra/sop-pdf-concurrency-limiter.test.ts`：并发 2 任务仅 1 同时执行（PDF=1）
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/infra/sop-deep-research-concurrency-limiter.ts`：导出 `runWithSopDeepResearchSlot(fn)`
+- [x] 新增 `workers/pipeline/src/infra/sop-deep-research-concurrency-limiter.ts`：导出 `runWithSopDeepResearchSlot(fn)`
   - **依赖**：M11 SOP env
-- [ ] 新增 `workers/pipeline/src/infra/sop-deep-research-concurrency-limiter.test.ts`
+- [x] 新增 `workers/pipeline/src/infra/sop-deep-research-concurrency-limiter.test.ts`
   - **依赖**：上一条
 
-- [ ] 新增 `workers/pipeline/src/infra/sop-worker-concurrency-guard.ts`：导出 `runWithGlobalWorkerSlot(fn)`（复用 `getWorkerConcurrencyLimiter`；SOP 与转写共享 5 槽，`architecture.md` §3.2.6.10）
+- [x] 新增 `workers/pipeline/src/infra/sop-worker-concurrency-guard.ts`：导出 `runWithGlobalWorkerSlot(fn)`（复用 `getWorkerConcurrencyLimiter`；SOP 与转写共享 5 槽，`architecture.md` §3.2.6.10）
   - **依赖**：`worker-concurrency.ts`
-- [ ] 新增 `workers/pipeline/src/infra/sop-worker-concurrency-guard.test.ts`
+- [x] 新增 `workers/pipeline/src/infra/sop-worker-concurrency-guard.test.ts`
   - **依赖**：上一条
 
-- [ ] 修改 `workers/pipeline/src/repositories/outbox-event.repository.ts`（或 `outbox.repository`）：新增 `parseWorkerPayload(event)` 调用 shared `parseWorkerOutboxPayload`
+- [x] 修改 `workers/pipeline/src/repositories/outbox-event.repository.ts`（或 `outbox.repository`）：新增 `parseWorkerPayload(event)` 调用 shared `parseWorkerOutboxPayload`
   - **依赖**：M14-A
-- [ ] 新增 `workers/pipeline/src/repositories/outbox-event.repository.sop-parse.test.ts`
+- [x] 新增 `workers/pipeline/src/repositories/outbox-event.repository.sop-parse.test.ts`
   - **依赖**：上一条
 
-- [ ] 修改 `workers/pipeline/src/services/outbox-poller.service.ts`：`parseWorkerPayload` 替换仅转写解析；日志区分 `pipelineId` / `taskId`
+- [x] 修改 `workers/pipeline/src/services/outbox-poller.service.ts`：`parseWorkerPayload` 替换仅转写解析；日志区分 `pipelineId` / `taskId`
   - **依赖**：repository 解析已扩展
-- [ ] 更新 `workers/pipeline/src/services/outbox-poller.service.test.ts`：SOP 载荷不抛 `Invalid taskId`
+- [x] 更新 `workers/pipeline/src/services/outbox-poller.service.test.ts`：SOP 载荷不抛 `Invalid taskId`
   - **依赖**：上一条
 
-- [ ] 修改 `workers/pipeline/src/services/pipeline-stage-processor.service.ts`：分支处理 `SopOutboxPayload`（幂等 `task_id` 列写入 `pipelineId`；路由 `SopStageRouter`）
+- [x] 修改 `workers/pipeline/src/services/pipeline-stage-processor.service.ts`：分支处理 `SopOutboxPayload`（幂等 `task_id` 列写入 `pipelineId`；路由 `SopStageRouter`）
   - **依赖**：M14-A；M14-H Handler 已注册
-- [ ] 新增 `workers/pipeline/src/services/pipeline-stage-processor.service.sop.test.ts`：Mock Sop handler；重复 outbox 跳过
+- [x] 新增 `workers/pipeline/src/services/pipeline-stage-processor.service.sop.test.ts`：Mock Sop handler；重复 outbox 跳过
   - **依赖**：上一条
 
 ---

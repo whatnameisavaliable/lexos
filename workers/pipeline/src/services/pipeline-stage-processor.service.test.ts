@@ -18,6 +18,7 @@ describe("PipelineStageProcessorService", () => {
     const stageErrorHandler = { handle: vi.fn() };
     const processor = new PipelineStageProcessorService(
       router as never,
+      { resolve: vi.fn() } as never,
       idempotency as never,
       outboxRepository as never,
       stageErrorHandler as never,

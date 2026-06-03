@@ -35,6 +35,7 @@ import { MediaPreprocessService } from "../services/media-preprocess.service.js"
 import { PipelineStageProcessorService } from "../services/pipeline-stage-processor.service.js";
 import type { OutboxStageProcessor } from "../services/outbox-stage-processor.js";
 import { StageRouter } from "../services/stage-router.js";
+import { SopStageRouter } from "../services/sop-stage-router.js";
 import { TempDirCleanupService } from "../services/temp-dir-cleanup.service.js";
 import { WorkerTransactionService } from "../services/worker-transaction.service.js";
 import type { WorkerAiClient } from "../adapters/ai/worker-ai-client.port.js";
@@ -127,7 +128,13 @@ export function createPipelineStageProcessor(
     ),
   });
 
-  return new PipelineStageProcessorService(router, undefined, undefined, stageErrorHandler);
+  return new PipelineStageProcessorService(
+    router,
+    new SopStageRouter({}),
+    undefined,
+    undefined,
+    stageErrorHandler,
+  );
 }
 
 function parseAsrApiConcurrency(): number {

@@ -1,5 +1,8 @@
 import type { PoolClient } from "pg";
-import { parsePipelineStageOutboxPayload } from "@lexos/shared";
+import {
+  parseWorkerOutboxPayload,
+  type WorkerOutboxPayload,
+} from "@lexos/shared";
 
 /** 待发布的 Outbox 行。 */
 export interface OutboxEventRow {
@@ -82,9 +85,14 @@ export class OutboxEventRepository {
     return attempts;
   }
 
-  /** 解析 Outbox JSON 载荷。 */
+  /** 解析 Outbox JSON 载荷（转写或 SOP 联合分流）。 */
+  parseWorkerPayload(payload: unknown): WorkerOutboxPayload {
+    return parseWorkerOutboxPayload(payload);
+  }
+
+  /** @deprecated 使用 {@link parseWorkerPayload} */
   parsePipelinePayload(payload: unknown) {
-    return parsePipelineStageOutboxPayload(payload);
+    return parseWorkerOutboxPayload(payload);
   }
 }
 

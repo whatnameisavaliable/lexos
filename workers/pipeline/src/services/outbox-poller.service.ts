@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import type { PipelineStageOutboxPayload } from "@lexos/shared";
+import type { WorkerOutboxPayload } from "@lexos/shared";
 import type { OutboxRuntimeEnvConfig } from "@lexos/shared/config";
 import { withPgClient } from "../infra/with-pg-client.js";
 import { OutboxEventRepository } from "../repositories/outbox-event.repository.js";
@@ -84,9 +84,9 @@ export class OutboxPollerService {
 
       let processed = 0;
       for (const event of events) {
-        let payload: PipelineStageOutboxPayload | null = null;
+        let payload: WorkerOutboxPayload | null = null;
         try {
-          payload = this.repository.parsePipelinePayload(event.payload);
+          payload = this.repository.parseWorkerPayload(event.payload);
           const outcome = await this.stageProcessor.processStage(
             this.pool,
             event,
@@ -94,17 +94,22 @@ export class OutboxPollerService {
           );
           if (outcome.kind === "executed") {
             processed += 1;
+            const subjectId =
+              "taskId" in payload ? payload.taskId : payload.pipeline_id;
             console.info(
-              `[pipeline-worker] stage ok task=${payload.taskId} stage=${payload.stage}`,
+              `[pipeline-worker] stage ok ${"taskId" in payload ? "task" : "pipeline"}=${subjectId} stage=${payload.stage}`,
             );
           }
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);
-          const taskId = payload?.taskId ?? event.aggregateId;
+          const subjectId =
+            payload && "taskId" in payload
+              ? payload.taskId
+              : payload?.pipeline_id ?? event.aggregateId;
           const stage = payload?.stage ?? event.eventType;
           console.error(
-            `[pipeline-worker] stage failed task=${taskId} stage=${stage}: ${message}`,
+            `[pipeline-worker] stage failed ${payload && "pipeline_id" in payload ? "pipeline" : "task"}=${subjectId} stage=${stage}: ${message}`,
           );
           await this.handleStageFailure(event, error);
         }

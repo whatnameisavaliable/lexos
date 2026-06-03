@@ -123,4 +123,52 @@ describe("OutboxPollerService", () => {
     expect(mockProcessStage).not.toHaveBeenCalled();
     await poller.stop();
   });
+
+  it("parses SOP payload without Invalid taskId", async () => {
+    mockClient.query.mockImplementation(async (sql: string) => {
+      if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") {
+        return { rows: [], rowCount: 0 };
+      }
+      if (sql.includes("SELECT id, aggregate_type")) {
+        return {
+          rows: [
+            {
+              id: "evt-sop",
+              aggregate_type: "case_pipeline",
+              aggregate_id: "pipe-1",
+              event_type: "pipeline.stage.sop.deep_research",
+              payload: {
+                stage: "sop.deep_research",
+                pipeline_id: "pipe-1",
+                step_code: "02-B",
+                artifact_id: "art-1",
+              },
+              publish_attempts: 0,
+            },
+          ],
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    });
+
+    mockProcessStage.mockResolvedValue({ kind: "executed" });
+    const poller = new OutboxPollerService(
+      env,
+      mockPool as never,
+      { processStage: mockProcessStage },
+    );
+
+    const count = await poller.pollOnce();
+
+    expect(count).toBe(1);
+    expect(mockProcessStage).toHaveBeenCalledWith(
+      mockPool,
+      expect.objectContaining({ id: "evt-sop" }),
+      expect.objectContaining({
+        pipeline_id: "pipe-1",
+        stage: "sop.deep_research",
+      }),
+    );
+    await poller.stop();
+  });
 });

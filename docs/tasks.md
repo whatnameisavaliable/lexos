@@ -2042,9 +2042,9 @@ M* → M9
   - **依赖**：无
 - [x] 执行 `npm install`（workspace 根目录）并确认 lockfile 更新
   - **依赖**：上三条 package.json 变更
-- [ ] 执行 `npx shadcn@latest add progress`（步骤/上传进度；若已存在则跳过）
+- [x] 执行 `npx shadcn@latest add progress`（步骤/上传进度；若已存在则跳过）
   - **依赖**：M1 Shadcn 基建
-- [ ] 执行 `npx shadcn@latest add toggle`（HTML 预览黑白模式切换，`prd.md` §3.8.5）
+- [x] 执行 `npx shadcn@latest add toggle`（HTML 预览黑白模式切换，`prd.md` §3.8.5）
   - **依赖**：无
 
 ---

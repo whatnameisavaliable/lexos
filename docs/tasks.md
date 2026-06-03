@@ -2040,7 +2040,7 @@ M* → M9
   - **依赖**：无
 - [x] 在 `apps/web/package.json` 增加 `isomorphic-dompurify`（非 iframe 场景的 HTML 片段展示，`prd.md` §3.10）
   - **依赖**：无
-- [ ] 执行 `npm install`（workspace 根目录）并确认 lockfile 更新
+- [x] 执行 `npm install`（workspace 根目录）并确认 lockfile 更新
   - **依赖**：上三条 package.json 变更
 - [ ] 执行 `npx shadcn@latest add progress`（步骤/上传进度；若已存在则跳过）
   - **依赖**：M1 Shadcn 基建

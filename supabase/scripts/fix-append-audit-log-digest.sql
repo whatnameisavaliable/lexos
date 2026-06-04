@@ -1,2 +1,0 @@
--- 与迁移 20260530120000_fix_append_audit_log_digest.sql 相同。
--- 在 Supabase SQL Editor 粘贴该迁移文件全文执行，或运行：supabase db push

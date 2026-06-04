@@ -1,27 +1,38 @@
-# Dependencies
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Environment (secrets)
-.env
-.env.development
-.env.production
-.env.docker
-.env.local
-.env.*.local
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# Build
-dist/
-.next/
-out/
-coverage/
+# testing
+/coverage
 
-# OS / IDE
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 .DS_Store
-Thumbs.db
-*.log
-.idea/
-.vscode/
+*.pem
 
-# Supabase local
-supabase/.branches/
-supabase/.temp/
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+.env.local

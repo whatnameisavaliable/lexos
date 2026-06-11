@@ -1,5 +1,6 @@
 .next/
 .vercel/
+.tmp/
 node_modules/
 dist/
 coverage/

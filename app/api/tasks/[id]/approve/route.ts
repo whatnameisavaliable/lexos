@@ -1,15 +1,17 @@
 import { ApiError, handleApiError, ok, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import { transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
 import { validateSourceReviewInput } from "@/lib/reviews/source-review";
 import { createLowScoreRiskCase } from "@/lib/risk/low-score-service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isTaskReviewSatisfied, type TaskReviewStatus } from "@/lib/tasks/review";
 
+const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
+
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["source_lawyer", "system_admin", "firm_admin"]);
+    const session = await requireInternalSession(lawyerAccessRoles);
     const taskId = await routeParam(context, "id");
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     let review;
@@ -37,8 +39,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       throw new ApiError(409, "CONFLICT", "当前任务不可验收");
     }
 
-    if (session.roleCode === "source_lawyer" && task.source_lawyer_id !== session.userId) {
-      throw new ApiError(403, "FORBIDDEN", "只能验收自己发布的任务");
+    if (task.source_lawyer_id !== session.userId) {
+      throw new ApiError(403, "FORBIDDEN", "只能验收自己发起的任务");
     }
 
     if (!isTaskReviewSatisfied({ reviewRequired: task.review_required, reviewStatus: task.review_status as TaskReviewStatus })) {
@@ -73,7 +75,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         organizationId: session.organizationId,
         reportedByUserId: session.userId,
         score: review.sourceReviewScore,
-        scoreLabel: "案源评分",
+        scoreLabel: "发起人评分",
         taskId,
         taskTitle: task.title,
       })) ??

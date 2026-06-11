@@ -2,11 +2,14 @@ import { ApiError, handleApiError, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
 import { SIGNED_DELIVERABLE_URL_SECONDS } from "@/lib/deliverables/files";
+import { isDirectorRole, isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+const deliverableDownloadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
 
 export async function GET(request: Request, context: { params: Promise<{ id: string; deliverableId: string }> }) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin", "source_lawyer", "handling_lawyer"]);
+    const session = await requireInternalSession(deliverableDownloadRoles);
     const taskId = await routeParam(context, "id");
     const deliverableId = await routeParam(context, "deliverableId");
     const admin = createSupabaseAdminClient();
@@ -27,10 +30,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     }
 
     const hasAccess =
-      session.roleCode === "system_admin" ||
-      session.roleCode === "firm_admin" ||
-      (session.roleCode === "source_lawyer" && task.source_lawyer_id === session.userId) ||
-      (session.roleCode === "handling_lawyer" && task.assigned_lawyer_id === session.userId);
+      isDirectorRole(session.roleCode) ||
+      (isLawyerRole(session.roleCode) &&
+        (task.source_lawyer_id === session.userId || task.assigned_lawyer_id === session.userId));
 
     if (!hasAccess) {
       throw new ApiError(403, "FORBIDDEN", "无权下载该交付附件");

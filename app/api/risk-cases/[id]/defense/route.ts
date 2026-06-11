@@ -1,6 +1,7 @@
 import { ApiError, handleApiError, ok, readJsonObject, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
+import { lawyerRoles, type UserRole } from "@/lib/domain/core";
 import type { RiskCaseStatus } from "@/lib/risk/cases";
 import { buildRiskCaseDefenseStatus, normalizeRiskCaseDefenseInput } from "@/lib/risk/defense";
 import { enrichRiskCases, type RiskCaseRow } from "@/lib/risk/records";
@@ -8,10 +9,11 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const riskCaseSelect =
   "id, organization_id, task_id, customer_id, reported_by_user_id, owner_user_id, source, severity, status, title, description, resolution_note, defense_statement, defended_at, committee_decision, committee_decision_note, committee_deduction_basis_points, committee_decided_by, committee_decided_at, resolved_at, created_at, updated_at";
+const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["handling_lawyer"]);
+    const session = await requireInternalSession(lawyerAccessRoles);
     const riskCaseId = await routeParam(context, "id");
     const body = await readJsonObject(request);
     let input;
@@ -60,7 +62,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
 
     if (task.assigned_lawyer_id !== session.userId) {
-      throw new ApiError(403, "FORBIDDEN", "办案律师只能答辩自己承办任务的风控工单");
+      throw new ApiError(403, "FORBIDDEN", "律师只能答辩自己承办任务的风控工单");
     }
 
     const defenseStatus = buildRiskCaseDefenseStatus({

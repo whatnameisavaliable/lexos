@@ -1,4 +1,5 @@
 import type { CustomerFeedback, DemoUser, Settlement, Task } from "../../types/demo.ts";
+import { isLawyerRole } from "../domain/core.ts";
 import { averageScores } from "../reviews/source-review.ts";
 import { effectiveSettlementAmountCents } from "../settlements/risk-deduction.ts";
 
@@ -65,7 +66,7 @@ export function buildLawyerPerformanceStats({
   const rollingScoreEntriesByLawyerId = new Map<string, RollingScoreEntry[]>();
 
   users
-    .filter((user) => user.role === "handling_lawyer")
+    .filter((user) => isLawyerRole(user.role))
     .forEach((lawyer) => {
       statsByLawyerId.set(lawyer.id, createLawyerStat(lawyer));
     });

@@ -9,7 +9,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: Request) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin"]);
+    const session = await requireInternalSession(["system_admin", "firm_admin", "director"]);
     const admin = createSupabaseAdminClient();
     const action = normalizedQueryParam(request, "action");
     const entityType = normalizedQueryParam(request, "entityType");

@@ -18,7 +18,7 @@ describe("审核律师流程", () => {
     );
   });
 
-  it("普通办案律师和非待审核任务不能执行审核", () => {
+  it("普通律师和非待审核任务不能执行审核", () => {
     assert.equal(
       canReviewTask({
         currentUserId: "u-handler",

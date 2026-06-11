@@ -1,12 +1,14 @@
 import { ApiError, handleApiError, ok, readJsonObject, routeParam, stringField, optionalStringField } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import { transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["handling_lawyer"]);
+    const session = await requireInternalSession(lawyerAccessRoles);
     const taskId = await routeParam(context, "id");
     const body = await readJsonObject(request);
     const title = stringField(body, "title", "成果标题");

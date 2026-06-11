@@ -28,20 +28,22 @@ describe("默认用户", () => {
   });
 });
 
-describe("任务抢单", () => {
-  it("办案律师职级满足最低要求且任务开放时可以抢单", () => {
-    assert.equal(
-      canClaimTask({
-        taskStatus: "open",
-        userRole: "handling_lawyer",
-        lawyerRankOrder: 6,
-        minRankOrder: 4,
-      }),
-      true,
-    );
+describe("任务承接", () => {
+  it("任一律师职级满足最低要求且任务开放时可以承接", () => {
+    for (const userRole of ["handling_lawyer", "source_lawyer"] as const) {
+      assert.equal(
+        canClaimTask({
+          taskStatus: "open",
+          userRole,
+          lawyerRankOrder: 6,
+          minRankOrder: 4,
+        }),
+        true,
+      );
+    }
   });
 
-  it("任务已被抢或职级不足时不能抢单", () => {
+  it("任务已被承接或职级不足时不能承接", () => {
     assert.equal(
       canClaimTask({
         taskStatus: "claimed",
@@ -65,7 +67,7 @@ describe("任务抢单", () => {
 });
 
 describe("任务状态流转", () => {
-  it("允许按 MVP 闭环顺序推进任务", () => {
+  it("允许按正式闭环顺序推进任务", () => {
     assert.equal(transitionTaskStatus("open", "claim"), "claimed");
     assert.equal(transitionTaskStatus("claimed", "submit"), "submitted");
     assert.equal(transitionTaskStatus("submitted", "approve"), "approved");
@@ -81,4 +83,3 @@ describe("任务状态流转", () => {
     );
   });
 });
-

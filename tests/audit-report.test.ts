@@ -14,7 +14,7 @@ const logs: AuditReportLog[] = [
     rawCreatedAt: "2026-06-10T01:00:00.000Z",
   },
   {
-    actor: "周案源律师",
+    actor: "周律师",
     action: "发布任务",
     actionCode: "tasks.create",
     entityType: "tasks",
@@ -22,7 +22,7 @@ const logs: AuditReportLog[] = [
     rawCreatedAt: "2026-06-10T01:10:00.000Z",
   },
   {
-    actor: "林办案律师",
+    actor: "林律师",
     action: "抢单",
     actionCode: "tasks.claim",
     entityType: "tasks",

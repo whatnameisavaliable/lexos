@@ -1,7 +1,7 @@
 import { ApiError, handleApiError, ok, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import { transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   CLAIM_BLOCKING_RISK_SEVERITIES,
@@ -10,9 +10,11 @@ import {
   canClaimTaskWithRestriction,
 } from "@/lib/tasks/claim-restrictions";
 
+const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
+
 export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["handling_lawyer"]);
+    const session = await requireInternalSession(lawyerAccessRoles);
     const taskId = await routeParam(context, "id");
     const admin = createSupabaseAdminClient();
 
@@ -36,7 +38,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       .select("rank_id")
       .eq("organization_id", session.organizationId)
       .eq("user_id", session.userId)
-      .eq("role_code", "handling_lawyer")
+      .in("role_code", lawyerAccessRoles)
       .eq("status", "active")
       .maybeSingle();
 
@@ -45,7 +47,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     }
 
     if (!member?.rank_id) {
-      throw new ApiError(403, "FORBIDDEN", "办案律师尚未绑定职级");
+      throw new ApiError(403, "FORBIDDEN", "律师尚未绑定职级");
     }
 
     const minRankOrder = task.min_rank_id
@@ -55,7 +57,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     const basePermission = canClaimTaskWithRestriction({
       taskStatus: task.status,
-      userRole: "handling_lawyer",
+      userRole: session.roleCode,
       lawyerRankOrder: lawyerRankOrder ?? 0,
       minRankOrder,
     });
@@ -67,7 +69,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     const riskRestriction = await getClaimRiskRestriction(admin, session.organizationId, session.userId);
     const claimPermission = canClaimTaskWithRestriction({
       taskStatus: task.status,
-      userRole: "handling_lawyer",
+      userRole: session.roleCode,
       lawyerRankOrder: lawyerRankOrder ?? 0,
       minRankOrder,
       restriction: riskRestriction,

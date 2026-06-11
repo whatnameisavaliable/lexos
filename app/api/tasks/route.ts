@@ -9,13 +9,13 @@ import {
 } from "@/lib/api/pagination";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildPortalToken, buildPortalTokenHash, validateCreateTaskInput } from "@/lib/workflow/validation";
 
-const taskReadRoles: UserRole[] = ["system_admin", "firm_admin", "director", "source_lawyer", "handling_lawyer", "finance"];
-const taskCreateRoles: UserRole[] = ["system_admin", "firm_admin", "source_lawyer"];
+const taskReadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer", "finance"];
+const taskCreateRoles: UserRole[] = ["source_lawyer", "handling_lawyer"];
 const taskSortOptions = {
   amountDesc: { ascending: false, column: "amount_cents" },
   createdAtAsc: { ascending: true, column: "created_at" },
@@ -61,18 +61,14 @@ export async function GET(request: Request) {
       .eq("organization_id", session.organizationId)
       .order(sort.column, { ascending: sort.ascending });
 
-    if (session.roleCode === "source_lawyer") {
-      query = query.eq("source_lawyer_id", session.userId);
-    }
-
-    if (session.roleCode === "director") {
-      query = query.eq("review_required", true).or(`review_lawyer_id.is.null,review_lawyer_id.eq.${session.userId}`);
-    }
-
-    if (session.roleCode === "handling_lawyer" && scope === "assigned") {
+    if (isLawyerRole(session.roleCode) && scope === "assigned") {
       query = query.eq("assigned_lawyer_id", session.userId);
-    } else if (session.roleCode === "handling_lawyer") {
-      query = query.or(`status.eq.open,assigned_lawyer_id.eq.${session.userId}`);
+    } else if (isLawyerRole(session.roleCode) && scope === "sourced") {
+      query = query.eq("source_lawyer_id", session.userId);
+    } else if (isLawyerRole(session.roleCode) && scope === "mine") {
+      query = query.or(`assigned_lawyer_id.eq.${session.userId},source_lawyer_id.eq.${session.userId}`);
+    } else if (isLawyerRole(session.roleCode)) {
+      query = query.or(`status.eq.open,assigned_lawyer_id.eq.${session.userId},source_lawyer_id.eq.${session.userId}`);
     }
 
     if (status && status !== "all") {

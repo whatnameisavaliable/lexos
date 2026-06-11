@@ -8,14 +8,16 @@ import {
   sanitizeDeliverableFileName,
   validateDeliverableUpload,
 } from "@/lib/deliverables/files";
-import { transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   let uploadedStoragePath: string | undefined;
 
   try {
-    const session = await requireInternalSession(["handling_lawyer"]);
+    const session = await requireInternalSession(lawyerAccessRoles);
     const taskId = await routeParam(context, "id");
     const formData = await request.formData();
     const title = requiredFormText(formData, "title", "成果标题");

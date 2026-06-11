@@ -2,7 +2,7 @@ import { ApiError, handleApiError, ok, optionalStringField, readJsonObject, rout
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
 import { validateUpdateUserInput } from "@/lib/auth/user-provisioning";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const adminRoles: UserRole[] = ["system_admin", "firm_admin"];
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const nextRankId = optionalStringField(body, "rankId") ?? member.rank_id ?? undefined;
     const input = validateUpdateUserInput({
       roleCode: nextRole,
-      rankId: nextRole === "handling_lawyer" ? nextRankId : undefined,
+      rankId: isLawyerRole(nextRole) ? nextRankId : undefined,
       status: nextStatus,
     });
 

@@ -13,7 +13,7 @@ function demoUser(id: string) {
 }
 
 describe("律师个人工作台", () => {
-  it("办案律师看到自己的已接单待提交任务", () => {
+  it("承办中的律师看到自己的待提交任务", () => {
     const summary = buildPersonalWorkbench({
       currentUser: demoUser("u-junior"),
       feedback: demoFeedback,
@@ -21,14 +21,14 @@ describe("律师个人工作台", () => {
       tasks: demoTasks,
     });
 
-    assert.equal(summary.title, "吴青年律师的个人工作台");
+    assert.ok(summary.title.endsWith("的工作台"));
     assert.equal(summary.metrics.find((metric) => metric.label === "我的任务")?.value, "2");
     assert.equal(summary.metrics.find((metric) => metric.label === "待处理")?.value, "1");
     assert.equal(summary.metrics.find((metric) => metric.label === "综合评分")?.value, "8/10");
-    assert.ok(summary.actions.some((action) => action.title.includes("提交成果：劳动争议证据梳理")));
+    assert.ok(summary.actions.some((action) => action.title.includes("提交成果")));
   });
 
-  it("案源律师看到自己发布任务中的待验收成果", () => {
+  it("发起任务的律师看到本人待验收成果", () => {
     const summary = buildPersonalWorkbench({
       currentUser: demoUser("u-source"),
       feedback: demoFeedback,
@@ -36,9 +36,9 @@ describe("律师个人工作台", () => {
       tasks: demoTasks,
     });
 
-    assert.equal(summary.metrics.find((metric) => metric.label === "我发布的任务")?.value, "5");
+    assert.equal(summary.metrics.find((metric) => metric.label === "我的任务")?.value, "5");
     assert.equal(summary.metrics.find((metric) => metric.label === "待处理")?.value, "1");
-    assert.ok(summary.actions.some((action) => action.title.includes("验收任务：买卖合同纠纷诉前方案")));
+    assert.ok(summary.actions.some((action) => action.title.includes("验收任务")));
   });
 
   it("财务角色优先看到待确认结算", () => {

@@ -4,18 +4,19 @@ import {
   paginationMeta,
   parseListQuery,
   parseListSort,
+  postgrestInFilter,
   postgrestLikePattern,
 } from "@/lib/api/pagination";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { normalizeRiskCaseInput } from "@/lib/risk/cases";
 import { enrichRiskCases, type RiskCaseRow } from "@/lib/risk/records";
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const riskReadRoles: UserRole[] = ["system_admin", "firm_admin", "director", "source_lawyer", "handling_lawyer"];
-const riskCreateRoles: UserRole[] = ["system_admin", "firm_admin", "director", "source_lawyer"];
+const riskReadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
+const riskCreateRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
 const riskCaseSelect =
   "id, organization_id, task_id, customer_id, reported_by_user_id, owner_user_id, source, severity, status, title, description, resolution_note, defense_statement, defended_at, committee_decision, committee_decision_note, committee_deduction_basis_points, committee_decided_by, committee_decided_at, resolved_at, created_at, updated_at";
 const riskSortOptions = {
@@ -38,12 +39,12 @@ export async function GET(request: Request) {
     const searchPattern = postgrestLikePattern(listQuery.search);
     let assignedTaskIds: string[] = [];
 
-    if (session.roleCode === "handling_lawyer") {
+    if (isLawyerRole(session.roleCode)) {
       const { data: assignedTasks, error: assignedTasksError } = await admin
         .from("tasks")
         .select("id")
         .eq("organization_id", session.organizationId)
-        .eq("assigned_lawyer_id", session.userId)
+        .or(`assigned_lawyer_id.eq.${session.userId},source_lawyer_id.eq.${session.userId}`)
         .limit(1000);
 
       if (assignedTasksError) {
@@ -52,9 +53,6 @@ export async function GET(request: Request) {
 
       assignedTaskIds = (assignedTasks ?? []).map((task) => task.id);
 
-      if (!assignedTaskIds.length) {
-        return ok({ pagination: paginationMeta(listQuery, 0), riskCases: [] });
-      }
     }
 
     let query = admin
@@ -63,12 +61,11 @@ export async function GET(request: Request) {
       .eq("organization_id", session.organizationId)
       .order(sort.column, { ascending: sort.ascending });
 
-    if (session.roleCode === "source_lawyer") {
-      query = query.eq("reported_by_user_id", session.userId);
-    }
-
-    if (session.roleCode === "handling_lawyer") {
-      query = query.in("task_id", assignedTaskIds);
+    if (isLawyerRole(session.roleCode)) {
+      const relatedTaskFilter = postgrestInFilter(assignedTaskIds);
+      query = relatedTaskFilter
+        ? query.or(`reported_by_user_id.eq.${session.userId},task_id.in.${relatedTaskFilter}`)
+        : query.eq("reported_by_user_id", session.userId);
     }
 
     if (status && status !== "all") {
@@ -119,7 +116,7 @@ export async function POST(request: Request) {
     if (input.taskId) {
       const { data: task, error: taskError } = await admin
         .from("tasks")
-        .select("id, title, customer_id, source_lawyer_id")
+        .select("id, title, customer_id, source_lawyer_id, assigned_lawyer_id")
         .eq("id", input.taskId)
         .eq("organization_id", session.organizationId)
         .maybeSingle();
@@ -132,8 +129,12 @@ export async function POST(request: Request) {
         throw new ApiError(404, "NOT_FOUND", "关联任务不存在");
       }
 
-      if (session.roleCode === "source_lawyer" && task.source_lawyer_id !== session.userId) {
-        throw new ApiError(403, "FORBIDDEN", "案源律师只能登记自己任务相关的风控工单");
+      if (
+        isLawyerRole(session.roleCode) &&
+        task.source_lawyer_id !== session.userId &&
+        task.assigned_lawyer_id !== session.userId
+      ) {
+        throw new ApiError(403, "FORBIDDEN", "律师只能登记自己相关任务的风控工单");
       }
 
       customerId = customerId ?? task.customer_id ?? undefined;

@@ -20,7 +20,7 @@ import { settlementRiskPenaltyDestinations } from "@/lib/settlements/risk-deduct
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const fundRoles: UserRole[] = ["system_admin", "firm_admin", "finance"];
+const fundRoles: UserRole[] = ["director", "finance"];
 const fundAccountTypes = new Set<string>(settlementRiskPenaltyDestinations);
 const fundSortOptions = {
   accountTypeAsc: { ascending: true, column: "account_type" },

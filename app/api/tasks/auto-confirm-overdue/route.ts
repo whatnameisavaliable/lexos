@@ -5,7 +5,7 @@ import type { UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { autoConfirmOverdueTasks } from "@/lib/tasks/customer-auto-confirm-service";
 
-const autoConfirmRoles: UserRole[] = ["system_admin", "firm_admin"];
+const autoConfirmRoles: UserRole[] = ["director"];
 
 export async function POST(request: Request) {
   try {

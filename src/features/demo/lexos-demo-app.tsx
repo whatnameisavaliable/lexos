@@ -36,6 +36,9 @@ import {
 import {
   DEFAULT_INITIAL_PASSWORD,
   calculateSettlementAmount,
+  isDirectorRole,
+  isLawyerRole,
+  isSystemConfigRole,
   createInitialUserProfile,
   transitionTaskStatus,
   type TaskStatus,
@@ -233,7 +236,7 @@ const userStatusOptions: Array<[DemoUser["status"], string]> = [
 ];
 
 const statusLabels: Record<TaskStatus, string> = {
-  open: "待抢单",
+  open: "待承接",
   claimed: "处理中",
   submitted: "待验收",
   approved: "客户待确认",
@@ -431,11 +434,11 @@ function riskCaseDefenseStatusText(status: RiskCaseDefenseStatus): string {
 function canSubmitRiskCaseDefense(currentUser: DemoUser, riskCase: RiskCase, linkedTask?: Task): boolean {
   const assignedLawyerId = riskCase.taskAssignedLawyerId ?? linkedTask?.assignedLawyerId;
 
-  return currentUser.role === "handling_lawyer" && Boolean(assignedLawyerId) && assignedLawyerId === currentUser.id;
+  return isLawyerRole(currentUser.role) && Boolean(assignedLawyerId) && assignedLawyerId === currentUser.id;
 }
 
 function canSubmitRiskCaseCommitteeDecision(currentUser: DemoUser): boolean {
-  return ["system_admin", "firm_admin", "director"].includes(currentUser.role);
+  return isDirectorRole(currentUser.role);
 }
 
 function riskCaseCommitteeDecisionText(riskCase: RiskCase): string {
@@ -650,13 +653,16 @@ export function LexosDemoApp() {
 
   async function reloadApiWorkspace(user: DemoUser, tokens = portalTokensByTaskId) {
     const nextRanks = await apiFetchRanks();
-    const loadUsers = ["system_admin", "firm_admin"].includes(user.role);
-    const loadCustomers = ["system_admin", "firm_admin", "source_lawyer"].includes(user.role);
-    const loadSettlements = ["system_admin", "firm_admin", "finance", "handling_lawyer"].includes(user.role);
-    const loadFunds = ["system_admin", "firm_admin", "finance"].includes(user.role);
-    const loadAuditLogs = ["system_admin", "firm_admin"].includes(user.role);
-    const loadSystemSettings = ["system_admin", "firm_admin"].includes(user.role);
-    const loadRiskCases = ["system_admin", "firm_admin", "director", "source_lawyer", "handling_lawyer"].includes(user.role);
+    const configRole = isSystemConfigRole(user.role);
+    const directorRole = isDirectorRole(user.role);
+    const lawyerRole = isLawyerRole(user.role);
+    const loadUsers = configRole || directorRole;
+    const loadCustomers = directorRole || lawyerRole;
+    const loadSettlements = directorRole || lawyerRole || user.role === "finance";
+    const loadFunds = directorRole || user.role === "finance";
+    const loadAuditLogs = configRole || directorRole;
+    const loadSystemSettings = configRole;
+    const loadRiskCases = directorRole || lawyerRole;
 
     const [
       nextUsers,
@@ -792,7 +798,7 @@ export function LexosDemoApp() {
     setSessionUserId(nextSessionUserId);
     setActiveNav("dashboard");
     setWorkspaceVersion((version) => version + 1);
-    showNotice("演示数据已恢复到标准脚本。");
+    showNotice("本地数据已恢复到标准脚本。");
   }
 
   function log(actor: string, action: string, entity: string, actionCode = action) {
@@ -851,7 +857,7 @@ export function LexosDemoApp() {
   }
 
   async function createRiskCase(input: CreateRiskCaseInput) {
-    if (!currentUser || !["system_admin", "firm_admin", "director", "source_lawyer"].includes(currentUser.role)) {
+    if (!currentUser || (!isDirectorRole(currentUser.role) && !isLawyerRole(currentUser.role))) {
       return;
     }
 
@@ -893,7 +899,7 @@ export function LexosDemoApp() {
   }
 
   async function updateRiskCaseStatus(riskCaseId: string, input: UpdateRiskCaseStatusInput) {
-    if (!currentUser || !["system_admin", "firm_admin", "director", "source_lawyer"].includes(currentUser.role)) {
+    if (!currentUser || (!isDirectorRole(currentUser.role) && !isLawyerRole(currentUser.role))) {
       return;
     }
 
@@ -917,8 +923,8 @@ export function LexosDemoApp() {
       return;
     }
 
-    if (currentUser.role === "source_lawyer" && existing.reportedByUserId !== currentUser.id) {
-      showError("案源律师只能处理自己登记的风控工单");
+    if (isLawyerRole(currentUser.role) && existing.reportedByUserId !== currentUser.id) {
+      showError("律师只能处理自己登记的风控工单");
       return;
     }
 
@@ -963,7 +969,7 @@ export function LexosDemoApp() {
   }
 
   async function submitRiskCaseDefense(riskCaseId: string, defenseStatement: string) {
-    if (!currentUser || currentUser.role !== "handling_lawyer") {
+    if (!currentUser || !isLawyerRole(currentUser.role)) {
       return;
     }
 
@@ -989,7 +995,7 @@ export function LexosDemoApp() {
     }
 
     if (!canSubmitRiskCaseDefense(currentUser, existing, linkedTask)) {
-      showError("办案律师只能答辩自己承办任务的风控工单");
+      showError("律师只能答辩自己承办任务的风控工单");
       return;
     }
 
@@ -1204,7 +1210,7 @@ export function LexosDemoApp() {
           username: input.username,
           displayName: input.displayName,
           roleCode: input.role,
-          rankId: input.role === "handling_lawyer" ? rank?.id : undefined,
+          rankId: isLawyerRole(input.role) ? rank?.id : undefined,
         });
         await reloadApiWorkspace(currentUser);
         showNotice(`用户 ${input.displayName} 已创建。`);
@@ -1236,7 +1242,7 @@ export function LexosDemoApp() {
     status: DemoUser["status"];
     userId: string;
   }) {
-    if (!currentUser || !["system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || !isSystemConfigRole(currentUser.role)) {
       return;
     }
 
@@ -1250,7 +1256,7 @@ export function LexosDemoApp() {
         const rank = input.rankCode ? ranks.find((item) => item.code === input.rankCode) : undefined;
         await apiUpdateUser(input.userId, {
           roleCode: input.role,
-          rankId: input.role === "handling_lawyer" ? rank?.id : undefined,
+          rankId: isLawyerRole(input.role) ? rank?.id : undefined,
           status: input.status,
         });
         await reloadApiWorkspace(currentUser);
@@ -1266,7 +1272,7 @@ export function LexosDemoApp() {
         user.id === input.userId
           ? {
               ...user,
-              rankCode: input.role === "handling_lawyer" ? input.rankCode : undefined,
+              rankCode: isLawyerRole(input.role) ? input.rankCode : undefined,
               role: input.role,
               status: input.status,
             }
@@ -1413,7 +1419,7 @@ export function LexosDemoApp() {
       try {
         await apiSubmitTask(taskId, input);
         await reloadApiWorkspace(currentUser);
-        showNotice("成果已提交，等待案源律师验收。");
+        showNotice("成果已提交，等待发起人验收。");
       } catch (error) {
         showError(error instanceof Error ? error.message : "提交成果失败");
       }
@@ -1505,7 +1511,7 @@ export function LexosDemoApp() {
       customerId: task.customerId,
       customerName: customersById.get(task.customerId)?.name,
       score: input.sourceReviewScore,
-      scoreLabel: "案源评分",
+      scoreLabel: "发起人评分",
       task,
     });
 
@@ -1532,7 +1538,7 @@ export function LexosDemoApp() {
       try {
         await apiReviewTask(taskId, input);
         await reloadApiWorkspace(currentUser);
-        showNotice(input.decision === "approved" ? "审核已通过，案源律师可继续验收。" : "已退回办案律师修改。");
+        showNotice(input.decision === "approved" ? "审核已通过，发起人可继续验收。" : "已退回承办律师修改。");
       } catch (error) {
         showError(error instanceof Error ? error.message : "审核任务失败");
       }
@@ -1634,7 +1640,7 @@ export function LexosDemoApp() {
   }
 
   async function autoConfirmOverdueTasks() {
-    if (!currentUser || !["system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || !isSystemConfigRole(currentUser.role)) {
       return;
     }
 
@@ -1729,7 +1735,7 @@ export function LexosDemoApp() {
   }
 
   async function confirmSettlement(settlementId: string) {
-    if (!currentUser || !["finance", "system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || currentUser.role !== "finance") {
       return;
     }
 
@@ -1756,13 +1762,11 @@ export function LexosDemoApp() {
       return;
     }
 
-    if (currentUser.role !== "system_admin") {
-      const lockError = settlementRiskLockError(settlement, settlementLockDays);
+    const lockError = settlementRiskLockError(settlement, settlementLockDays);
 
-      if (lockError) {
-        showError(lockError);
-        return;
-      }
+    if (lockError) {
+      showError(lockError);
+      return;
     }
 
     const confirmedAt = new Date().toISOString();
@@ -1778,7 +1782,7 @@ export function LexosDemoApp() {
   }
 
   async function confirmSettlementBatch(settlementIds: string[]) {
-    if (!currentUser || !["finance", "system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || currentUser.role !== "finance") {
       return;
     }
 
@@ -1808,7 +1812,7 @@ export function LexosDemoApp() {
     }
 
     const lockedSettlement =
-      currentUser.role === "system_admin"
+      false
         ? undefined
         : pendingSettlements.find((settlement) => settlementRiskLockError(settlement, settlementLockDays));
 
@@ -1835,7 +1839,7 @@ export function LexosDemoApp() {
   }
 
   async function lockSettlementRiskDeduction(settlementId: string, input: LockSettlementRiskDeductionInput) {
-    if (!currentUser || !["finance", "system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || currentUser.role !== "finance") {
       return;
     }
 
@@ -1950,7 +1954,7 @@ export function LexosDemoApp() {
   }
 
   async function updateSystemSettings(settings: Array<{ key: string; value: SystemSettingValue }>) {
-    if (!currentUser || !["system_admin", "firm_admin"].includes(currentUser.role)) {
+    if (!currentUser || !isSystemConfigRole(currentUser.role)) {
       return;
     }
 
@@ -2004,9 +2008,9 @@ export function LexosDemoApp() {
       <a className="skip-link focus-ring" href="#main-content">
         跳到主内容
       </a>
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[264px] border-r border-slate-950 bg-navy text-white shadow-[8px_0_28px_rgba(15,23,42,0.18)] xl:block">
-        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-navy shadow-lift">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[232px] border-r border-slate-950 bg-navy text-white shadow-[8px_0_28px_rgba(15,23,42,0.18)] xl:block">
+        <div className="flex h-14 items-center gap-3 border-b border-white/10 px-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-navy shadow-lift">
             <Gavel className="h-4 w-4" />
           </div>
           <div>
@@ -2014,14 +2018,14 @@ export function LexosDemoApp() {
             <div className="text-[11px] text-white/56">律所协作与结算中枢</div>
           </div>
         </div>
-        <nav aria-label="主导航" className="space-y-1 px-3 py-4">
+        <nav aria-label="主导航" className="space-y-1 px-2.5 py-3">
           {allowedNav.map((item) => {
             const Icon = item.icon;
             const active = item.key === visibleNav;
             return (
               <button
                 aria-current={active ? "page" : undefined}
-                className={`focus-ring flex h-11 w-full items-center gap-3 rounded-md px-3 text-[13px] font-medium transition ${
+                className={`focus-ring flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium transition ${
                   active
                     ? "bg-white text-navy shadow-soft"
                     : "text-white/68 hover:bg-white/8 hover:text-white"
@@ -2030,7 +2034,7 @@ export function LexosDemoApp() {
                 onClick={() => setActiveNav(item.key)}
                 type="button"
               >
-                <span className={`flex h-7 w-7 items-center justify-center rounded-md ${active ? "bg-teal/10" : "bg-white/[0.04]"}`}>
+                <span className={`flex h-6 w-6 items-center justify-center rounded-md ${active ? "bg-teal/10" : "bg-white/[0.04]"}`}>
                   <Icon className={`h-4 w-4 ${active ? "text-teal" : "text-white/52"}`} />
                 </span>
                 {item.label}
@@ -2050,7 +2054,7 @@ export function LexosDemoApp() {
         </div>
       </aside>
 
-      <main className="xl:pl-[264px]" id="main-content">
+      <main className="xl:pl-[232px]" id="main-content">
         <TopBar
           activeLabel={navItems.find((item) => item.key === visibleNav)?.label ?? "工作台"}
           apiMode={apiMode}
@@ -2058,7 +2062,7 @@ export function LexosDemoApp() {
           onLogout={logout}
         />
         <MobileNav activeKey={visibleNav} items={allowedNav} onSelect={setActiveNav} />
-        <div className="mx-auto max-w-[1520px] px-4 py-4 sm:px-5 lg:px-6">
+        <div className="mx-auto max-w-[1600px] px-3 py-3 sm:px-4 lg:px-5">
           {appError ? <InlineError className="mb-4" text={appError} /> : null}
           {appNotice ? (
             <div
@@ -2086,7 +2090,7 @@ export function LexosDemoApp() {
               customers={customers}
               feedback={feedback}
               onAutoConfirmOverdue={
-                ["system_admin", "firm_admin"].includes(currentUser.role) ? autoConfirmOverdueTasks : undefined
+                isDirectorRole(currentUser.role) ? autoConfirmOverdueTasks : undefined
               }
               onResetDemo={apiMode ? undefined : resetDemoWorkspace}
               ranks={ranks}
@@ -2211,7 +2215,7 @@ function LoadingScreen({ apiMode }: { apiMode: boolean }) {
         </div>
         <h1 className="mt-5 text-xl font-semibold">正在进入 Lexos</h1>
         <p className="mt-2 text-sm leading-6 text-slate">
-          {apiMode ? "正在检查 Supabase 会话并加载律所工作台数据。" : "正在加载本地 demo 数据。"}
+          {apiMode ? "正在检查 Supabase 会话并加载律所工作台数据。" : "正在加载本地工作区数据。"}
         </p>
       </div>
     </main>
@@ -2265,10 +2269,10 @@ function LoginScreen({
           <div className="max-w-2xl">
             <h1 className="text-[38px] font-semibold leading-tight tracking-normal">律所任务、交付与结算，放进同一套秩序。</h1>
             <p className="mt-5 max-w-xl text-[15px] leading-7 text-white/68">
-              面向律所内部律师协作，从案源发单、办案抢单、客户确认到财务结算，形成可审计、可追踪、可演示的闭环。
+              面向律所内部协作，从客户建档、任务发起、律师承办、客户确认到财务结算，形成可审计、可追踪的业务闭环。
             </p>
             <div className="mt-8 grid max-w-xl gap-2">
-              {["案源律师发布任务与客户链接", "办案律师按职级抢单并提交成果", "客户验证码确认，财务完成结算"].map((item, index) => (
+              {["律师发起任务与客户链接", "律师按职级承接并提交成果", "客户确认交付，财务完成结算"].map((item, index) => (
                 <div className="flex min-h-11 items-center gap-3 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[13px]" key={item}>
                   <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-[12px] font-semibold text-navy">{index + 1}</span>
                   {item}
@@ -2286,8 +2290,8 @@ function LoginScreen({
               <div className="mt-1 text-white/56">直连保护</div>
             </div>
             <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
-              <div className="text-2xl font-semibold">MVP</div>
-              <div className="mt-1 text-white/56">可演示闭环</div>
+              <div className="text-2xl font-semibold">Prod</div>
+              <div className="mt-1 text-white/56">上线闭环</div>
             </div>
           </div>
         </div>
@@ -2299,7 +2303,7 @@ function LoginScreen({
               <Gavel className="h-4 w-4" />
             </div>
             <div className="mt-4 inline-flex h-7 items-center rounded-md border border-teal/20 bg-teal/10 px-2 text-[12px] font-semibold text-teal">
-              {apiMode ? "真实 API 模式" : "本地 Demo 模式"}
+              {apiMode ? "真实 API 模式" : "本地工作区模式"}
             </div>
             <h2 className="mt-1 text-[24px] font-semibold leading-8">登录工作台</h2>
             <p className="mt-2 text-[13px] leading-5 text-steel">
@@ -2455,25 +2459,25 @@ function TopBar({
 }) {
   return (
     <header className="sticky top-0 z-10 border-b border-line bg-paper/94 backdrop-blur">
-      <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-2 sm:px-5 lg:px-6">
+      <div className="flex min-h-14 items-center justify-between gap-3 px-3 py-1.5 sm:px-4 lg:px-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white xl:hidden">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-navy text-white xl:hidden">
             <Gavel className="h-4 w-4" />
           </div>
           <div>
             <div className="text-[15px] font-semibold leading-5">{activeLabel}</div>
             <div className="mt-0.5 text-[12px] text-steel">Lexos 律所协作平台</div>
           </div>
-          <div className="ml-4 hidden h-10 items-center gap-2 rounded-md border border-line bg-canvas px-3 text-[12px] text-steel md:flex">
+          <div className="ml-3 hidden h-9 items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-[12px] text-steel md:flex">
             <ShieldCheck className="h-4 w-4 text-teal" />
             RLS 已启用 · 多角色协同
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden h-10 items-center rounded-md border border-line bg-canvas px-3 text-[12px] font-semibold text-slate md:flex">
-            {apiMode ? "真实 API" : "Demo 模式"}
+          <div className="hidden h-9 items-center rounded-md border border-line bg-canvas px-2.5 text-[12px] font-semibold text-slate md:flex">
+            {apiMode ? "真实 API" : "本地工作区"}
           </div>
-          <div className="hidden items-center gap-2 rounded-md border border-line bg-white px-3 py-1.5 sm:flex">
+          <div className="hidden items-center gap-2 rounded-md border border-line bg-white px-2.5 py-1 sm:flex">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-teal/10 text-teal">
               <UserRound className="h-3.5 w-3.5" />
             </div>
@@ -2484,7 +2488,7 @@ function TopBar({
           </div>
           <button
             aria-label="退出登录"
-            className="focus-ring flex h-11 w-11 items-center justify-center rounded-md border border-line bg-white text-steel hover:border-steel/50 hover:text-ink"
+            className="focus-ring flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white text-steel hover:border-steel/50 hover:text-ink"
             onClick={onLogout}
             type="button"
           >
@@ -2574,7 +2578,7 @@ function Dashboard({
   const topLawyer = lawyerSummary.topLawyer;
   const allRepeatDisciplineStats = buildRepeatDisciplineStats({ riskCases, tasks, users });
   const visibleRepeatDisciplineStats =
-    currentUser.role === "handling_lawyer"
+    isLawyerRole(currentUser.role)
       ? allRepeatDisciplineStats.filter((stat) => stat.lawyerId === currentUser.id)
       : allRepeatDisciplineStats;
   const repeatDisciplineSummary = summarizeRepeatDisciplineStats(visibleRepeatDisciplineStats);
@@ -2612,7 +2616,7 @@ function Dashboard({
       {onResetDemo ? (
         <div className="flex flex-col gap-3 rounded-md border border-teal/20 bg-teal/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-teal">标准演示数据已加载</div>
+            <div className="text-[13px] font-semibold text-teal">标准本地数据已加载</div>
             <div className="mt-1 text-[12px] text-steel">覆盖任务大厅、我的任务、客户大屏、结算和审计日志。</div>
           </div>
           <button
@@ -2621,7 +2625,7 @@ function Dashboard({
             type="button"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            重置演示数据
+            重置本地数据
           </button>
         </div>
       ) : null}
@@ -2716,11 +2720,11 @@ function Dashboard({
           </div>
         </div>
       </Panel>
-      <Panel title="办案律师绩效">
+      <Panel title="律师绩效">
         <div className="grid gap-4 xl:grid-cols-[1.45fr_0.8fr]">
           <DataTable
-            emptyText="暂无办案律师绩效。"
-            headers={["办案律师", "职级", "在办/完成", "客户/案源/结果", "近30单", "任务金额", "结算金额"]}
+            emptyText="暂无律师绩效。"
+            headers={["律师", "职级", "在办/完成", "客户/发起/结果", "近30单", "任务金额", "结算金额"]}
             rows={lawyerStats.map((stat) => [
               stat.lawyerName,
               stat.rankCode,
@@ -2733,10 +2737,10 @@ function Dashboard({
           />
           <div>
             <Signal label="绩效领先" value={topLawyer ? topLawyer.lawyerName : "待采集"} />
-            <Signal label="有效办案律师" value={`${lawyerSummary.activeLawyerCount}/${lawyerSummary.lawyerCount} 人`} />
+            <Signal label="有效律师" value={`${lawyerSummary.activeLawyerCount}/${lawyerSummary.lawyerCount} 人`} />
             <Signal label="客户平均评分" value={lawyerSummary.averageScore === null ? "待采集" : `${lawyerSummary.averageScore}/10`} />
             <Signal label="近30单评分" value={lawyerSummary.rollingAverageScore === null ? "待采集" : `${lawyerSummary.rollingAverageScore}/10`} />
-            <Signal label="案源平均评分" value={lawyerSummary.sourceReviewAverageScore === null ? "待采集" : `${lawyerSummary.sourceReviewAverageScore}/10`} />
+            <Signal label="发起人平均评分" value={lawyerSummary.sourceReviewAverageScore === null ? "待采集" : `${lawyerSummary.sourceReviewAverageScore}/10`} />
             <Signal label="结果平均评分" value={lawyerSummary.caseResultAverageScore === null ? "待采集" : `${lawyerSummary.caseResultAverageScore}/10`} />
             <Signal label="在办任务" value={`${lawyerSummary.inProgressTaskCount} 个`} />
             <Signal label="已完成任务" value={`${lawyerSummary.completedTaskCount} 个`} />
@@ -2795,14 +2799,14 @@ function RepeatDisciplinePanel({ stats }: { stats: RepeatDisciplineStat[] }) {
       <div className="mt-3 rounded-md border border-line bg-white px-3 py-2 text-[12px] leading-5 text-steel">
         {topStat
           ? `当前重点关注：${topStat.lawyerName}，${repeatDisciplineLevelLabels[topStat.level]}，近 ${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天有效风控 ${topStat.effectiveCaseCount} 条。`
-          : "当前没有达到累犯惩戒建议阈值的办案律师。"}
+          : "当前没有达到累犯惩戒建议阈值的律师。"}
       </div>
       {actionableStats.length ? (
         <div className={`${lexosUi.tableWrap} mt-3`}>
           <table className={`${lexosUi.table} min-w-[1080px]`}>
             <thead className={lexosUi.tableHead}>
               <tr>
-                <th className="px-3 py-2.5 font-semibold">办案律师</th>
+                <th className="px-3 py-2.5 font-semibold">律师</th>
                 <th className="px-3 py-2.5 font-semibold">建议等级</th>
                 <th className="px-3 py-2.5 font-semibold">有效风控</th>
                 <th className="px-3 py-2.5 font-semibold">未办结</th>
@@ -2832,7 +2836,7 @@ function RepeatDisciplinePanel({ stats }: { stats: RepeatDisciplineStat[] }) {
         </div>
       ) : (
         <div className="mt-3">
-          <EmptyState text={`近 ${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天暂无触发累犯惩戒建议的办案律师。`} />
+          <EmptyState text={`近 ${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天暂无触发累犯惩戒建议的律师。`} />
         </div>
       )}
     </Panel>
@@ -3019,7 +3023,7 @@ function UsersPage({
     setIsCreating(true);
 
     try {
-      await onAddUser({ username, displayName, role, rankCode: role === "handling_lawyer" ? rankCode : undefined });
+      await onAddUser({ username, displayName, role, rankCode: isLawyerRole(role) ? rankCode : undefined });
       setUsername("");
       setDisplayName("");
     } finally {
@@ -3040,7 +3044,7 @@ function UsersPage({
 
     try {
       await onUpdateUser({
-        rankCode: editingRole === "handling_lawyer" ? editingRankCode : undefined,
+        rankCode: isLawyerRole(editingRole) ? editingRankCode : undefined,
         role: editingRole,
         status: editingStatus,
         userId,
@@ -3056,7 +3060,7 @@ function UsersPage({
 
     try {
       await onUpdateUser({
-        rankCode: user.role === "handling_lawyer" ? user.rankCode ?? ranks[0]?.code : undefined,
+        rankCode: isLawyerRole(user.role) ? user.rankCode ?? ranks[0]?.code : undefined,
         role: user.role,
         status: user.status === "active" ? "disabled" : "active",
         userId: user.id,
@@ -3081,7 +3085,7 @@ function UsersPage({
             value={role}
           />
           <SelectInput
-            disabled={role !== "handling_lawyer"}
+            disabled={!isLawyerRole(role)}
             label="职级"
             onChange={setRankCode}
             options={ranks.map((rank) => [rank.code, rank.code])}
@@ -3168,7 +3172,7 @@ function UsersPage({
                           <select
                             aria-label={`调整 ${user.displayName} 职级`}
                             className={`${lexosUi.inputBare} w-28`}
-                            disabled={editingRole !== "handling_lawyer"}
+                            disabled={!isLawyerRole(editingRole)}
                             onChange={(event) => setEditingRankCode(event.target.value)}
                             value={editingRankCode}
                           >
@@ -3397,7 +3401,7 @@ function CustomersPage({
     setIsCreating(true);
 
     try {
-      await onAddCustomer({ name, contactName, phone, source: "案源律师录入" });
+      await onAddCustomer({ name, contactName, phone, source: "律师录入" });
       setName("");
       setContactName("");
     } finally {
@@ -3407,7 +3411,7 @@ function CustomersPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader description="MVP 只保存客户基础信息，暂不存完整案卷材料。" title="客户管理" />
+      <PageHeader description="维护客户联系人、来源与任务关联，支撑律师个人客户池和主任全所视图。" title="客户管理" />
       <Panel title="新增客户">
         <form className="grid gap-3 md:grid-cols-4" onSubmit={submit}>
           <TextInput label="客户名称" onChange={setName} value={name} />
@@ -3587,7 +3591,7 @@ function MarketPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader description="办案律师只能抢开放状态、满足最低职级要求且未触发严重风控限制的任务。" title="任务大厅" />
+      <PageHeader description="律师可承接开放任务；系统按最低职级、任务状态和未结严重风控限制进行校验。" title="任务大厅" />
       <Panel title="可抢任务">
         <ListToolbar
           onSearchChange={setQuery}
@@ -3711,14 +3715,11 @@ function MyTasksPage({
   tasks: Task[];
   usersById: Map<string, DemoUser>;
 }) {
-  const ownedTasks =
-    currentUser.role === "system_admin" || currentUser.role === "firm_admin"
-      ? tasks
-      : currentUser.role === "director"
-      ? tasks.filter((task) => task.reviewRequired && (!task.reviewLawyerId || task.reviewLawyerId === currentUser.id))
-      : currentUser.role === "source_lawyer"
-      ? tasks.filter((task) => task.sourceLawyerId === currentUser.id)
-      : tasks.filter((task) => task.assignedLawyerId === currentUser.id);
+  const ownedTasks = isDirectorRole(currentUser.role)
+    ? tasks
+    : isLawyerRole(currentUser.role)
+    ? tasks.filter((task) => task.sourceLawyerId === currentUser.id || task.assignedLawyerId === currentUser.id)
+    : [];
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [sort, setSort] = useState("createdAtDesc");
@@ -3785,7 +3786,7 @@ function MyTasksPage({
           page,
           pageSize: CARD_PAGE_SIZE,
           search: query,
-          scope: currentUser.role === "handling_lawyer" ? "assigned" : undefined,
+          scope: isLawyerRole(currentUser.role) ? "mine" : undefined,
           sort,
           status: statusFilter,
         });
@@ -3816,8 +3817,8 @@ function MyTasksPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader description="案源律师发单与验收，办案律师提交成果。" title="我的任务" />
-      {currentUser.role === "source_lawyer" || currentUser.role === "system_admin" ? (
+      <PageHeader description="律师在这里发起任务、提交成果和验收本人发起的任务；主任查看全所任务流转。" title="任务工作台" />
+      {isLawyerRole(currentUser.role) ? (
         <CreateTaskPanel customersById={customersById} onAddTask={onAddTask} ranks={ranks} />
       ) : null}
       <Panel title="任务列表">
@@ -4001,14 +4002,15 @@ function TaskRow({
   const [sourceReviewComment, setSourceReviewComment] = useState("成果结构完整，风险提示清晰。");
   const [caseResultScore, setCaseResultScore] = useState("8");
   const [caseResultSummary, setCaseResultSummary] = useState("交付结果满足当前客户沟通和推进需要。");
-  const [reviewComment, setReviewComment] = useState("材料完整，法律风险提示清楚，可进入案源验收。");
+  const [reviewComment, setReviewComment] = useState("材料完整，法律风险提示清楚，可进入发起人验收。");
   const [expanded, setExpanded] = useState(task.status !== "open");
   const [confirmingApprove, setConfirmingApprove] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const canApprove =
-    currentUser.role === "source_lawyer" &&
+    isLawyerRole(currentUser.role) &&
+    task.sourceLawyerId === currentUser.id &&
     task.status === "submitted" &&
     isTaskReviewSatisfied({ reviewRequired: task.reviewRequired, reviewStatus: task.reviewStatus });
   const canReview = canReviewTask({
@@ -4019,7 +4021,7 @@ function TaskRow({
     taskStatus: task.status,
     userRole: currentUser.role,
   });
-  const canSubmit = currentUser.role === "handling_lawyer" && task.status === "claimed";
+  const canSubmit = isLawyerRole(currentUser.role) && task.assignedLawyerId === currentUser.id && task.status === "claimed";
   const milestones = buildTaskMilestones(task, settlement);
   const milestoneSummary = summarizeTaskMilestones(milestones);
   const deliveryRecords = buildTaskDeliveryRecords(task);
@@ -4087,7 +4089,7 @@ function TaskRow({
           <div className="mt-1 text-[13px] leading-5 text-steel">{task.description}</div>
           <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-slate">
             <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">客户 {customer?.name ?? task.customerName ?? "-"}</span>
-            <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">办案 {user?.displayName ?? "待抢单"}</span>
+            <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">承办 {user?.displayName ?? "待承接"}</span>
             <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">金额 {formatMoney(task.amountCents)}</span>
             <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">
               客户链接 {task.portalToken || "创建任务时显示"}
@@ -4143,9 +4145,9 @@ function TaskRow({
       {canApprove && confirmingApprove ? (
         <form className="mt-4 rounded-md border border-teal/20 bg-teal/10 p-4" onSubmit={approve}>
           <div className="grid gap-3 md:grid-cols-4">
-            <ScoreSelect label="案源评分" onChange={setSourceReviewScore} value={sourceReviewScore} />
+            <ScoreSelect label="发起人评分" onChange={setSourceReviewScore} value={sourceReviewScore} />
             <ScoreSelect label="案件结果评分" onChange={setCaseResultScore} value={caseResultScore} />
-            <TextInput label="案源评语" onChange={setSourceReviewComment} value={sourceReviewComment} />
+            <TextInput label="发起人评语" onChange={setSourceReviewComment} value={sourceReviewComment} />
             <TextInput label="结果摘要" onChange={setCaseResultSummary} value={caseResultSummary} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -4173,7 +4175,7 @@ function TaskRow({
           <TaskProgress milestones={milestones} />
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             <DetailItem label="客户" value={customer?.name ?? task.customerName ?? "-"} />
-            <DetailItem label="办案律师" value={user?.displayName ?? "待抢单"} />
+            <DetailItem label="承办律师" value={user?.displayName ?? "待承接"} />
             <DetailItem label="任务类型" value={task.taskType} />
             <DetailItem label="最低职级" value={task.minRankCode} />
             <DetailItem label="任务金额" value={formatMoney(task.amountCents)} />
@@ -4184,13 +4186,13 @@ function TaskRow({
             <DetailItem label="审核时间" value={task.reviewedAt ?? "-"} />
             <DetailItem label="客户 token" value={task.portalToken || "创建任务时显示"} />
             <DetailItem label="验收时间" value={task.approvedAt ?? "-"} />
-            <DetailItem label="案源评分" value={formatOptionalScore(task.sourceReviewScore)} />
+            <DetailItem label="发起人评分" value={formatOptionalScore(task.sourceReviewScore)} />
             <DetailItem label="案件结果评分" value={formatOptionalScore(task.caseResultScore)} />
           </div>
           {task.reviewComment || task.sourceReviewComment || task.caseResultSummary ? (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {task.reviewComment ? <DetailItem label="审核意见" value={task.reviewComment} /> : null}
-              <DetailItem label="案源评语" value={task.sourceReviewComment ?? "-"} />
+              <DetailItem label="发起人评语" value={task.sourceReviewComment ?? "-"} />
               <DetailItem label="结果摘要" value={task.caseResultSummary ?? "-"} />
             </div>
           ) : null}
@@ -4394,7 +4396,7 @@ function TaskDeliveryRecordsCard({ records }: { records: ReturnType<typeof build
           ))}
         </div>
       ) : (
-        <EmptyState text="办案律师提交成果后，这里会形成交付记录。" />
+        <EmptyState text="承办律师提交成果后，这里会形成交付记录。" />
       )}
     </div>
   );
@@ -4458,7 +4460,7 @@ function PortalPage({
     <section className="mt-8 rounded-md border border-line bg-paper p-5 shadow-soft">
       <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
         <div>
-          <div className="text-sm font-semibold text-teal">客户大屏 demo</div>
+          <div className="text-sm font-semibold text-teal">客户确认页</div>
           <h2 className="mt-1 text-xl font-semibold">带验证码的安全访问链接</h2>
           <p className="mt-1 text-sm text-slate">客户不创建完整账号，使用任务 token + 手机验证码访问交付页面。</p>
         </div>
@@ -4496,7 +4498,7 @@ function PortalPage({
                         {item.fileSizeBytes ? <div className="mt-0.5 text-[11px] text-steel">{formatFileSize(item.fileSizeBytes)}</div> : null}
                       </div>
                       <span className="inline-flex min-h-8 items-center rounded-md border border-line bg-canvas px-2 text-[11px] font-medium text-steel">
-                        Demo 附件
+                        交付附件
                       </span>
                     </div>
                   ))}
@@ -4504,7 +4506,7 @@ function PortalPage({
               </div>
             ) : null}
             <div className="mt-4 space-y-3">
-              {["任务已发布", "律师已接单", "成果已提交", "案源律师已验收"].map((item) => (
+              {["任务已发布", "律师已承接", "成果已提交", "发起人已验收"].map((item) => (
                 <div className="flex items-center gap-3 text-sm" key={item}>
                   <CheckCircle2 className="h-4 w-4 text-teal" />
                   {item}
@@ -4535,7 +4537,7 @@ function PortalPage({
                 </button>
               </form>
             ) : (
-              <EmptyState text="任务需要先由案源律师验收，客户才能确认接收。" />
+              <EmptyState text="任务需要先由发起人验收，客户才能确认接收。" />
             )}
           </div>
         </div>
@@ -4609,7 +4611,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
           </p>
         </div>
         <div className="flex min-h-10 items-center rounded-md border border-line bg-white px-3 text-xs font-medium text-slate">
-          Demo 验证码仍固定为 111111
+          本地验证码固定为 111111
         </div>
       </div>
       <form className="mt-5 grid gap-3 md:grid-cols-4" onSubmit={verify}>
@@ -4664,7 +4666,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
                             下载
                           </a>
                         ) : (
-                          <span className="inline-flex min-h-8 items-center rounded-md border border-line bg-canvas px-2 text-[11px] font-medium text-steel">案源验收后开放</span>
+                          <span className="inline-flex min-h-8 items-center rounded-md border border-line bg-canvas px-2 text-[11px] font-medium text-steel">发起人验收后开放</span>
                         )}
                       </div>
                     ))}
@@ -4672,7 +4674,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
               </div>
             ) : null}
             <div className="mt-4 space-y-3">
-              {["任务已发布", "律师已接单", "成果已提交", "案源律师已验收"].map((item) => (
+              {["任务已发布", "律师已承接", "成果已提交", "发起人已验收"].map((item) => (
                 <div className="flex items-center gap-3 text-sm" key={item}>
                   <CheckCircle2 className="h-4 w-4 text-teal" />
                   {item}
@@ -4702,7 +4704,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
                 </button>
               </form>
             ) : (
-              <EmptyState text="任务需要先由案源律师验收，客户才能确认接收。" />
+              <EmptyState text="任务需要先由发起人验收，客户才能确认接收。" />
             )}
           </div>
         </div>
@@ -4741,7 +4743,7 @@ function SettlementsPage({
   usersById: Map<string, DemoUser>;
 }) {
   const visibleSettlements =
-    currentUser.role === "handling_lawyer"
+    isLawyerRole(currentUser.role)
       ? settlements.filter((item) => item.lawyerId === currentUser.id)
       : settlements;
   const [query, setQuery] = useState("");
@@ -4796,8 +4798,8 @@ function SettlementsPage({
   const visiblePageSize = apiMode ? serverPagination.pageSize : settlementPage.pageSize;
   const visibleTotal = apiMode ? serverPagination.total : settlementPage.total;
   const visibleTotalPages = apiMode ? serverPagination.totalPages : settlementPage.totalPages;
-  const canConfirmSettlements = currentUser.role !== "handling_lawyer";
-  const canBypassSettlementRiskLock = currentUser.role === "system_admin";
+  const canConfirmSettlements = currentUser.role === "finance";
+  const canBypassSettlementRiskLock = false;
   const pendingSettlementRows = visibleSettlements.filter((settlement) => settlement.status === "pending");
   const confirmedSettlementRows = visibleSettlements.filter((settlement) => settlement.status === "confirmed");
   const pendingPayableCents = pendingSettlementRows.reduce(
@@ -5027,7 +5029,7 @@ function SettlementsPage({
           value={`${lockedOrFrozenCount}`}
         />
         <OperationsCue
-          detail={canConfirmSettlements ? "勾选待确认记录后可批量处理" : "办案律师仅查看个人结算"}
+          detail={canConfirmSettlements ? "勾选待确认记录后可批量处理" : "律师仅查看个人结算"}
           label="本页可批量确认"
           tone={selectedPendingIds.length ? "teal" : "ink"}
           value={`${selectedPendingIds.length}`}
@@ -5154,7 +5156,7 @@ function SettlementsPage({
                   const isRiskLocked = settlement.status === "pending" && (taskFreezeStatus.frozen || isSettlementRiskLocked);
                   const canConfirmRow =
                     settlement.status === "pending" &&
-                    currentUser.role !== "handling_lawyer" &&
+                    canConfirmSettlements &&
                     !taskFreezeStatus.frozen &&
                     (canBypassSettlementRiskLock || !lockStatus.locked);
 
@@ -5224,7 +5226,7 @@ function SettlementsPage({
                           <span>
                             锁定中 {lockStatus.daysRemaining} 天
                             <span className="block text-[11px] text-steel">
-                              {canBypassSettlementRiskLock ? "系统管理员可越过" : `预计 ${formatDateTimeText(lockStatus.lockedUntil)}`}
+                              {`预计 ${formatDateTimeText(lockStatus.lockedUntil)}`}
                             </span>
                           </span>
                         ) : (
@@ -5303,7 +5305,7 @@ function SettlementsPage({
                               财务确认
                             </button>
                           )
-                        ) : settlement.status === "pending" && currentUser.role !== "handling_lawyer" ? (
+                        ) : settlement.status === "pending" && canConfirmSettlements ? (
                           <span className="text-[12px] text-steel">
                             {deductionLockCandidate ? "待锁定扣罚" : taskFreezeStatus.frozen ? "风控冻结" : "锁定中"}
                           </span>
@@ -5563,19 +5565,19 @@ function RiskCasesPage({
   >({});
   const [pendingDecisionRiskCaseId, setPendingDecisionRiskCaseId] = useState<string | null>(null);
   const taskById = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks]);
-  const canCreateRiskCases = ["system_admin", "firm_admin", "director", "source_lawyer"].includes(currentUser.role);
+  const canCreateRiskCases = isDirectorRole(currentUser.role) || isLawyerRole(currentUser.role);
   const canUpdateRiskCaseStatus = canCreateRiskCases;
   const canDecideRiskCases = canSubmitRiskCaseCommitteeDecision(currentUser);
-  const availableTasks =
-    currentUser.role === "source_lawyer" ? tasks.filter((task) => task.sourceLawyerId === currentUser.id) : tasks;
-  const scopedRiskCases =
-    currentUser.role === "handling_lawyer"
-      ? riskCases.filter((item) => {
-          const linkedTask = item.taskId ? taskById.get(item.taskId) : undefined;
+  const availableTasks = isLawyerRole(currentUser.role)
+    ? tasks.filter((task) => task.sourceLawyerId === currentUser.id || task.assignedLawyerId === currentUser.id)
+    : tasks;
+  const scopedRiskCases = isLawyerRole(currentUser.role)
+    ? riskCases.filter((item) => {
+        const linkedTask = item.taskId ? taskById.get(item.taskId) : undefined;
 
-          return canSubmitRiskCaseDefense(currentUser, item, linkedTask);
-        })
-      : riskCases;
+        return item.reportedByUserId === currentUser.id || canSubmitRiskCaseDefense(currentUser, item, linkedTask);
+      })
+    : riskCases;
   const openRiskCases = scopedRiskCases.filter((item) => item.status !== "resolved");
   const majorRiskCases = openRiskCases.filter((item) => item.severity === "critical" || item.severity === "high");
   const lowScoreRiskCases = scopedRiskCases.filter((item) => item.source === "low_score");
@@ -5587,7 +5589,7 @@ function RiskCasesPage({
     users: Array.from(usersById.values()),
   });
   const visibleRepeatDisciplineStats =
-    currentUser.role === "handling_lawyer"
+    isLawyerRole(currentUser.role)
       ? repeatDisciplineStats.filter((stat) => stat.lawyerId === currentUser.id)
       : repeatDisciplineStats;
   const repeatDisciplineSummary = summarizeRepeatDisciplineStats(visibleRepeatDisciplineStats);
@@ -5798,8 +5800,8 @@ function RiskCasesPage({
         <Metric icon={ClipboardList} label="低分触发" value={`${lowScoreRiskCases.length}`} />
         <Metric
           icon={Gavel}
-          label={currentUser.role === "handling_lawyer" ? "待答辩" : "待裁决"}
-          value={`${currentUser.role === "handling_lawyer" ? defensePendingRiskCases.length : committeePendingRiskCases.length}`}
+          label={isLawyerRole(currentUser.role) ? "待答辩" : "待裁决"}
+          value={`${isLawyerRole(currentUser.role) ? defensePendingRiskCases.length : committeePendingRiskCases.length}`}
         />
         <Metric icon={Gavel} label="累犯建议" value={`${repeatDisciplineSummary.actionableLawyerCount}`} />
       </div>
@@ -5991,7 +5993,7 @@ function RiskCasesPage({
                             </>
                           ) : (
                             <div className="text-[12px] leading-5 text-steel">
-                              {currentUser.role === "handling_lawyer" ? "当前不可提交答辩。" : "等待办案律师答辩。"}
+                              {isLawyerRole(currentUser.role) ? "当前不可提交答辩。" : "等待承办律师答辩。"}
                             </div>
                           )}
                         </div>
@@ -6487,7 +6489,7 @@ function AuditPage({ apiMode, logs, refreshKey }: { apiMode: boolean; logs: Audi
 
   return (
     <div className="space-y-4">
-      <PageHeader description="MVP 记录关键操作，后续扩展运维日志和安全审计。" title="审计日志" />
+      <PageHeader description="记录登录、配置、任务、风控、结算等关键操作，支持主任和配置管理员追溯。" title="审计日志" />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Metric icon={ShieldCheck} label="审计事件" value={`${auditReport.summary.totalCount}`} />
         <Metric icon={UsersRound} label="操作人" value={`${auditReport.summary.actorCount}`} />
@@ -6673,12 +6675,12 @@ function actionButtonClass(tone: ActionButtonTone = "primary", size: ActionButto
 
 function PageHeader({ description, title }: { description: string; title: string }) {
   return (
-    <div className="flex flex-col gap-2 border-b border-line pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-2 border-b border-line pb-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-[24px] font-semibold leading-8 tracking-normal text-ink">{title}</h1>
+        <h1 className="text-[20px] font-semibold leading-7 tracking-normal text-ink">{title}</h1>
         <p className="mt-1 max-w-3xl text-[13px] leading-5 text-steel">{description}</p>
       </div>
-      <div className="hidden h-8 items-center rounded-md border border-line bg-white px-3 text-[11px] font-semibold uppercase text-steel sm:flex">
+      <div className="hidden h-7 items-center rounded-md border border-line bg-white px-2.5 text-[11px] font-semibold uppercase text-steel sm:flex">
         Lexos Ops
       </div>
     </div>
@@ -6719,31 +6721,31 @@ function OperationsCue({
           : "border-navy/15 bg-navy/5 text-navy";
 
   return (
-    <div className={`rounded-md border px-3 py-3 ${toneClass}`}>
+    <div className={`rounded-md border px-3 py-2.5 ${toneClass}`}>
       <div className="text-[12px] font-semibold">{label}</div>
-      <div className="mt-1 text-[22px] font-semibold leading-7 tabular-nums">{value}</div>
-      <div className="mt-1 text-[12px] leading-5 text-slate">{detail}</div>
+      <div className="mt-0.5 text-[20px] font-semibold leading-6 tabular-nums">{value}</div>
+      <div className="mt-0.5 text-[12px] leading-5 text-slate">{detail}</div>
     </div>
   );
 }
 
 function Metric({ icon: Icon, label, value }: { icon: ComponentType<{ className?: string }>; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-paper p-4 shadow-soft transition hover:border-steel/40">
+    <div className="rounded-md border border-line bg-paper p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition hover:border-steel/40">
       <div className="flex items-center justify-between">
         <div className="text-[12px] font-medium text-steel">{label}</div>
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal/10 text-teal">
           <Icon className="h-3.5 w-3.5" />
         </div>
       </div>
-      <div className="mt-2 text-[24px] font-semibold leading-8 tabular-nums">{value}</div>
+      <div className="mt-1.5 text-[21px] font-semibold leading-7 tabular-nums">{value}</div>
     </div>
   );
 }
 
 function Signal({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-line py-2.5 first:pt-0 last:border-b-0 last:pb-0">
+    <div className="flex items-center justify-between gap-4 border-b border-line py-2 first:pt-0 last:border-b-0 last:pb-0">
       <span className="text-[13px] text-steel">{label}</span>
       <span className="text-right text-[13px] font-semibold tabular-nums">{value}</span>
     </div>
@@ -7031,7 +7033,7 @@ function DataTable({
         <thead className={lexosUi.tableHead}>
           <tr>
             {headers.map((header) => (
-              <th className="whitespace-nowrap px-3 py-3 font-semibold" key={header}>
+              <th className="whitespace-nowrap px-3 py-2.5 font-semibold" key={header}>
                 {header}
               </th>
             ))}
@@ -7041,7 +7043,7 @@ function DataTable({
           {rows.map((row, rowIndex) => (
             <tr className="odd:bg-white even:bg-[#FBFCFE] hover:bg-canvas/70" key={`${row.join("-")}-${rowIndex}`}>
               {row.map((cell, cellIndex) => (
-                <td className="whitespace-nowrap px-3 py-3 text-slate first:font-medium first:text-ink" key={`${cell}-${cellIndex}`}>
+                <td className="whitespace-nowrap px-3 py-2.5 text-slate first:font-medium first:text-ink" key={`${cell}-${cellIndex}`}>
                   {cell}
                 </td>
               ))}

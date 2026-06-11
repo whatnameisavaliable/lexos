@@ -6,7 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin", "finance"]);
+    const session = await requireInternalSession(["finance"]);
     const body = await readJsonObject(request);
     const settlementIds = normalizeSettlementIdList(body.settlementIds ?? body.ids);
     const admin = createSupabaseAdminClient();

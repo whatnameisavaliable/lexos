@@ -8,7 +8,7 @@ import {
   postgrestLikePattern,
 } from "@/lib/api/pagination";
 import { requireInternalSession } from "@/lib/auth/session";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { calculateRiskDeductionPreview, type RiskDeductionRates } from "@/lib/risk/deductions";
 import { loadRiskDeductionRates } from "@/lib/risk/deductions-service";
 import type { TaskRiskFreezeStatus } from "@/lib/risk/task-freeze";
@@ -16,7 +16,7 @@ import { loadTaskRiskFreezeMap } from "@/lib/risk/task-freeze-service";
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const settlementRoles: UserRole[] = ["system_admin", "firm_admin", "finance", "handling_lawyer"];
+const settlementRoles: UserRole[] = ["director", "finance", "source_lawyer", "handling_lawyer"];
 const settlementSortOptions = {
   amountDesc: { ascending: false, column: "payable_amount_cents" },
   generatedAtAsc: { ascending: true, column: "generated_at" },
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
       .eq("organization_id", session.organizationId)
       .order(sort.column, { ascending: sort.ascending });
 
-    if (session.roleCode === "handling_lawyer") {
+    if (isLawyerRole(session.roleCode)) {
       query = query.eq("lawyer_id", session.userId);
     }
 

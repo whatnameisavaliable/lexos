@@ -14,7 +14,7 @@ export type TaskReviewDraft = {
   decision: TaskReviewDecision;
 };
 
-export const taskReviewerRoles: UserRole[] = ["system_admin", "firm_admin", "director"];
+export const taskReviewerRoles: UserRole[] = ["director"];
 
 export function canReviewTask(input: {
   currentUserId: string;
@@ -32,7 +32,7 @@ export function canReviewTask(input: {
     return false;
   }
 
-  if (input.userRole === "director" && input.reviewLawyerId && input.reviewLawyerId !== input.currentUserId) {
+  if (input.reviewLawyerId && input.reviewLawyerId !== input.currentUserId) {
     return false;
   }
 

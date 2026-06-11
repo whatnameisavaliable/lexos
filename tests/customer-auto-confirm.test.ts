@@ -59,7 +59,7 @@ describe("客户逾期自动确认规则", () => {
     assert.equal(status.reason, "disabled");
   });
 
-  it("非待确认、已确认或缺少办案律师的任务不进入处理范围", () => {
+  it("非待确认、已确认或缺少承办律师的任务不进入处理范围", () => {
     assert.equal(
       isCustomerAutoConfirmDue(
         {

@@ -39,21 +39,21 @@ export function buildTaskMilestones(task: Task, settlement?: Settlement): TaskMi
     milestone("published", "发布任务", "已发布", task.dueAt, "done"),
     milestone(
       "claimed",
-      "办案接单",
+      "律师承接",
       task.assignedLawyerId ? "已接单" : "待接单",
-      task.assignedLawyerId ? "办案律师已进入任务" : "等待符合职级的律师抢单",
+      task.assignedLawyerId ? "承办律师已进入任务" : "等待符合职级的律师承接",
       stateFor(task, "claimed"),
     ),
     milestone(
       "submitted",
       "成果提交",
       hasDelivery(task) ? "已提交" : "待提交",
-      task.submittedTitle ?? "等待办案律师提交成果",
+      task.submittedTitle ?? "等待承办律师提交成果",
       stateFor(task, "submitted"),
     ),
     milestone(
       "approved",
-      "审核与案源验收",
+      "复核与发起人验收",
       approvalMilestoneValue(task),
       approvalMilestoneDetail(task),
       stateFor(task, "approved"),
@@ -133,7 +133,7 @@ function approvalMilestoneValue(task: Task): string {
   }
 
   if (task.reviewStatus === "approved") {
-    return "待案源验收";
+    return "待发起人验收";
   }
 
   return "待审核";
@@ -145,18 +145,18 @@ function approvalMilestoneDetail(task: Task): string {
   }
 
   if (!task.reviewRequired) {
-    return "等待案源律师验收";
+    return "等待发起人验收";
   }
 
   if (task.reviewStatus === "changes_requested") {
-    return task.reviewComment ?? "审核退回，等待办案律师修改后重新提交";
+    return task.reviewComment ?? "审核退回，等待承办律师修改后重新提交";
   }
 
   if (task.reviewStatus === "approved") {
-    return task.reviewedAt ?? "审核已通过，等待案源律师验收";
+    return task.reviewedAt ?? "审核已通过，等待发起人验收";
   }
 
-  return "等待主任或管理员完成复核";
+  return "等待主任完成复核";
 }
 
 function stateFor(task: Task, target: TaskStatus): TaskMilestoneState {

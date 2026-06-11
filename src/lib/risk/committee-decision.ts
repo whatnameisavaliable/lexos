@@ -54,7 +54,7 @@ export function canSubmitCommitteeDecision(input: {
   }
 
   if (!input.defenseSubmitted && !input.defenseOverdue) {
-    return { allowed: false, reason: "办案律师 48 小时答辩期未结束" };
+    return { allowed: false, reason: "承办律师 48 小时答辩期未结束" };
   }
 
   return { allowed: true };

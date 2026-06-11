@@ -10,6 +10,25 @@ export type UserRole =
   | "customer"
   | "channel_partner";
 
+export const lawyerRoles = ["source_lawyer", "handling_lawyer"] as const satisfies readonly UserRole[];
+export const systemConfigRoles = ["system_admin", "firm_admin"] as const satisfies readonly UserRole[];
+
+export function isLawyerRole(role: UserRole): boolean {
+  return lawyerRoles.includes(role as (typeof lawyerRoles)[number]);
+}
+
+export function isSystemConfigRole(role: UserRole): boolean {
+  return systemConfigRoles.includes(role as (typeof systemConfigRoles)[number]);
+}
+
+export function isDirectorRole(role: UserRole): boolean {
+  return role === "director";
+}
+
+export function canViewFirmWide(role: UserRole): boolean {
+  return isDirectorRole(role);
+}
+
 export type TaskStatus =
   | "open"
   | "claimed"
@@ -100,7 +119,7 @@ export function canClaimTask(input: {
 }): boolean {
   return (
     input.taskStatus === "open" &&
-    input.userRole === "handling_lawyer" &&
+    isLawyerRole(input.userRole) &&
     Number.isInteger(input.lawyerRankOrder) &&
     Number.isInteger(input.minRankOrder) &&
     input.lawyerRankOrder >= input.minRankOrder
@@ -116,4 +135,3 @@ export function transitionTaskStatus(currentStatus: TaskStatus, action: TaskActi
 
   return nextStatus;
 }
-

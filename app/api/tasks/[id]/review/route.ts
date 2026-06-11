@@ -6,7 +6,7 @@ import { canReviewTask, validateTaskReviewInput, type TaskReviewStatus } from "@
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin", "director"]);
+    const session = await requireInternalSession(["director"]);
     const taskId = await routeParam(context, "id");
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     let review;

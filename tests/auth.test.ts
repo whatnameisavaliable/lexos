@@ -22,7 +22,7 @@ describe("用户名登录映射", () => {
 });
 
 describe("更新用户输入", () => {
-  it("非办案律师会清空职级", () => {
+  it("非律师会清空职级", () => {
     const input = validateUpdateUserInput({
       rankId: "rank-l2a",
       roleCode: "finance",
@@ -32,14 +32,22 @@ describe("更新用户输入", () => {
     assert.equal(input.rankId, undefined);
   });
 
-  it("更新为办案律师时必须绑定职级", () => {
+  it("更新为任一律师角色时必须绑定职级", () => {
     assert.throws(
       () =>
         validateUpdateUserInput({
           roleCode: "handling_lawyer",
           status: "active",
         }),
-      /办案律师必须绑定职级/,
+      /律师必须绑定职级/,
+    );
+    assert.throws(
+      () =>
+        validateUpdateUserInput({
+          roleCode: "source_lawyer",
+          status: "active",
+        }),
+      /律师必须绑定职级/,
     );
   });
 
@@ -70,7 +78,7 @@ describe("创建用户输入", () => {
     assert.equal(input.authEmail, "lawyer02@lexos.local");
   });
 
-  it("办案律师必须绑定职级", () => {
+  it("律师必须绑定职级", () => {
     assert.throws(
       () =>
         validateCreateUserInput({
@@ -78,7 +86,7 @@ describe("创建用户输入", () => {
           displayName: "赵律师",
           roleCode: "handling_lawyer",
         }),
-      /办案律师必须绑定职级/,
+      /律师必须绑定职级/,
     );
   });
 });

@@ -228,13 +228,13 @@ function buildPostDeploymentCheckItems(): PostDeploymentCheckItem[] {
       "管理员可登录，用户、客户、任务、结算、资金、审计、风控、权限和系统参数页面可访问。",
     ], true, false, ["不得在证据中记录管理员密码或一次性验证码。"]),
     item("auth-navigation", "lawyer-workbench", "律师个人工作台入口", true, "交付负责人", undefined, [
-      "办案律师账号可进入个人工作台，待办任务、交付记录和绩效信息显示正常。",
+      "律师账号可进入个人工作台，发起/承办任务、交付记录和绩效信息显示正常。",
     ], true, false, ["仅保留脱敏截图或文字结论。"]),
     item("business-readiness", "private-readiness", "私有化交付自检复跑", true, "交付负责人", "npm.cmd run private:check", [
       "真实 Supabase 模式、必要变量、关键迁移、脚本和文档完整性检查通过。",
     ], false, false, ["该命令不确认远端迁移状态，只核对本地交付前置条件。"]),
     item("business-readiness", "real-smoke", "真实闭环 smoke 复核", true, "交付负责人", "npm.cmd run smoke:real", [
-      "管理员、案源律师、办案律师、客户确认和财务结算闭环成功，最终状态已归档。",
+      "配置管理员、主任、律师、客户确认和财务结算闭环成功，最终状态已归档。",
     ], true, true, ["该命令会写入验收数据，只能在允许写入的目标环境执行。"]),
     item("security-boundary", "rls-verification", "RLS / Data API 负向验证", true, "安全复核人", "npm.cmd run verify:rls", [
       "service role 可读，anon/authenticated 不能直接读取内部 public 表。",

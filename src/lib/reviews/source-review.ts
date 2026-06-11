@@ -17,7 +17,7 @@ export function validateSourceReviewInput(input: SourceReviewInput): SourceRevie
     caseResultScore: optionalScore(input.caseResultScore, "案件结果评分"),
     caseResultSummary: optionalText(input.caseResultSummary, 500),
     sourceReviewComment: optionalText(input.sourceReviewComment, 500),
-    sourceReviewScore: optionalScore(input.sourceReviewScore, "案源律师评分"),
+    sourceReviewScore: optionalScore(input.sourceReviewScore, "发起人评分"),
   };
 }
 

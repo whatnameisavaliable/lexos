@@ -35,7 +35,7 @@ export const SYSTEM_SETTING_DEFINITIONS: SystemSettingDefinition[] = [
   },
   {
     defaultValue: 7,
-    description: "任务经案源律师验收后，客户超过该天数未确认时，可由管理员触发系统视为交付并生成待结算记录。0 表示停用。",
+    description: "任务经发起人验收后，客户超过该天数未确认时，可由主任触发系统视为交付并生成待结算记录。0 表示停用。",
     key: "customer_auto_confirm_days",
     label: "客户自动确认天数",
     max: 365,

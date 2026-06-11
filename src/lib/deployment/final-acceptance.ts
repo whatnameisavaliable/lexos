@@ -414,7 +414,7 @@ function buildFinalAcceptanceSections(): FinalAcceptanceSection[] {
           title: "真实闭环 smoke",
           required: true,
           command: "npm.cmd run smoke:real",
-          evidence: "管理员、案源律师、办案律师、客户确认、财务结算闭环成功，最终结算状态 confirmed。",
+          evidence: "配置管理员、主任、律师、客户确认、财务结算闭环成功，最终结算状态 confirmed。",
           notes: ["该命令会写入客户、任务、反馈和结算记录，只能在允许写入的验收库执行。"],
         },
         {

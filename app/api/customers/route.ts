@@ -5,9 +5,10 @@ import { requireInternalSession } from "@/lib/auth/session";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { validateCreateCustomerInput } from "@/lib/workflow/validation";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 
-const customerWriteRoles: UserRole[] = ["system_admin", "firm_admin", "source_lawyer"];
+const customerReadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
+const customerWriteRoles: UserRole[] = ["source_lawyer", "handling_lawyer"];
 const customerSortOptions = {
   createdAtAsc: { ascending: true, column: "created_at" },
   createdAtDesc: { ascending: false, column: "created_at" },
@@ -18,7 +19,7 @@ const customerSortOptions = {
 
 export async function GET(request: Request) {
   try {
-    const session = await requireInternalSession(customerWriteRoles);
+    const session = await requireInternalSession(customerReadRoles);
     const admin = createSupabaseAdminClient();
     const defaultPageSize = await loadSystemSettingNumber(admin, session.organizationId, "default_page_size");
     const listQuery = parseListQuery(request, { defaultPageSize });
@@ -30,6 +31,10 @@ export async function GET(request: Request) {
       .select("id, name, contact_name, phone, source, status, created_at, created_by", { count: "exact" })
       .eq("organization_id", session.organizationId)
       .order(sort.column, { ascending: sort.ascending });
+
+    if (isLawyerRole(session.roleCode)) {
+      query = query.eq("created_by", session.userId);
+    }
 
     if (status && status !== "all") {
       query = query.eq("status", status);

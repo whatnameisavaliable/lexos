@@ -19,7 +19,7 @@ describe("客户输入", () => {
       name: " 东辰科技有限公司 ",
       contactName: " 王总 ",
       phone: " 13800000000 ",
-      source: "案源律师录入",
+      source: "律师录入",
     });
 
     assert.equal(input.name, "东辰科技有限公司");
@@ -107,7 +107,7 @@ describe("结算导出", () => {
 
     assert.equal(
       csv,
-      '结算ID,任务,办案律师,用户名,职级,任务金额(元),结算比例,原结算金额(元),扣减金额(元),律师实付金额(元),扣罚去向,扣罚锁定时间,状态,生成时间,确认时间\nsettlement-id,"民商事一审代理,材料准备",张律师,lawyer01,L2B,12000.00,80%,9600.00,1440.00,8160.00,公共风险储备金,2026-06-08T11:00:00.000Z,已确认,2026-06-08T10:00:00.000Z,2026-06-08T12:30:00.000Z\n',
+      '结算ID,任务,承办律师,用户名,职级,任务金额(元),结算比例,原结算金额(元),扣减金额(元),律师实付金额(元),扣罚去向,扣罚锁定时间,状态,生成时间,确认时间\nsettlement-id,"民商事一审代理,材料准备",张律师,lawyer01,L2B,12000.00,80%,9600.00,1440.00,8160.00,公共风险储备金,2026-06-08T11:00:00.000Z,已确认,2026-06-08T10:00:00.000Z,2026-06-08T12:30:00.000Z\n',
     );
   });
 
@@ -187,7 +187,7 @@ describe("客户与渠道统计", () => {
 });
 
 describe("律师绩效统计", () => {
-  it("按办案律师汇总任务、客户评分和结算金额", () => {
+  it("按律师汇总任务、客户评分和结算金额", () => {
     const stats = buildLawyerPerformanceStats({
       feedback: demoFeedback,
       settlements: demoSettlements,
@@ -197,8 +197,8 @@ describe("律师绩效统计", () => {
     const summary = summarizeLawyerPerformanceStats(stats);
     const handler = stats.find((item) => item.lawyerId === "u-handler");
 
-    assert.equal(stats.length, 3);
-    assert.equal(summary.lawyerCount, 3);
+    assert.equal(stats.length, 5);
+    assert.equal(summary.lawyerCount, 5);
     assert.equal(summary.activeLawyerCount, 3);
     assert.equal(summary.averageScore, 9);
     assert.equal(summary.rollingAverageScore, 8.9);
@@ -276,7 +276,7 @@ describe("任务里程碑与交付记录", () => {
     const milestones = buildTaskMilestones(task);
     const reviewMilestone = milestones.find((item) => item.key === "approved");
 
-    assert.equal(reviewMilestone?.label, "审核与案源验收");
+    assert.equal(reviewMilestone?.label, "复核与发起人验收");
     assert.equal(reviewMilestone?.value, "待审核");
     assert.equal(reviewMilestone?.state, "current");
   });

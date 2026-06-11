@@ -1,6 +1,6 @@
 import { ApiError, handleApiError, ok, readJsonObject, routeParam, optionalStringField } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
-import { transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoles, transitionTaskStatus } from "@/lib/domain/core";
 import { createLowScoreRiskCase } from "@/lib/risk/low-score-service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildPortalTokenHash, validateSettlementDraft } from "@/lib/workflow/validation";
@@ -50,7 +50,7 @@ export async function POST(request: Request, context: { params: Promise<{ token:
       .select("rank_id, ranks:rank_id(settlement_basis_points)")
       .eq("organization_id", link.organization_id)
       .eq("user_id", task.assigned_lawyer_id)
-      .eq("role_code", "handling_lawyer")
+      .in("role_code", [...lawyerRoles])
       .eq("status", "active")
       .maybeSingle();
 
@@ -61,7 +61,7 @@ export async function POST(request: Request, context: { params: Promise<{ token:
     const rank = Array.isArray(member?.ranks) ? member?.ranks[0] : member?.ranks;
 
     if (!member?.rank_id || !rank) {
-      throw new ApiError(409, "CONFLICT", "办案律师职级缺失，无法生成结算");
+      throw new ApiError(409, "CONFLICT", "律师职级缺失，无法生成结算");
     }
 
     const now = new Date().toISOString();

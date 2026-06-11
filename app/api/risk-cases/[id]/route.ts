@@ -1,12 +1,12 @@
 import { ApiError, handleApiError, ok, readJsonObject, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { normalizeRiskCaseStatusUpdate, type RiskCaseStatus } from "@/lib/risk/cases";
 import { enrichRiskCases, type RiskCaseRow } from "@/lib/risk/records";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const riskUpdateRoles: UserRole[] = ["system_admin", "firm_admin", "director", "source_lawyer"];
+const riskUpdateRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
 const riskCaseSelect =
   "id, organization_id, task_id, customer_id, reported_by_user_id, owner_user_id, source, severity, status, title, description, resolution_note, defense_statement, defended_at, committee_decision, committee_decision_note, committee_deduction_basis_points, committee_decided_by, committee_decided_at, resolved_at, created_at, updated_at";
 
@@ -33,8 +33,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     const riskCase = existing as RiskCaseRow;
 
-    if (session.roleCode === "source_lawyer" && riskCase.reported_by_user_id !== session.userId) {
-      throw new ApiError(403, "FORBIDDEN", "案源律师只能处理自己登记的风控工单");
+    if (isLawyerRole(session.roleCode) && riskCase.reported_by_user_id !== session.userId) {
+      throw new ApiError(403, "FORBIDDEN", "律师只能处理自己登记的风控工单");
     }
 
     let statusUpdate;

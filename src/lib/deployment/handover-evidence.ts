@@ -237,7 +237,7 @@ function buildHandoverEvidenceItems(): HandoverEvidenceItem[] {
       "租户表 organization_id、关键 API 组织过滤、Storage 路径隔离和人工负向测试清单。",
     ], "security/tenant-isolation.md", false, false, ["正式多律所上线前仍需在验收库执行跨组织负向测试。"]),
     item("business-smoke", "real-smoke", "真实闭环 smoke 验收", true, "交付负责人", "npm.cmd run smoke:real", [
-      "管理员、案源律师、办案律师、客户确认、财务结算闭环成功输出。",
+      "配置管理员、主任、律师、客户确认、财务结算闭环成功输出。",
       "真实任务 ID、结算 ID 和最终 confirmed 状态。",
     ], "smoke/real-flow.txt", true, true, ["该命令会写入客户、任务、反馈和结算记录，只能在允许写入的验收库执行。"]),
     item("release-package", "release-package-check", "交付包清单与敏感内容扫描", true, "交付负责人", "npm.cmd run release:package:check && npm.cmd run release:sensitive:check", [

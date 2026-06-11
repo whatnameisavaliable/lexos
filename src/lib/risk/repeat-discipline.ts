@@ -1,5 +1,6 @@
 import type { RiskCaseSeverity, RiskCaseStatus } from "./cases.ts";
 import type { RiskCaseCommitteeDecision } from "./committee-decision.ts";
+import { isLawyerRole, type UserRole } from "../domain/core.ts";
 
 export const REPEAT_DISCIPLINE_LOOKBACK_DAYS = 90;
 
@@ -99,7 +100,7 @@ export function buildRepeatDisciplineStats(input: {
   const statsByLawyerId = new Map<string, RepeatDisciplineStat>();
 
   input.users
-    .filter((user) => user.role === "handling_lawyer")
+    .filter((user) => isLawyerRole(user.role as UserRole))
     .forEach((lawyer) => {
       statsByLawyerId.set(lawyer.id, {
         activeCaseCount: 0,

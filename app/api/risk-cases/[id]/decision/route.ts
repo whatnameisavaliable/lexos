@@ -15,7 +15,7 @@ const riskCaseSelect =
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin", "director"]);
+    const session = await requireInternalSession(["director"]);
     const riskCaseId = await routeParam(context, "id");
     const body = await readJsonObject(request);
     let decisionInput;

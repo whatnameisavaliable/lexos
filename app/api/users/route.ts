@@ -15,7 +15,8 @@ import {
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const adminRoles: UserRole[] = ["system_admin", "firm_admin"];
+const userReadRoles: UserRole[] = ["system_admin", "firm_admin", "director"];
+const userWriteRoles: UserRole[] = ["system_admin", "firm_admin"];
 const userSortOptions = {
   createdAtAsc: { ascending: true, column: "created_at" },
   createdAtDesc: { ascending: false, column: "created_at" },
@@ -25,7 +26,7 @@ const userSortOptions = {
 
 export async function GET(request: Request) {
   try {
-    const session = await requireInternalSession(adminRoles);
+    const session = await requireInternalSession(userReadRoles);
     const admin = createSupabaseAdminClient();
     const defaultPageSize = await loadSystemSettingNumber(admin, session.organizationId, "default_page_size");
     const listQuery = parseListQuery(request, { defaultPageSize });
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
   let createdAuthUserId: string | undefined;
 
   try {
-    const session = await requireInternalSession(adminRoles);
+    const session = await requireInternalSession(userWriteRoles);
     const body = await readJsonObject(request);
     const env = getSupabaseRuntimeEnv();
 

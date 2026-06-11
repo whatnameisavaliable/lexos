@@ -14,7 +14,7 @@ const auditLogSortOptions = {
 
 export async function GET(request: Request) {
   try {
-    const session = await requireInternalSession(["system_admin", "firm_admin"]);
+    const session = await requireInternalSession(["system_admin", "firm_admin", "director"]);
     const admin = createSupabaseAdminClient();
     const defaultPageSize = await loadSystemSettingNumber(admin, session.organizationId, "default_page_size");
     const listQuery = parseListQuery(request, { defaultPageSize });

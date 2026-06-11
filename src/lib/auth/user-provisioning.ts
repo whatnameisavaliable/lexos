@@ -1,4 +1,4 @@
-import { DEFAULT_INITIAL_PASSWORD, type UserRole } from "../domain/core.ts";
+import { DEFAULT_INITIAL_PASSWORD, isLawyerRole, type UserRole } from "../domain/core.ts";
 
 export const DEFAULT_AUTH_EMAIL_DOMAIN = "lexos.local";
 
@@ -80,15 +80,15 @@ export function validateCreateUserInput(input: CreateUserInput): ValidatedCreate
     throw new Error("角色不允许创建内部用户");
   }
 
-  if (input.roleCode === "handling_lawyer" && !input.rankId) {
-    throw new Error("办案律师必须绑定职级");
+  if (isLawyerRole(input.roleCode) && !input.rankId) {
+    throw new Error("律师必须绑定职级");
   }
 
   return {
     username,
     displayName,
     roleCode: input.roleCode,
-    rankId: input.rankId,
+    rankId: isLawyerRole(input.roleCode) ? input.rankId : undefined,
     phone: input.phone?.trim() || undefined,
     authEmail: buildAuthEmailForUsername(username, input.authEmailDomain ?? DEFAULT_AUTH_EMAIL_DOMAIN),
     defaultPassword: DEFAULT_INITIAL_PASSWORD,
@@ -105,13 +105,13 @@ export function validateUpdateUserInput(input: UpdateUserInput): ValidatedUpdate
     throw new Error("用户状态不正确");
   }
 
-  if (input.roleCode === "handling_lawyer" && !input.rankId) {
-    throw new Error("办案律师必须绑定职级");
+  if (isLawyerRole(input.roleCode) && !input.rankId) {
+    throw new Error("律师必须绑定职级");
   }
 
   return {
     roleCode: input.roleCode,
-    rankId: input.roleCode === "handling_lawyer" ? input.rankId : undefined,
+    rankId: isLawyerRole(input.roleCode) ? input.rankId : undefined,
     status: input.status,
   };
 }

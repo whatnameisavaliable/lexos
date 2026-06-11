@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api/http";
 import { normalizedQueryParam, postgrestInFilter, postgrestLikePattern } from "@/lib/api/pagination";
 import { requireInternalSession } from "@/lib/auth/session";
-import type { UserRole } from "@/lib/domain/core";
+import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { settlementsToCsv } from "@/lib/settlements/export";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const settlementRoles: UserRole[] = ["system_admin", "firm_admin", "finance", "handling_lawyer"];
+const settlementRoles: UserRole[] = ["director", "finance", "source_lawyer", "handling_lawyer"];
 
 export async function GET(request: Request) {
   try {
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       .order("generated_at", { ascending: false })
       .limit(1000);
 
-    if (session.roleCode === "handling_lawyer") {
+    if (isLawyerRole(session.roleCode)) {
       query = query.eq("lawyer_id", session.userId);
     }
 

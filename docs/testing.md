@@ -1,5 +1,9 @@
 # Lexos 测试说明
 
+## 上线黑盒证据
+
+- 2026-06-12 上线黑盒测试证据见 [launch-blackbox-evidence-2026-06-12.md](launch-blackbox-evidence-2026-06-12.md)。
+
 ## 测试分层
 
 Lexos 当前保留三类测试：

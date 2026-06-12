@@ -7,6 +7,13 @@ export const lexosUi = {
   panelBody: "p-3 sm:p-4",
   panelHeader: "flex min-h-10 items-center justify-between border-b border-line bg-[#F8FAFC] px-3 sm:px-4",
   panelTitle: "text-[13px] font-semibold text-ink",
+  queue:
+    "rounded-md border border-line bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+  queueItem:
+    "grid gap-2 border-b border-line px-3 py-3 transition last:border-b-0 hover:bg-canvas/70 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start",
+  metaPill:
+    "inline-flex min-h-6 items-center rounded-md border border-line bg-canvas px-2 text-[11px] font-medium text-slate",
+  sectionEyebrow: "text-[11px] font-semibold uppercase text-steel",
   table: "min-w-[720px] w-full text-left text-[12px]",
   tableHead: "bg-[#EEF2F6] text-[11px] uppercase text-steel",
   tableWrap: "overflow-x-auto rounded-md border border-line bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]",

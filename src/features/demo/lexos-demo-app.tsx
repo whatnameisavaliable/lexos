@@ -197,6 +197,22 @@ import { lexosUi } from "./ui-tokens";
 type NavKey = MenuPermissionKey;
 type MaybePromise<T> = T | Promise<T>;
 type SubmitTaskInput = { title: string; content: string; externalUrl: string; file?: File | null };
+type SurfaceTone = "gold" | "ink" | "rose" | "teal";
+type DashboardFocusItem = {
+  badge: string;
+  detail: string;
+  id: string;
+  meta: string;
+  title: string;
+  tone: SurfaceTone;
+};
+type RankedInsightItem = {
+  detail: string;
+  id: string;
+  meta: string;
+  title: string;
+  value: string;
+};
 type ApproveTaskInput = {
   caseResultScore?: number;
   caseResultSummary?: string;
@@ -2569,7 +2585,6 @@ function Dashboard({
     .filter((item) => item.status === "confirmed")
     .reduce((sum, item) => sum + item.settlementAmountCents, 0);
   const totalAmount = tasks.reduce((sum, task) => sum + task.amountCents, 0);
-  const recentTasks = tasks.slice(0, 8);
   const channelStats = buildCustomerChannelStats({ customers, feedback, settlements, tasks });
   const channelSummary = summarizeCustomerChannelStats(channelStats);
   const topChannel = channelSummary.topChannel;
@@ -2592,6 +2607,76 @@ function Dashboard({
   );
   const openRiskCases = riskCases.filter((item) => item.status !== "resolved");
   const majorRiskCases = openRiskCases.filter((item) => item.severity === "critical" || item.severity === "high");
+  const focusItems: DashboardFocusItem[] = [
+    ...majorRiskCases.slice(0, 3).map((riskCase) => ({
+      badge: riskCaseSeverityLabels[riskCase.severity],
+      detail: `${riskCaseStatusLabels[riskCase.status]} · ${riskCase.taskTitle ?? riskCase.description ?? "需要跟进风控处理"}`,
+      id: `risk-${riskCase.id}`,
+      meta: riskCase.ownerName ?? "待分派",
+      title: riskCase.title,
+      tone: "rose" as const,
+    })),
+    ...submittedTasks.slice(0, 3).map((task) => ({
+      badge: "待验收",
+      detail: `${task.customerName ?? "客户"} · ${task.description}`,
+      id: `submitted-${task.id}`,
+      meta: formatMoney(task.amountCents),
+      title: task.title,
+      tone: "gold" as const,
+    })),
+    ...overdueAutoConfirmTasks.slice(0, 2).map((task) => ({
+      badge: "客户确认",
+      detail: `已到自动确认窗口 · 截止 ${task.dueAt}`,
+      id: `overdue-${task.id}`,
+      meta: formatMoney(task.amountCents),
+      title: task.title,
+      tone: "teal" as const,
+    })),
+    ...pendingSettlements.slice(0, 3).map((settlement) => ({
+      badge: "待结算",
+      detail: `${settlement.lawyerName ?? "律师"} · ${formatBasisPoints(settlement.settlementBasisPoints)} · ${settlement.status === "pending" ? "等待财务确认" : "已确认"}`,
+      id: `settlement-${settlement.id}`,
+      meta: formatMoney(effectiveSettlementAmountCents(settlement)),
+      title: settlement.taskTitle ?? settlement.id,
+      tone: "ink" as const,
+    })),
+    ...openTasks.slice(0, 2).map((task) => ({
+      badge: "任务大厅",
+      detail: `${task.minRankCode} 以上可承接 · 截止 ${task.dueAt}`,
+      id: `open-${task.id}`,
+      meta: formatMoney(task.amountCents),
+      title: task.title,
+      tone: "gold" as const,
+    })),
+  ].slice(0, 8);
+  const dashboardSignals = [
+    { label: "待确认结算", value: `${pendingSettlements.length} 条` },
+    { label: "客户待确认", value: `${approvedTasks.length} 条` },
+    { label: "逾期待处理", value: `${overdueAutoConfirmTasks.length} 条` },
+    { label: "风控待处理", value: `${openRiskCases.length} 条` },
+    { label: "重大/严重风险", value: `${majorRiskCases.length} 条` },
+    { label: "累犯惩戒建议", value: `${repeatDisciplineSummary.actionableLawyerCount} 人` },
+    { label: "客户评分", value: feedback.length ? `${feedback[0].score}/10` : "待采集" },
+    { label: "启用职级", value: `${ranks.length} 档` },
+    { label: "内部用户", value: `${users.length} 人` },
+  ];
+  const channelLeaderboard: RankedInsightItem[] = channelStats.slice(0, 5).map((stat) => ({
+    detail: `${stat.customerCount} 个客户 · ${stat.activeTaskCount} 个有效任务 · 确认率 ${stat.confirmedTaskRate}%`,
+    id: `channel-${stat.source}`,
+    meta: stat.averageScore === null ? "评分待采集" : `评分 ${stat.averageScore}/10`,
+    title: stat.source,
+    value: formatMoney(stat.taskAmountCents),
+  }));
+  const lawyerLeaderboard: RankedInsightItem[] = lawyerStats.slice(0, 5).map((stat) => ({
+    detail: `${stat.rankCode} · 在办 ${stat.inProgressTaskCount} · 完成 ${stat.completedTaskCount}`,
+    id: `lawyer-${stat.lawyerId}`,
+    meta:
+      stat.rollingAverageScore === null
+        ? "近 30 单待采集"
+        : `近 30 单 ${stat.rollingAverageScore}/10`,
+    title: stat.lawyerName,
+    value: formatMoney(stat.settlementAmountCents),
+  }));
 
   async function handleAutoConfirmOverdue() {
     if (!onAutoConfirmOverdue) {
@@ -2645,30 +2730,11 @@ function Dashboard({
         <Metric icon={Banknote} label="已确认结算" value={formatMoney(confirmedAmount)} />
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.55fr_0.95fr]">
-        <Panel title="任务流转">
-          <DataTable
-            headers={["任务", "状态", "金额", "最低职级", "截止"]}
-            rows={recentTasks.map((task) => [
-              task.title,
-              statusLabels[task.status],
-              formatMoney(task.amountCents),
-              task.minRankCode,
-              task.dueAt,
-            ])}
-          />
+        <Panel title="今日经营焦点">
+          <FocusQueue emptyText="当前没有需要立即处理的经营焦点。" items={focusItems} />
         </Panel>
         <Panel title="运营信号">
-          <div>
-            <Signal label="待确认结算" value={`${pendingSettlements.length} 条`} />
-            <Signal label="客户待确认" value={`${approvedTasks.length} 条`} />
-            <Signal label="逾期待处理" value={`${overdueAutoConfirmTasks.length} 条`} />
-            <Signal label="风控待处理" value={`${openRiskCases.length} 条`} />
-            <Signal label="重大/严重风险" value={`${majorRiskCases.length} 条`} />
-            <Signal label="累犯惩戒建议" value={`${repeatDisciplineSummary.actionableLawyerCount} 人`} />
-            <Signal label="客户评分" value={feedback.length ? `${feedback[0].score}/10` : "待采集"} />
-            <Signal label="启用职级" value={`${ranks.length} 档`} />
-            <Signal label="内部用户" value={`${users.length} 人`} />
-          </div>
+          <InsightList items={dashboardSignals} />
           {onAutoConfirmOverdue ? (
             <div className="mt-3 rounded-md border border-line bg-canvas/70 p-3">
               <div className="flex items-start justify-between gap-3">
@@ -2697,19 +2763,7 @@ function Dashboard({
       </div>
       <Panel title="客户与渠道贡献">
         <div className="grid gap-4 xl:grid-cols-[1.45fr_0.8fr]">
-          <DataTable
-            emptyText="暂无客户来源统计。"
-            headers={["来源", "客户", "有效任务", "确认率", "任务金额", "结算金额", "评分"]}
-            rows={channelStats.map((stat) => [
-              stat.source,
-              `${stat.customerCount}`,
-              `${stat.activeTaskCount}`,
-              `${stat.confirmedTaskRate}%`,
-              formatMoney(stat.taskAmountCents),
-              formatMoney(stat.settlementAmountCents),
-              stat.averageScore === null ? "待采集" : `${stat.averageScore}/10`,
-            ])}
-          />
+          <RankedInsightList emptyText="暂无客户来源统计。" items={channelLeaderboard} />
           <div>
             <Signal label="最高任务金额来源" value={topChannel ? topChannel.source : "待采集"} />
             <Signal label="来源数量" value={`${channelSummary.channelCount} 个`} />
@@ -2722,19 +2776,7 @@ function Dashboard({
       </Panel>
       <Panel title="律师绩效">
         <div className="grid gap-4 xl:grid-cols-[1.45fr_0.8fr]">
-          <DataTable
-            emptyText="暂无律师绩效。"
-            headers={["律师", "职级", "在办/完成", "客户/发起/结果", "近30单", "任务金额", "结算金额"]}
-            rows={lawyerStats.map((stat) => [
-              stat.lawyerName,
-              stat.rankCode,
-              `${stat.inProgressTaskCount}/${stat.completedTaskCount}`,
-              `${formatOptionalScore(stat.averageScore ?? undefined)} / ${formatOptionalScore(stat.sourceReviewAverageScore ?? undefined)} / ${formatOptionalScore(stat.caseResultAverageScore ?? undefined)}`,
-              stat.rollingAverageScore === null ? "待采集" : `${stat.rollingAverageScore}/10 (${stat.rollingTaskCount})`,
-              formatMoney(stat.taskAmountCents),
-              formatMoney(stat.settlementAmountCents),
-            ])}
-          />
+          <RankedInsightList emptyText="暂无律师绩效。" items={lawyerLeaderboard} />
           <div>
             <Signal label="绩效领先" value={topLawyer ? topLawyer.lawyerName : "待采集"} />
             <Signal label="有效律师" value={`${lawyerSummary.activeLawyerCount}/${lawyerSummary.lawyerCount} 人`} />
@@ -2802,37 +2844,38 @@ function RepeatDisciplinePanel({ stats }: { stats: RepeatDisciplineStat[] }) {
           : "当前没有达到累犯惩戒建议阈值的律师。"}
       </div>
       {actionableStats.length ? (
-        <div className={`${lexosUi.tableWrap} mt-3`}>
-          <table className={`${lexosUi.table} min-w-[1080px]`}>
-            <thead className={lexosUi.tableHead}>
-              <tr>
-                <th className="px-3 py-2.5 font-semibold">律师</th>
-                <th className="px-3 py-2.5 font-semibold">建议等级</th>
-                <th className="px-3 py-2.5 font-semibold">有效风控</th>
-                <th className="px-3 py-2.5 font-semibold">未办结</th>
-                <th className="px-3 py-2.5 font-semibold">最近工单</th>
-                <th className="px-3 py-2.5 font-semibold">建议动作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {actionableStats.map((stat) => (
-                <tr className="align-top hover:bg-canvas/70" key={stat.lawyerId}>
-                  <td className="whitespace-nowrap px-3 py-2.5">
-                    <div className="font-semibold text-ink">{stat.lawyerName}</div>
-                    <div className="mt-1 text-[12px] text-steel">{stat.rankCode}</div>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-slate">{repeatDisciplineLevelLabels[stat.level]}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-slate">
-                    {stat.effectiveCaseCount} 条
-                    <span className="ml-2 text-[12px] text-steel">高/重大 {stat.highOrCriticalCaseCount}</span>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-slate">{stat.activeCaseCount} 条</td>
-                  <td className="max-w-72 px-3 py-2.5 text-slate">{repeatDisciplineRecentCasesText(stat)}</td>
-                  <td className="max-w-96 px-3 py-2.5 leading-5 text-slate">{stat.suggestedAction}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className={`${lexosUi.queue} mt-3`}>
+          {actionableStats.map((stat) => (
+            <div className="grid gap-3 border-b border-line px-3 py-3 last:border-b-0 xl:grid-cols-[minmax(0,1fr)_220px_320px]" key={stat.lawyerId}>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex min-h-6 items-center rounded-md border px-2 text-[11px] font-semibold ${tonePillClass(stat.level === "escalation" || stat.level === "restriction" ? "rose" : "gold")}`}>
+                    {repeatDisciplineLevelLabels[stat.level]}
+                  </span>
+                  <div className="truncate text-[13px] font-semibold text-ink">{stat.lawyerName}</div>
+                  <span className={lexosUi.metaPill}>{stat.rankCode}</span>
+                </div>
+                <div className="mt-2 line-clamp-2 text-[12px] leading-5 text-steel">{repeatDisciplineRecentCasesText(stat)}</div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-[12px]">
+                <div className="rounded-md border border-line bg-canvas/60 px-2 py-1.5">
+                  <div className="text-[11px] text-steel">有效</div>
+                  <div className="font-semibold text-ink">{stat.effectiveCaseCount}</div>
+                </div>
+                <div className="rounded-md border border-line bg-canvas/60 px-2 py-1.5">
+                  <div className="text-[11px] text-steel">高/重大</div>
+                  <div className="font-semibold text-ink">{stat.highOrCriticalCaseCount}</div>
+                </div>
+                <div className="rounded-md border border-line bg-canvas/60 px-2 py-1.5">
+                  <div className="text-[11px] text-steel">未办结</div>
+                  <div className="font-semibold text-ink">{stat.activeCaseCount}</div>
+                </div>
+              </div>
+              <div className="rounded-md border border-line bg-canvas/60 px-3 py-2 text-[12px] leading-5 text-slate">
+                {stat.suggestedAction}
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="mt-3">
@@ -3765,6 +3808,11 @@ function MyTasksPage({
   const visibleTotal = apiMode ? serverPagination.total : taskPage.total;
   const visibleTotalPages = apiMode ? serverPagination.totalPages : taskPage.totalPages;
   const settlementByTaskId = new Map(settlements.map((settlement) => [settlement.taskId, settlement]));
+  const pipelineStatuses: TaskStatus[] = ["open", "claimed", "submitted", "approved", "settlement_pending", "settled"];
+  const pipelineCounts = pipelineStatuses.map((status) => ({
+    count: ownedTasks.filter((task) => task.status === status).length,
+    status,
+  }));
 
   useEffect(() => {
     setPage(1);
@@ -3821,6 +3869,7 @@ function MyTasksPage({
       {isLawyerRole(currentUser.role) ? (
         <CreateTaskPanel customersById={customersById} onAddTask={onAddTask} ranks={ranks} />
       ) : null}
+      <TaskPipelineSummary counts={pipelineCounts} total={ownedTasks.length} />
       <Panel title="任务列表">
         <ListToolbar
           onSearchChange={setQuery}
@@ -3865,6 +3914,43 @@ function MyTasksPage({
         />
       </Panel>
     </div>
+  );
+}
+
+function TaskPipelineSummary({
+  counts,
+  total,
+}: {
+  counts: Array<{ count: number; status: TaskStatus }>;
+  total: number;
+}) {
+  return (
+    <section className="rounded-md border border-line bg-paper p-3 shadow-soft">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+        <div>
+          <div className={lexosUi.sectionEyebrow}>任务流转</div>
+          <h2 className="mt-1 text-[14px] font-semibold text-ink">个人队列状态</h2>
+        </div>
+        <span className={lexosUi.metaPill}>{total} 个相关任务</span>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+        {counts.map(({ count, status }) => (
+          <div className="min-h-[92px] rounded-md border border-line bg-canvas/50 p-3" key={status}>
+            <div className="flex items-center justify-between gap-2">
+              <StatusBadge status={status} />
+              <span className="text-[18px] font-semibold tabular-nums text-ink">{count}</span>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white">
+              <div
+                className="h-full rounded-full bg-teal"
+                style={{ width: `${total ? Math.max(8, (count / total) * 100) : 0}%` }}
+              />
+            </div>
+            <div className="mt-2 text-[11px] text-steel">{total ? `${Math.round((count / total) * 100)}%` : "0%"} 占比</div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -5099,7 +5185,28 @@ function SettlementsPage({
         </ListToolbar>
         {listError ? <InlineError text={listError} /> : null}
         {visibleRows.length ? (
-          <div className={lexosUi.tableWrap}>
+          <>
+            <SettlementQueue
+              canBypassSettlementRiskLock={canBypassSettlementRiskLock}
+              canConfirmSettlements={canConfirmSettlements}
+              confirmingBusyId={confirmingBusyId}
+              confirmingSettlementId={confirmingSettlementId}
+              getDeductionLockDraft={getDeductionLockDraft}
+              lockDeductionForSettlement={lockDeductionForSettlement}
+              lockingDeductionId={lockingDeductionId}
+              onConfirmSettlementRow={confirm}
+              riskCases={riskCases}
+              riskDeductionRates={riskDeductionRates}
+              selectedSettlementIdSet={selectedSettlementIdSet}
+              setConfirmingSettlementId={setConfirmingSettlementId}
+              settlementLockDays={settlementLockDays}
+              settlements={visibleRows}
+              taskById={taskById}
+              toggleSettlement={toggleSettlement}
+              updateDeductionLockDraft={updateDeductionLockDraft}
+              usersById={usersById}
+            />
+            <div className="hidden">
             <table className={`${lexosUi.table} min-w-[1320px]`}>
               <thead className={lexosUi.tableHead}>
                 <tr>
@@ -5318,7 +5425,8 @@ function SettlementsPage({
                 })}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         ) : (
           <EmptyState text="客户确认接收后，系统会自动生成待结算记录。" />
         )}
@@ -5330,6 +5438,234 @@ function SettlementsPage({
           totalPages={visibleTotalPages}
         />
       </Panel>
+    </div>
+  );
+}
+
+function SettlementQueue({
+  canBypassSettlementRiskLock,
+  canConfirmSettlements,
+  confirmingBusyId,
+  confirmingSettlementId,
+  getDeductionLockDraft,
+  lockDeductionForSettlement,
+  lockingDeductionId,
+  onConfirmSettlementRow,
+  riskCases,
+  riskDeductionRates,
+  selectedSettlementIdSet,
+  setConfirmingSettlementId,
+  settlementLockDays,
+  settlements,
+  taskById,
+  toggleSettlement,
+  updateDeductionLockDraft,
+  usersById,
+}: {
+  canBypassSettlementRiskLock: boolean;
+  canConfirmSettlements: boolean;
+  confirmingBusyId: string | null;
+  confirmingSettlementId: string | null;
+  getDeductionLockDraft: (settlementId: string) => { destination: SettlementRiskPenaltyDestination; note: string };
+  lockDeductionForSettlement: (settlementId: string, riskCaseId: string) => MaybePromise<void>;
+  lockingDeductionId: string | null;
+  onConfirmSettlementRow: (settlementId: string) => MaybePromise<void>;
+  riskCases: RiskCase[];
+  riskDeductionRates: RiskDeductionRates;
+  selectedSettlementIdSet: Set<string>;
+  setConfirmingSettlementId: (settlementId: string | null) => void;
+  settlementLockDays: number;
+  settlements: Settlement[];
+  taskById: Map<string, Task>;
+  toggleSettlement: (settlementId: string) => void;
+  updateDeductionLockDraft: (
+    settlementId: string,
+    patch: Partial<{ destination: SettlementRiskPenaltyDestination; note: string }>,
+  ) => void;
+  usersById: Map<string, DemoUser>;
+}) {
+  return (
+    <div className="space-y-3">
+      {settlements.map((settlement) => {
+        const task = taskById.get(settlement.taskId);
+        const lawyer = usersById.get(settlement.lawyerId);
+        const settlementLabel = task?.title ?? settlement.taskTitle ?? settlement.id;
+        const lockStatus = buildSettlementRiskLockStatus(settlement.generatedAt, settlementLockDays);
+        const taskFreezeStatus = settlementTaskRiskFreezeStatus(settlement, riskCases);
+        const deductionLockCandidate = taskFreezeStatus.deductionLockCandidate;
+        const deductionLockDraft = getDeductionLockDraft(settlement.id);
+        const deductionRiskCase = deductionLockCandidate
+          ? riskCases.find((item) => item.id === deductionLockCandidate.riskCaseId)
+          : undefined;
+        const deductionLockPermission = canLockSettlementRiskDeduction({
+          deductionBasisPoints: deductionLockCandidate?.basisPoints,
+          existingLockedAt: settlement.riskDeductionLockedAt,
+          riskCaseDecision: deductionRiskCase?.committeeDecision ?? (deductionLockCandidate ? "deduction" : undefined),
+          riskCaseStatus: deductionRiskCase?.status ?? (deductionLockCandidate ? "in_review" : undefined),
+          settlementStatus: settlement.status,
+        });
+        const deductionCandidateCalculation = deductionLockCandidate
+          ? calculateSettlementRiskDeduction(settlement.settlementAmountCents, deductionLockCandidate.basisPoints)
+          : null;
+        const deductionPreview = settlementRiskDeductionPreview(settlement, taskFreezeStatus, riskDeductionRates);
+        const effectiveAmountCents = effectiveSettlementAmountCents(settlement);
+        const hasLockedDeduction = Boolean(settlement.riskDeductionLockedAt);
+        const isSettlementRiskLocked =
+          settlement.status === "pending" && lockStatus.locked && !canBypassSettlementRiskLock;
+        const isRiskLocked = settlement.status === "pending" && (taskFreezeStatus.frozen || isSettlementRiskLocked);
+        const canConfirmRow =
+          settlement.status === "pending" &&
+          canConfirmSettlements &&
+          !taskFreezeStatus.frozen &&
+          (canBypassSettlementRiskLock || !lockStatus.locked);
+        const canLockDeductionRow =
+          canConfirmSettlements && Boolean(deductionLockCandidate) && deductionLockPermission.allowed;
+        const tone: SurfaceTone =
+          settlement.status === "confirmed" ? "teal" : isRiskLocked || canLockDeductionRow ? "rose" : "gold";
+
+        return (
+          <article className="rounded-md border border-line bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]" key={settlement.id}>
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_260px_320px] xl:items-start">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  {canConfirmSettlements && settlement.status === "pending" ? (
+                    <input
+                      aria-label={`选择结算 ${settlementLabel}`}
+                      checked={selectedSettlementIdSet.has(settlement.id)}
+                      className="h-4 w-4 accent-teal"
+                      disabled={isRiskLocked}
+                      onChange={() => toggleSettlement(settlement.id)}
+                      type="checkbox"
+                    />
+                  ) : null}
+                  <span className={`inline-flex min-h-6 items-center rounded-md border px-2 text-[11px] font-semibold ${tonePillClass(tone)}`}>
+                    {settlement.status === "confirmed" ? "已确认" : isRiskLocked ? "锁定中" : "待确认"}
+                  </span>
+                  <h3 className="truncate text-[14px] font-semibold text-ink">{settlementLabel}</h3>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <span className={lexosUi.metaPill}>律师 {lawyer?.displayName ?? settlement.lawyerName ?? "-"}</span>
+                  <span className={lexosUi.metaPill}>职级 {settlement.rankCode}</span>
+                  <span className={lexosUi.metaPill}>比例 {formatBasisPoints(settlement.settlementBasisPoints)}</span>
+                  <span className={lexosUi.metaPill}>任务 {formatMoney(settlement.taskAmountCents)}</span>
+                </div>
+              </div>
+
+              <div className="rounded-md border border-line bg-canvas/50 p-3">
+                <div className={lexosUi.sectionEyebrow}>实付金额</div>
+                <div className="mt-1 text-[20px] font-semibold tabular-nums text-ink">{formatMoney(effectiveAmountCents)}</div>
+                {hasLockedDeduction ? (
+                  <p className="mt-1 text-[12px] leading-5 text-rose-700">
+                    原 {formatMoney(settlement.settlementAmountCents)} · 扣减 {formatMoney(settlement.riskDeductionAmountCents ?? 0)}
+                  </p>
+                ) : deductionPreview ? (
+                  <p className="mt-1 text-[12px] leading-5 text-rose-700">{riskDeductionPreviewText(deductionPreview)}</p>
+                ) : (
+                  <p className="mt-1 text-[12px] leading-5 text-steel">
+                    {settlement.status === "confirmed"
+                      ? `确认于 ${formatDateTimeText(settlement.confirmedAt)}`
+                      : lockStatus.locked
+                        ? `锁定剩余 ${lockStatus.daysRemaining} 天`
+                        : "可进入财务确认"}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-md border border-line bg-canvas/50 p-3">
+                {canLockDeductionRow && deductionLockCandidate ? (
+                  <div className="space-y-2">
+                    <div className="text-[12px] font-semibold text-rose-700">
+                      扣罚待锁定
+                      {deductionCandidateCalculation ? (
+                        <span className="ml-2 font-normal">
+                          {formatMoney(deductionCandidateCalculation.deductionAmountCents)}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        aria-label={`${settlementLabel} 扣罚去向`}
+                        className="focus-ring h-10 min-w-0 flex-1 rounded-md border border-line bg-white px-2 text-[12px] text-slate"
+                        onChange={(event) =>
+                          updateDeductionLockDraft(settlement.id, {
+                            destination: event.target.value as SettlementRiskPenaltyDestination,
+                          })
+                        }
+                        value={deductionLockDraft.destination}
+                      >
+                        {settlementRiskPenaltyDestinations.map((destination) => (
+                          <option key={destination} value={destination}>
+                            {settlementRiskPenaltyDestinationLabels[destination]}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        className={actionButtonClass("danger", "sm", "shrink-0")}
+                        disabled={lockingDeductionId === settlement.id}
+                        onClick={() => void lockDeductionForSettlement(settlement.id, deductionLockCandidate.riskCaseId)}
+                        type="button"
+                      >
+                        {lockingDeductionId === settlement.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                        锁定
+                      </button>
+                    </div>
+                    <input
+                      aria-label={`${settlementLabel} 扣罚说明`}
+                      className="focus-ring h-10 w-full rounded-md border border-line bg-white px-2 text-[12px] text-slate placeholder:text-steel"
+                      onChange={(event) => updateDeductionLockDraft(settlement.id, { note: event.target.value })}
+                      placeholder="说明，可选"
+                      value={deductionLockDraft.note}
+                    />
+                  </div>
+                ) : canConfirmRow ? (
+                  confirmingSettlementId === settlement.id ? (
+                    <div className="space-y-2">
+                      <div className="text-[12px] font-semibold text-ink">确认这条结算？</div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          className={actionButtonClass("ghost", "sm")}
+                          disabled={confirmingBusyId === settlement.id}
+                          onClick={() => setConfirmingSettlementId(null)}
+                          type="button"
+                        >
+                          取消
+                        </button>
+                        <button
+                          className={actionButtonClass("primary", "sm")}
+                          disabled={confirmingBusyId === settlement.id}
+                          onClick={() => void onConfirmSettlementRow(settlement.id)}
+                          type="button"
+                        >
+                          {confirmingBusyId === settlement.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                          确认
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className={actionButtonClass("primary", "sm")}
+                      onClick={() => setConfirmingSettlementId(settlement.id)}
+                      type="button"
+                    >
+                      财务确认
+                    </button>
+                  )
+                ) : (
+                  <div className="text-[12px] leading-5 text-steel">
+                    {settlement.status === "confirmed"
+                      ? "已完成财务确认"
+                      : hasLockedDeduction
+                        ? `扣罚已锁定 · ${riskPenaltyDestinationLabel(settlement.riskPenaltyDestination)}`
+                        : taskFreezeStatus.frozen
+                          ? taskRiskFreezeStatusText(taskFreezeStatus)
+                          : "等待锁定期结束"}
+                  </div>
+                )}
+              </div>
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -5869,7 +6205,29 @@ function RiskCasesPage({
         {listError ? <InlineError text={listError} /> : null}
         {actionError ? <div className="mt-3"><InlineError text={actionError} /></div> : null}
         {visibleRiskCases.length ? (
-          <div className={lexosUi.tableWrap}>
+          <>
+            <RiskCaseQueue
+              canDecideRiskCases={canDecideRiskCases}
+              canUpdateRiskCaseStatus={canUpdateRiskCaseStatus}
+              currentUser={currentUser}
+              decisionDrafts={decisionDrafts}
+              defenseDrafts={defenseDrafts}
+              handleCommitteeDecisionSubmit={handleCommitteeDecisionSubmit}
+              handleDefenseSubmit={handleDefenseSubmit}
+              handleStatusAction={handleStatusAction}
+              pendingDecisionRiskCaseId={pendingDecisionRiskCaseId}
+              pendingDefenseRiskCaseId={pendingDefenseRiskCaseId}
+              pendingRiskCaseId={pendingRiskCaseId}
+              resolutionDrafts={resolutionDrafts}
+              riskCases={visibleRiskCases}
+              riskDeductionRates={riskDeductionRates}
+              setDecisionDrafts={setDecisionDrafts}
+              setDefenseDrafts={setDefenseDrafts}
+              setResolutionDrafts={setResolutionDrafts}
+              taskById={taskById}
+              usersById={usersById}
+            />
+            <div className="hidden">
             <table className={`${lexosUi.table} min-w-[1620px]`}>
               <thead className={lexosUi.tableHead}>
                 <tr>
@@ -6150,7 +6508,8 @@ function RiskCasesPage({
                 })}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         ) : (
           <EmptyState text="暂无匹配的风控工单。" />
         )}
@@ -6162,6 +6521,302 @@ function RiskCasesPage({
           totalPages={visibleTotalPages}
         />
       </Panel>
+    </div>
+  );
+}
+
+function RiskCaseQueue({
+  canDecideRiskCases,
+  canUpdateRiskCaseStatus,
+  currentUser,
+  decisionDrafts,
+  defenseDrafts,
+  handleCommitteeDecisionSubmit,
+  handleDefenseSubmit,
+  handleStatusAction,
+  pendingDecisionRiskCaseId,
+  pendingDefenseRiskCaseId,
+  pendingRiskCaseId,
+  resolutionDrafts,
+  riskCases,
+  riskDeductionRates,
+  setDecisionDrafts,
+  setDefenseDrafts,
+  setResolutionDrafts,
+  taskById,
+  usersById,
+}: {
+  canDecideRiskCases: boolean;
+  canUpdateRiskCaseStatus: boolean;
+  currentUser: DemoUser;
+  decisionDrafts: Record<string, { decision: RiskCaseCommitteeDecision; deductionBasisPoints: number; note: string }>;
+  defenseDrafts: Record<string, string>;
+  handleCommitteeDecisionSubmit: (riskCase: RiskCase) => MaybePromise<void>;
+  handleDefenseSubmit: (riskCase: RiskCase) => MaybePromise<void>;
+  handleStatusAction: (riskCase: RiskCase, action: RiskCaseAction) => MaybePromise<void>;
+  pendingDecisionRiskCaseId: string | null;
+  pendingDefenseRiskCaseId: string | null;
+  pendingRiskCaseId: string | null;
+  resolutionDrafts: Record<string, string>;
+  riskCases: RiskCase[];
+  riskDeductionRates: RiskDeductionRates;
+  setDecisionDrafts: (
+    value: (
+      items: Record<string, { decision: RiskCaseCommitteeDecision; deductionBasisPoints: number; note: string }>,
+    ) => Record<string, { decision: RiskCaseCommitteeDecision; deductionBasisPoints: number; note: string }>,
+  ) => void;
+  setDefenseDrafts: (value: (items: Record<string, string>) => Record<string, string>) => void;
+  setResolutionDrafts: (value: (items: Record<string, string>) => Record<string, string>) => void;
+  taskById: Map<string, Task>;
+  usersById: Map<string, DemoUser>;
+}) {
+  return (
+    <div className="space-y-3">
+      {riskCases.map((riskCase) => {
+        const linkedTask = riskCase.taskId ? taskById.get(riskCase.taskId) : undefined;
+        const reporterName = riskCase.reporterName ?? usersById.get(riskCase.reportedByUserId ?? "")?.displayName ?? "系统";
+        const ownerName = riskCase.ownerName ?? usersById.get(riskCase.ownerUserId ?? "")?.displayName ?? "-";
+        const defenseStatus = buildRiskCaseDefenseStatus({
+          createdAt: riskCase.rawCreatedAt ?? riskCase.createdAt,
+          defendedAt: riskCase.defendedAt,
+          status: riskCase.status,
+        });
+        const committeePermission = canSubmitCommitteeDecision({
+          defenseOverdue: defenseStatus.overdue,
+          defenseSubmitted: defenseStatus.submitted,
+          existingDecision: riskCase.committeeDecision,
+          status: riskCase.status,
+        });
+        const maySubmitDefense = canSubmitRiskCaseDefense(currentUser, riskCase, linkedTask) && defenseStatus.canSubmit;
+        const maySubmitDecision = canDecideRiskCases && committeePermission.allowed;
+        const isPending = pendingRiskCaseId === riskCase.id;
+        const isDefensePending = pendingDefenseRiskCaseId === riskCase.id;
+        const isDecisionPending = pendingDecisionRiskCaseId === riskCase.id;
+        const resolutionDraft = resolutionDrafts[riskCase.id] ?? "";
+        const defenseDraft = defenseDrafts[riskCase.id] ?? "";
+        const decisionDraft = decisionDrafts[riskCase.id] ?? {
+          decision: riskCase.committeeDecision ?? ("warning" as RiskCaseCommitteeDecision),
+          deductionBasisPoints: riskCase.committeeDeductionBasisPoints ?? 500,
+          note: riskCase.committeeDecisionNote ?? "",
+        };
+        const deductionPreview = linkedTask
+          ? calculateRiskDeductionPreview(linkedTask.amountCents, riskCase.severity, riskDeductionRates)
+          : null;
+        const tone: SurfaceTone =
+          riskCase.status === "resolved"
+            ? "teal"
+            : riskCase.severity === "critical" || riskCase.severity === "high"
+              ? "rose"
+              : "gold";
+
+        return (
+          <article className="rounded-md border border-line bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]" key={riskCase.id}>
+            <div className="grid gap-3 2xl:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)_minmax(260px,0.9fr)_260px]">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex min-h-6 items-center rounded-md border px-2 text-[11px] font-semibold ${tonePillClass(tone)}`}>
+                    {riskCaseSeverityLabels[riskCase.severity]}
+                  </span>
+                  <RiskCaseStatusBadge status={riskCase.status} />
+                  <h3 className="truncate text-[14px] font-semibold text-ink">{riskCase.title}</h3>
+                </div>
+                {riskCase.description ? (
+                  <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-steel">{riskCase.description}</p>
+                ) : null}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <span className={lexosUi.metaPill}>{riskCaseSourceLabels[riskCase.source]}</span>
+                  <span className={lexosUi.metaPill}>登记 {reporterName}</span>
+                  <span className={lexosUi.metaPill}>处理 {ownerName}</span>
+                  <span className={lexosUi.metaPill}>更新 {riskCase.updatedAt ?? riskCase.createdAt}</span>
+                </div>
+                <div className="mt-3 rounded-md border border-line bg-canvas/50 px-3 py-2">
+                  <div className={lexosUi.sectionEyebrow}>关联任务</div>
+                  <div className="mt-1 truncate text-[13px] font-semibold text-ink">{linkedTask?.title ?? riskCase.taskTitle ?? "-"}</div>
+                  <div className="mt-1 text-[12px] text-steel">{riskCase.customerName ?? linkedTask?.customerName ?? "-"}</div>
+                  {deductionPreview ? (
+                    <div className="mt-1 text-[12px] leading-5 text-rose-700">{riskDeductionPreviewText(deductionPreview)}</div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="rounded-md border border-line bg-canvas/50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className={lexosUi.sectionEyebrow}>48 小时答辩</div>
+                  <span className={defenseStatus.overdue && !defenseStatus.submitted ? "text-[11px] font-semibold text-rose-700" : "text-[11px] font-semibold text-slate"}>
+                    {riskCaseDefenseStatusText(defenseStatus)}
+                  </span>
+                </div>
+                {defenseStatus.deadlineAt ? (
+                  <div className="mt-1 text-[12px] text-steel">截止 {formatDateTimeText(defenseStatus.deadlineAt)}</div>
+                ) : null}
+                {riskCase.defenseStatement ? (
+                  <div className="mt-3 rounded-md border border-teal/20 bg-teal/10 px-2 py-1.5 text-[12px] leading-5 text-teal">
+                    {riskCase.defenseStatement}
+                  </div>
+                ) : maySubmitDefense ? (
+                  <div className="mt-3 space-y-2">
+                    <textarea
+                      aria-label={`${riskCase.title} 答辩说明`}
+                      className={`${lexosUi.input} h-20 resize-y py-2`}
+                      disabled={isDefensePending}
+                      onChange={(event) => setDefenseDrafts((items) => ({ ...items, [riskCase.id]: event.target.value }))}
+                      placeholder="填写事实说明、补救动作和佐证线索"
+                      value={defenseDraft}
+                    />
+                    <button
+                      className={actionButtonClass("primary", "sm")}
+                      disabled={isDefensePending}
+                      onClick={() => void handleDefenseSubmit(riskCase)}
+                      type="button"
+                    >
+                      {isDefensePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Gavel className="h-3.5 w-3.5" />}
+                      提交答辩
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-[12px] leading-5 text-steel">
+                    {isLawyerRole(currentUser.role) ? "当前不可提交答辩。" : "等待承办律师答辩。"}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-md border border-line bg-canvas/50 p-3">
+                <div className={lexosUi.sectionEyebrow}>委员会裁决</div>
+                <div className="mt-1 text-[13px] font-semibold text-ink">{riskCaseCommitteeDecisionText(riskCase)}</div>
+                {riskCase.committeeDecisionNote ? (
+                  <p className="mt-2 rounded-md border border-line bg-white px-2 py-1.5 text-[12px] leading-5 text-slate">
+                    {riskCase.committeeDecisionNote}
+                  </p>
+                ) : maySubmitDecision ? (
+                  <div className="mt-3 space-y-2">
+                    <SelectInput
+                      label="裁决"
+                      onChange={(value) =>
+                        setDecisionDrafts((items) => ({
+                          ...items,
+                          [riskCase.id]: {
+                            ...decisionDraft,
+                            decision: value as RiskCaseCommitteeDecision,
+                          },
+                        }))
+                      }
+                      options={[
+                        ["warning", riskCaseCommitteeDecisionLabels.warning],
+                        ["no_fault", riskCaseCommitteeDecisionLabels.no_fault],
+                        ["deduction", riskCaseCommitteeDecisionLabels.deduction],
+                        ["escalation", riskCaseCommitteeDecisionLabels.escalation],
+                      ]}
+                      value={decisionDraft.decision}
+                    />
+                    {decisionDraft.decision === "deduction" ? (
+                      <label className="block text-[12px]">
+                        <span className="font-medium text-slate">扣减基点</span>
+                        <input
+                          className={`${lexosUi.input} mt-1`}
+                          max={10000}
+                          min={1}
+                          onChange={(event) =>
+                            setDecisionDrafts((items) => ({
+                              ...items,
+                              [riskCase.id]: {
+                                ...decisionDraft,
+                                deductionBasisPoints: Number(event.target.value),
+                              },
+                            }))
+                          }
+                          type="number"
+                          value={decisionDraft.deductionBasisPoints}
+                        />
+                      </label>
+                    ) : null}
+                    <textarea
+                      aria-label={`${riskCase.title} 委员会裁决意见`}
+                      className={`${lexosUi.input} h-20 resize-y py-2`}
+                      disabled={isDecisionPending}
+                      onChange={(event) =>
+                        setDecisionDrafts((items) => ({
+                          ...items,
+                          [riskCase.id]: {
+                            ...decisionDraft,
+                            note: event.target.value,
+                          },
+                        }))
+                      }
+                      placeholder="记录裁决依据、是否采纳答辩和后续处理"
+                      value={decisionDraft.note}
+                    />
+                    <button
+                      className={actionButtonClass("teal", "sm")}
+                      disabled={isDecisionPending}
+                      onClick={() => void handleCommitteeDecisionSubmit(riskCase)}
+                      type="button"
+                    >
+                      {isDecisionPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                      提交裁决
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-[12px] leading-5 text-steel">
+                    {committeePermission.reason ?? "等待委员会裁决。"}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-md border border-line bg-canvas/50 p-3">
+                <div className={lexosUi.sectionEyebrow}>处理动作</div>
+                {canUpdateRiskCaseStatus && riskCase.status !== "resolved" ? (
+                  <textarea
+                    aria-label={`${riskCase.title} 处理意见`}
+                    className={`${lexosUi.input} mt-2 h-20 resize-y py-2`}
+                    disabled={isPending}
+                    onChange={(event) => setResolutionDrafts((items) => ({ ...items, [riskCase.id]: event.target.value }))}
+                    placeholder="办结前填写处理意见"
+                    value={resolutionDraft}
+                  />
+                ) : (
+                  <p className="mt-2 rounded-md bg-white px-2 py-1.5 text-[12px] leading-5 text-slate">
+                    {riskCase.resolutionNote ?? (canUpdateRiskCaseStatus ? "已办结。" : "无处理权限。")}
+                  </p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {riskCase.status === "open" && canUpdateRiskCaseStatus ? (
+                    <button
+                      className={actionButtonClass("secondary", "sm")}
+                      disabled={isPending}
+                      onClick={() => void handleStatusAction(riskCase, "start_review")}
+                      type="button"
+                    >
+                      {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock3 className="h-3.5 w-3.5" />}
+                      开始处理
+                    </button>
+                  ) : null}
+                  {riskCase.status !== "resolved" && canUpdateRiskCaseStatus ? (
+                    <button
+                      className={actionButtonClass("teal", "sm")}
+                      disabled={isPending}
+                      onClick={() => void handleStatusAction(riskCase, "resolve")}
+                      type="button"
+                    >
+                      {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      办结
+                    </button>
+                  ) : canUpdateRiskCaseStatus ? (
+                    <button
+                      className={actionButtonClass("secondary", "sm")}
+                      disabled={isPending}
+                      onClick={() => void handleStatusAction(riskCase, "reopen")}
+                      type="button"
+                    >
+                      {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                      重新打开
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -6708,7 +7363,7 @@ function OperationsCue({
 }: {
   detail: string;
   label: string;
-  tone: "gold" | "ink" | "rose" | "teal";
+  tone: SurfaceTone;
   value: string;
 }) {
   const toneClass =
@@ -6748,6 +7403,89 @@ function Signal({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-4 border-b border-line py-2 first:pt-0 last:border-b-0 last:pb-0">
       <span className="text-[13px] text-steel">{label}</span>
       <span className="text-right text-[13px] font-semibold tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function tonePillClass(tone: SurfaceTone): string {
+  if (tone === "teal") {
+    return "border-teal/25 bg-teal/10 text-teal";
+  }
+
+  if (tone === "gold") {
+    return "border-gold/25 bg-gold/10 text-gold";
+  }
+
+  if (tone === "rose") {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+
+  return "border-navy/15 bg-navy/5 text-navy";
+}
+
+function FocusQueue({ emptyText, items }: { emptyText: string; items: DashboardFocusItem[] }) {
+  if (!items.length) {
+    return <EmptyState text={emptyText} />;
+  }
+
+  return (
+    <div className={lexosUi.queue}>
+      {items.map((item) => (
+        <div className={lexosUi.queueItem} key={item.id}>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex min-h-6 items-center rounded-md border px-2 text-[11px] font-semibold ${tonePillClass(item.tone)}`}>
+                {item.badge}
+              </span>
+              <h3 className="truncate text-[13px] font-semibold text-ink">{item.title}</h3>
+            </div>
+            <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-steel">{item.detail}</p>
+          </div>
+          <div className="flex items-start sm:justify-end">
+            <span className={lexosUi.metaPill}>{item.meta}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InsightList({ items }: { items: Array<{ label: string; value: string }> }) {
+  return (
+    <div className="rounded-md border border-line bg-canvas/50 px-3 py-2">
+      {items.map((item) => (
+        <Signal key={item.label} label={item.label} value={item.value} />
+      ))}
+    </div>
+  );
+}
+
+function RankedInsightList({ emptyText, items }: { emptyText: string; items: RankedInsightItem[] }) {
+  if (!items.length) {
+    return <EmptyState text={emptyText} />;
+  }
+
+  return (
+    <div className={lexosUi.queue}>
+      {items.map((item, index) => (
+        <div className={lexosUi.queueItem} key={item.id}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-navy/5 text-[11px] font-semibold text-navy">
+                {index + 1}
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-ink">{item.title}</div>
+                <div className="mt-0.5 truncate text-[12px] text-steel">{item.detail}</div>
+              </div>
+            </div>
+          </div>
+          <div className="text-left sm:text-right">
+            <div className="text-[13px] font-semibold tabular-nums text-ink">{item.value}</div>
+            <div className="mt-0.5 text-[11px] text-steel">{item.meta}</div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

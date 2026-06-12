@@ -7,8 +7,8 @@ import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { validateCreateCustomerInput } from "@/lib/workflow/validation";
 import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 
-const customerReadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
-const customerWriteRoles: UserRole[] = ["source_lawyer", "handling_lawyer"];
+const customerReadRoles: UserRole[] = ["director", "lawyer"];
+const customerWriteRoles: UserRole[] = ["lawyer"];
 const customerSortOptions = {
   createdAtAsc: { ascending: true, column: "created_at" },
   createdAtDesc: { ascending: false, column: "created_at" },

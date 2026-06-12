@@ -25,7 +25,7 @@ describe("审核律师流程", () => {
         reviewRequired: true,
         reviewStatus: "pending",
         taskStatus: "submitted",
-        userRole: "handling_lawyer",
+        userRole: "lawyer",
       }),
       false,
     );

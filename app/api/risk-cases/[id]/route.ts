@@ -6,7 +6,7 @@ import { normalizeRiskCaseStatusUpdate, type RiskCaseStatus } from "@/lib/risk/c
 import { enrichRiskCases, type RiskCaseRow } from "@/lib/risk/records";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const riskUpdateRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
+const riskUpdateRoles: UserRole[] = ["director", "lawyer"];
 const riskCaseSelect =
   "id, organization_id, task_id, customer_id, reported_by_user_id, owner_user_id, source, severity, status, title, description, resolution_note, defense_statement, defended_at, committee_decision, committee_decision_note, committee_deduction_basis_points, committee_decided_by, committee_decided_at, resolved_at, created_at, updated_at";
 

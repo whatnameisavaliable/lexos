@@ -4,13 +4,12 @@ export type UserRole =
   | "system_admin"
   | "firm_admin"
   | "director"
-  | "source_lawyer"
-  | "handling_lawyer"
+  | "lawyer"
   | "finance"
   | "customer"
   | "channel_partner";
 
-export const lawyerRoles = ["source_lawyer", "handling_lawyer"] as const satisfies readonly UserRole[];
+export const lawyerRoles = ["lawyer"] as const satisfies readonly UserRole[];
 export const systemConfigRoles = ["system_admin", "firm_admin"] as const satisfies readonly UserRole[];
 
 export function isLawyerRole(role: UserRole): boolean {

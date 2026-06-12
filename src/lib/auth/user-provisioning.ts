@@ -8,8 +8,7 @@ const internalUserRoles = new Set<UserRole>([
   "system_admin",
   "firm_admin",
   "director",
-  "source_lawyer",
-  "handling_lawyer",
+  "lawyer",
   "finance",
   "channel_partner",
 ]);

@@ -36,15 +36,7 @@ describe("更新用户输入", () => {
     assert.throws(
       () =>
         validateUpdateUserInput({
-          roleCode: "handling_lawyer",
-          status: "active",
-        }),
-      /律师必须绑定职级/,
-    );
-    assert.throws(
-      () =>
-        validateUpdateUserInput({
-          roleCode: "source_lawyer",
+          roleCode: "lawyer",
           status: "active",
         }),
       /律师必须绑定职级/,
@@ -68,7 +60,7 @@ describe("创建用户输入", () => {
     const input = validateCreateUserInput({
       username: "lawyer02",
       displayName: "李律师",
-      roleCode: "handling_lawyer",
+      roleCode: "lawyer",
       rankId: "rank-l2a",
       phone: "13800000000",
     });
@@ -84,7 +76,7 @@ describe("创建用户输入", () => {
         validateCreateUserInput({
           username: "lawyer03",
           displayName: "赵律师",
-          roleCode: "handling_lawyer",
+          roleCode: "lawyer",
         }),
       /律师必须绑定职级/,
     );

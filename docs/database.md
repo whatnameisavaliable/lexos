@@ -17,8 +17,7 @@
 - system_admin
 - firm_admin
 - director
-- source_lawyer
-- handling_lawyer
+- lawyer
 - finance
 - customer
 - channel_partner
@@ -26,8 +25,7 @@
 第一版实际启用：
 
 - system_admin
-- source_lawyer
-- handling_lawyer
+- lawyer
 - finance
 
 ### 任务状态
@@ -409,8 +407,7 @@
 ### 默认角色
 
 - system_admin：系统管理员
-- source_lawyer：发起人
-- handling_lawyer：承办律师
+- lawyer：律师
 - finance：财务
 
 ### 默认职级
@@ -479,13 +476,13 @@
 
 - 发起人可以创建任务。
 - 发起人可以查看和更新自己发布的任务。
-- 承办律师可以查看 open 状态且满足条件的任务。
-- 承办律师可以查看和更新分配给自己的任务提交信息。
+- 律师可以查看 open 状态且满足条件的任务。
+- 律师可以查看和更新分配给自己的任务提交信息。
 - 财务可以读取与结算相关的任务摘要。
 
 ### settlements
 
-- 承办律师可以查看自己的结算。
+- 律师可以查看自己的结算。
 - 财务可以查看和确认本组织结算。
 - 管理员可以查看本组织结算。
 
@@ -493,7 +490,7 @@
 
 - 当前通过 `/api/funds` 查询资金台账。
 - 系统管理员、律所管理员和财务可以查看本组织资金账户摘要和流水。
-- 普通用户、承办律师、客户和浏览器直连不读取资金流水表。
+- 普通用户、律师、客户和浏览器直连不读取资金流水表。
 
 ### audit_logs
 

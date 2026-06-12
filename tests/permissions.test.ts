@@ -23,17 +23,14 @@ describe("角色菜单权限", () => {
     const lawyerMenus = ["dashboard", "customers", "market", "my-tasks", "risk", "settlements"];
 
     assert.deepEqual(
-      getAccessibleMenuItems("handling_lawyer").map((item) => item.key),
+      getAccessibleMenuItems("lawyer").map((item) => item.key),
       lawyerMenus,
     );
-    assert.deepEqual(
-      getAccessibleMenuItems("source_lawyer").map((item) => item.key),
-      lawyerMenus,
-    );
+    assert.equal(internalUserRoleOptions.filter(([role]) => role === "lawyer").length, 1);
 
-    assert.equal(canAccessMenu("handling_lawyer", "users"), false);
-    assert.equal(canAccessMenu("handling_lawyer", "audit"), false);
-    assert.equal(canAccessMenu("handling_lawyer", "funds"), false);
+    assert.equal(canAccessMenu("lawyer", "users"), false);
+    assert.equal(canAccessMenu("lawyer", "audit"), false);
+    assert.equal(canAccessMenu("lawyer", "funds"), false);
   });
 
   it("配置管理员只进入系统配置、人员、职级、审计和权限入口", () => {

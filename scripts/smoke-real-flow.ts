@@ -120,14 +120,14 @@ const l2b = findRank(ranks, "L2B");
 const l2a = findRank(ranks, "L2A");
 
 await ensureUser(admin, {
-  username: "source01",
+  username: "lawyer04",
   displayName: "周律师",
-  roleCode: "source_lawyer",
+  roleCode: "lawyer",
 });
 await ensureUser(admin, {
   username: "lawyer01",
   displayName: "林律师",
-  roleCode: "handling_lawyer",
+  roleCode: "lawyer",
   rankId: l2b.id,
 });
 await ensureUser(admin, {
@@ -136,7 +136,7 @@ await ensureUser(admin, {
   roleCode: "finance",
 });
 
-const source = await loginAndClearDefaultPassword("source01");
+const source = await loginAndClearDefaultPassword("lawyer04");
 const lawyer = await loginAndClearDefaultPassword("lawyer01");
 const finance = await loginAndClearDefaultPassword("finance01");
 
@@ -208,7 +208,7 @@ console.log(
     {
       ok: true,
       baseUrl,
-      users: ["source01", "lawyer01", "finance01"],
+      users: ["lawyer04", "lawyer01", "finance01"],
       customerId: customer.customer.id,
       taskId: createdTask.task.id,
       settlementId: settlement.id,

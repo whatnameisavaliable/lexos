@@ -198,7 +198,7 @@
   "username": "lawyer01",
   "displayName": "张律师",
   "phone": "13800000000",
-  "roleCode": "handling_lawyer",
+  "roleCode": "lawyer",
   "rankId": "uuid"
 }
 ```
@@ -215,7 +215,7 @@
 
 ```json
 {
-  "roleCode": "handling_lawyer",
+  "roleCode": "lawyer",
   "rankId": "uuid",
   "status": "active"
 }

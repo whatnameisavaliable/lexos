@@ -14,8 +14,8 @@ import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildPortalToken, buildPortalTokenHash, validateCreateTaskInput } from "@/lib/workflow/validation";
 
-const taskReadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer", "finance"];
-const taskCreateRoles: UserRole[] = ["source_lawyer", "handling_lawyer"];
+const taskReadRoles: UserRole[] = ["director", "lawyer", "finance"];
+const taskCreateRoles: UserRole[] = ["lawyer"];
 const taskSortOptions = {
   amountDesc: { ascending: false, column: "amount_cents" },
   createdAtAsc: { ascending: true, column: "created_at" },

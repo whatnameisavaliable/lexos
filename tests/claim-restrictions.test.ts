@@ -38,7 +38,7 @@ describe("承接权限限制", () => {
       minRankOrder: 4,
       restriction: buildClaimRiskRestriction([riskCase({ id: "r-1", severity: "critical", status: "in_review" })]),
       taskStatus: "open",
-      userRole: "handling_lawyer",
+      userRole: "lawyer",
     });
 
     assert.equal(permission.allowed, false);

@@ -825,7 +825,7 @@
 
 - 新增 `npm run smoke:real`，用于通过本地 API 对线上 Supabase 执行端到端 smoke 测试。
 - Smoke 脚本不写死密码，通过 `LEXOS_SMOKE_ADMIN_PASSWORD` 和 `LEXOS_SMOKE_TEST_PASSWORD` 环境变量读取。
-- Smoke 脚本会创建/复用 `source01`、`lawyer01`、`finance01` 三个演示账号，并清除默认密码强制改密状态。
+- Smoke 脚本会创建/复用 `lawyer04`、`lawyer01`、`finance01` 三个演示账号，并清除默认密码强制改密状态。
 - 真实闭环已跑通：创建客户、发布任务、承接、提交成果、发起人验收、客户验证码确认、评分、生成结算、财务确认结算。
 
 ### 验证

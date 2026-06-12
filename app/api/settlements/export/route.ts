@@ -7,7 +7,7 @@ import { isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { settlementsToCsv } from "@/lib/settlements/export";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const settlementRoles: UserRole[] = ["director", "finance", "source_lawyer", "handling_lawyer"];
+const settlementRoles: UserRole[] = ["director", "finance", "lawyer"];
 
 export async function GET(request: Request) {
   try {

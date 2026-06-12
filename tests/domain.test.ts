@@ -30,7 +30,7 @@ describe("默认用户", () => {
 
 describe("任务承接", () => {
   it("任一律师职级满足最低要求且任务开放时可以承接", () => {
-    for (const userRole of ["handling_lawyer", "source_lawyer"] as const) {
+    for (const userRole of ["lawyer"] as const) {
       assert.equal(
         canClaimTask({
           taskStatus: "open",
@@ -47,7 +47,7 @@ describe("任务承接", () => {
     assert.equal(
       canClaimTask({
         taskStatus: "claimed",
-        userRole: "handling_lawyer",
+        userRole: "lawyer",
         lawyerRankOrder: 9,
         minRankOrder: 1,
       }),
@@ -57,7 +57,7 @@ describe("任务承接", () => {
     assert.equal(
       canClaimTask({
         taskStatus: "open",
-        userRole: "handling_lawyer",
+        userRole: "lawyer",
         lawyerRankOrder: 2,
         minRankOrder: 5,
       }),

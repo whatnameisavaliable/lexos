@@ -16,7 +16,7 @@ import { loadTaskRiskFreezeMap } from "@/lib/risk/task-freeze-service";
 import { loadSystemSettingNumber } from "@/lib/settings/runtime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const settlementRoles: UserRole[] = ["director", "finance", "source_lawyer", "handling_lawyer"];
+const settlementRoles: UserRole[] = ["director", "finance", "lawyer"];
 const settlementSortOptions = {
   amountDesc: { ascending: false, column: "payable_amount_cents" },
   generatedAtAsc: { ascending: true, column: "generated_at" },

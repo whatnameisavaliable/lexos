@@ -338,7 +338,7 @@ npm run smoke:real
 
 脚本会通过 `/api/*` 完成以下流程：
 
-- 管理员创建或复用 `source01`、`lawyer01`、`finance01`。
+- 管理员创建或复用 `lawyer04`、`lawyer01`、`finance01`。
 - 发起人创建客户和任务。
 - 承办律师承接并提交成果。
 - 发起人验收。
@@ -435,7 +435,7 @@ Vercel Preview 只用于测试 demo 和对外演示，不等同于律所正式�
 ## 待确认事项
 
 - 如果使用真实 Supabase Preview，是否复用当前 `LexOS` 项目，还是新建独立演示项目。
-- 对外演示账号是否继续使用 `admin`、`source01`、`lawyer01`、`finance01`，以及是否需要重置演示密码。
+- 对外演示账号是否继续使用 `admin`、`lawyer04`、`lawyer01`、`finance01`，以及是否需要重置演示密码。
 - 私有化部署第一阶段是否要求完全离线运行。
 # Vercel upload package dry run
 

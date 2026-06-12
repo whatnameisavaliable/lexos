@@ -2924,7 +2924,7 @@ function UsersPage({
 }) {
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState<UserRole>("handling_lawyer");
+  const [role, setRole] = useState<UserRole>("lawyer");
   const [rankCode, setRankCode] = useState("L1A");
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
@@ -2933,7 +2933,7 @@ function UsersPage({
   const [page, setPage] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editingRole, setEditingRole] = useState<UserRole>("handling_lawyer");
+  const [editingRole, setEditingRole] = useState<UserRole>("lawyer");
   const [editingRankCode, setEditingRankCode] = useState("L1A");
   const [editingStatus, setEditingStatus] = useState<DemoUser["status"]>("active");
   const [confirmingStatusUserId, setConfirmingStatusUserId] = useState<string | null>(null);

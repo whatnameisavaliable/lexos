@@ -10,8 +10,8 @@ import {
 
 const now = new Date("2026-06-10T12:00:00.000Z");
 const users = [
-  { displayName: "林律师", id: "u-1", rankCode: "L2B", role: "handling_lawyer", username: "lawyer01" },
-  { displayName: "赵律师", id: "u-2", rankCode: "L3A", role: "handling_lawyer", username: "lawyer02" },
+  { displayName: "林律师", id: "u-1", rankCode: "L2B", role: "lawyer", username: "lawyer01" },
+  { displayName: "赵律师", id: "u-2", rankCode: "L3A", role: "lawyer", username: "lawyer02" },
 ];
 const tasks = [
   { assignedLawyerId: "u-1", id: "t-1", title: "买卖合同纠纷" },

@@ -10,7 +10,7 @@ const lawyer: DemoUser = {
   mustChangePassword: false,
   password: "changed",
   rankCode: "L2A",
-  role: "handling_lawyer",
+  role: "lawyer",
   status: "active",
   username: "lawyer",
 };

@@ -5,7 +5,7 @@ import { SIGNED_DELIVERABLE_URL_SECONDS } from "@/lib/deliverables/files";
 import { isDirectorRole, isLawyerRole, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const deliverableDownloadRoles: UserRole[] = ["director", "source_lawyer", "handling_lawyer"];
+const deliverableDownloadRoles: UserRole[] = ["director", "lawyer"];
 
 export async function GET(request: Request, context: { params: Promise<{ id: string; deliverableId: string }> }) {
   try {

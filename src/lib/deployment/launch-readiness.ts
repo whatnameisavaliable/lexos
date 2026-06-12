@@ -275,7 +275,7 @@ function buildLaunchStages(): LaunchReadinessStage[] {
           title: "部署后核心页面复核",
           required: true,
           readonly: true,
-          expectedEvidence: "管理员登录、用户、任务、客户大屏、结算、资金、审计、风控页面均可访问。",
+          expectedEvidence: "管理员登录、用户、任务、客户确认页、结算、资金、审计、风控页面均可访问。",
           notes: ["复核时不要使用默认密码长期留存；管理员首次登录后必须改密。"],
         },
         {

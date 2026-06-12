@@ -74,7 +74,7 @@ export function canClaimTaskWithRestriction(input: ClaimTaskWithRestrictionInput
   ) {
     return {
       allowed: false,
-      reason: "当前任务不可抢单或职级不满足要求",
+      reason: "当前任务不可承接或职级不满足要求",
     };
   }
 

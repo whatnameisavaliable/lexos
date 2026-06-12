@@ -229,7 +229,7 @@ function buildHandoverEvidenceItems(): HandoverEvidenceItem[] {
     ], "backup/hardening-checks.md", false, false, ["当前只输出核对清单，不执行真实加密、通知或上传。"]),
     item("storage-deliverables", "storage-bucket", "私有交付附件 Storage 证据", true, "交付负责人", "npm.cmd run backup:storage -- --dry-run", [
       "lexos-deliverables 私有 bucket 核对、附件 manifest、客户验证码授权下载边界说明。",
-    ], "storage/deliverables-storage.md", true, false, ["客户侧仍沿用 token + 手机号 + 演示验证码链路，不接真实短信。"]),
+    ], "storage/deliverables-storage.md", true, false, ["客户侧仍沿用 token + 手机号 + 临时验证码链路，不接真实短信。"]),
     item("observability", "ops-logs", "运维、错误和性能日志制度", true, "运维交接人", "npm.cmd run ops:log:check && npm.cmd run error:log:check && npm.cmd run perf:check", [
       "发布、迁移、备份、恢复、安全核对、异常处置、错误脱敏和性能阈值留痕口径。",
     ], "operations/logging-and-performance.md", false, false, ["当前不采集真实用户数据，不接入外部 APM。"]),

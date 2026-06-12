@@ -51,7 +51,7 @@ npm run tenant:check
 - `roles`
 - `customer_verification_codes`
 
-`customer_verification_codes` 通过客户大屏链接关联到具体任务和组织，不能作为跨组织共享验证码池使用。
+`customer_verification_codes` 通过客户确认页链接关联到具体任务和组织，不能作为跨组织共享验证码池使用。
 
 ### API 组织过滤
 

@@ -30,7 +30,7 @@ LEXOS_OPERATIONS_LOG_REVIEW_INTERVAL_DAYS=30
 - 保留期建议不少于 365 天，最低不得低于 180 天。
 - 复核周期建议 30 天，最长不得超过 90 天。
 - 运维日志目录不要放在 `public/`、`app/` 或其他会被静态托管的目录下。
-- 运维日志不得记录密钥值、数据库连接串、用户密码、客户大屏 token 明文或客户案件材料原文。
+- 运维日志不得记录密钥值、数据库连接串、用户密码、客户确认页 token 明文或客户案件材料原文。
 
 ## 必记事件
 
@@ -72,7 +72,7 @@ LEXOS_OPERATIONS_LOG_REVIEW_INTERVAL_DAYS=30
 
 留存证据：`npm run private:check`、`npm run launch:check`、`npm run verify:rls` 输出。
 
-禁止记录：真实 key、用户密码、客户大屏 token 明文。
+禁止记录：真实 key、用户密码、客户确认页 token 明文。
 
 ### 真实闭环 smoke
 
@@ -80,7 +80,7 @@ LEXOS_OPERATIONS_LOG_REVIEW_INTERVAL_DAYS=30
 
 留存证据：`npm run smoke:real` 输出摘要、验收库记录 ID、测试数据清理或保留说明。
 
-禁止记录：客户手机号完整明文、客户大屏 token 明文、用户密码。
+禁止记录：客户手机号完整明文、客户确认页 token 明文、用户密码。
 
 ### 生产异常与处置
 

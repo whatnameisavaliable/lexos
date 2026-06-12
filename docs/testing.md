@@ -4,7 +4,7 @@
 
 Lexos 当前保留三类测试：
 
-- 单元与领域测试：使用 Node.js 原生 test runner，覆盖权限、环境变量、任务流转、客户大屏和审计日志等纯逻辑。
+- 单元与领域测试：使用 Node.js 原生 test runner，覆盖权限、环境变量、任务流转、客户确认页和审计日志等纯逻辑。
 - 真实 Supabase 冒烟测试：使用 `npm run smoke:real`，面向线上 Supabase 测试闭环，执行前必须确认 `.env.local` 和测试密码环境变量。
 - Playwright E2E：使用 `npm run test:e2e`，只跑本地 Demo 模式，不写入线上 Supabase 数据。
 - Vercel Preview 远端冒烟测试：使用 `npm run smoke:preview`，只访问已部署 URL，不启动本地服务。
@@ -80,7 +80,7 @@ LEXOS_PREVIEW_EXPECT_MODE=demo
 - `/api/health` 可访问，且返回 `app=lexos`、`ok=true`、运行模式、commit、环境和时间戳。
 - 登录页可见，并处于本地 Demo 模式。
 - 使用 `admin / 111111` 登录后完成首次改密。
-- 总览页可见，客户大屏 demo 可用 `LEXOS-DEMO-004 / 13800000000 / 111111` 校验。
+- 总览页可见，客户确认页 demo 可用 `LEXOS-DEMO-004 / 13800000000 / 111111` 校验。
 - 结算管理页面可访问。
 
 该流程不会点击“确认接收并评分”，因此不会改变标准演示数据。

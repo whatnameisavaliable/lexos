@@ -136,7 +136,7 @@ backups/reports/lexos-rehearsal-YYYYMMDD-HHMMSS/
 4. 在隔离环境执行 `npm run restore:db -- --execute` 和 `npm run restore:storage -- --execute`。
 5. 执行 `npm run verify:rls`。
 6. 在允许写入的验收库执行 `npm run smoke:real`。
-7. 人工核对管理员登录、任务列表、客户大屏、附件下载、结算、资金和审计页面。
+7. 人工核对管理员登录、任务列表、客户确认页、附件下载、结算、资金和审计页面。
 8. 将演练报告、恢复结果、执行人、执行时间、应用版本和异常处理记录归档。
 
 ## 当前限制

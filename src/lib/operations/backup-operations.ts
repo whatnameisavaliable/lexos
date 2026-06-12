@@ -418,7 +418,7 @@ function buildRehearsalNextActions(ok: boolean): string[] {
   return [
     "在隔离验收环境执行真实恢复，并运行 npm run verify:rls。",
     "在允许写入的验收库执行 npm run smoke:real。",
-    "人工核对客户大屏、任务附件下载、审计日志和结算页面。",
+    "人工核对客户确认页、任务附件下载、审计日志和结算页面。",
     "将本报告与备份目录、应用版本和执行人记录一起归档。",
   ];
 }

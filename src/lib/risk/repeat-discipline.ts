@@ -229,7 +229,7 @@ function repeatDisciplineSuggestedAction(stat: RepeatDisciplineStat): string {
   }
 
   if (stat.level === "restriction") {
-    return "建议限制高金额或高风险抢单，并由主任复核后恢复";
+    return "建议限制高金额或高风险任务承接，并由主任复核后恢复";
   }
 
   if (stat.level === "watch") {

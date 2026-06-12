@@ -8,7 +8,7 @@ import {
   type ClaimBlockingRiskCase,
 } from "../src/lib/tasks/claim-restrictions.ts";
 
-describe("抢单权限限制", () => {
+describe("承接权限限制", () => {
   it("存在未办结高风险或重大风控工单时暂停抢新任务", () => {
     const restriction = buildClaimRiskRestriction([
       riskCase({ id: "r-1", severity: "high", status: "open", title: "交付质量投诉" }),
@@ -22,7 +22,7 @@ describe("抢单权限限制", () => {
     assert.match(restriction.reason ?? "", /暂不能抢新任务/);
   });
 
-  it("中低风险或已办结风控工单不影响抢单", () => {
+  it("中低风险或已办结风控工单不影响承接", () => {
     const restriction = buildClaimRiskRestriction([
       riskCase({ id: "r-1", severity: "medium", status: "in_review", title: "一般风控" }),
       riskCase({ id: "r-2", severity: "critical", status: "resolved", title: "已办结重大投诉" }),
@@ -32,7 +32,7 @@ describe("抢单权限限制", () => {
     assert.equal(restriction.blockingCaseCount, 0);
   });
 
-  it("基础抢单条件满足但风控限制存在时仍会拒绝", () => {
+  it("基础承接条件满足但风控限制存在时仍会拒绝", () => {
     const permission = canClaimTaskWithRestriction({
       lawyerRankOrder: 6,
       minRankOrder: 4,

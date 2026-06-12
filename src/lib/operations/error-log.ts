@@ -45,7 +45,7 @@ export const errorLogRequirements: ErrorLogRequirement[] = [
     severity: "error",
     requiredFields: ["时间", "环境", "路由/模块", "错误摘要", "请求 ID", "影响范围"],
     examples: ["Next.js route handler 未捕获异常", "前端 API client 收到非预期响应"],
-    immediateActions: ["确认是否影响登录、任务、结算和客户大屏", "保留构建版本和请求路径"],
+    immediateActions: ["确认是否影响登录、任务、结算和客户确认页", "保留构建版本和请求路径"],
   },
   {
     category: "api",
@@ -136,7 +136,7 @@ export function buildErrorLogReadiness(options: {
     redactionRules: [
       "按 key 名屏蔽 password、token、secret、service_role、database_url、authorization、cookie 等字段。",
       "手机号仅保留前三后四或使用摘要，不记录客户手机号完整明文。",
-      "客户大屏 token、验证码、恢复确认口令和数据库连接串永不写入错误日志。",
+      "客户确认页 token、验证码、恢复确认口令和数据库连接串永不写入错误日志。",
       "客户案件材料、交付附件正文和律师成果正文只记录对象 ID 或文件摘要。",
     ],
   };

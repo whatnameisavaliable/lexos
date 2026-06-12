@@ -61,6 +61,6 @@ describe("运维日志核对", () => {
     assert.match(markdown, /运维日志核对/);
     assert.match(markdown, /数据库迁移/);
     assert.match(markdown, /禁止记录/);
-    assert.match(markdown, /客户大屏 token 明文/);
+    assert.match(markdown, /客户确认页 token 明文/);
   });
 });

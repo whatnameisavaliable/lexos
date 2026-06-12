@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Lexos 当前已经具备本地内存 demo、Supabase 迁移、服务端 Supabase client、用户名登录 API、改密 API、用户 API、职级 API、客户 API、任务 API、客户大屏 API、结算 API、投诉与风控 API、审计日志 API、系统参数 API 和 Preview 健康检查 API。
+Lexos 当前已经具备本地内存 demo、Supabase 迁移、服务端 Supabase client、用户名登录 API、改密 API、用户 API、职级 API、客户 API、任务 API、客户确认页 API、结算 API、投诉与风控 API、审计日志 API、系统参数 API 和 Preview 健康检查 API。
 
 前端支持两种运行模式：
 
@@ -61,7 +61,7 @@ LEXOS_AUTH_EMAIL_DOMAIN=lexos.local
 1. 分支上已通过 `npm run verify`，至少包含 lint、typecheck、测试和生产构建。
 2. 已执行 `npm run preview:check`，确认当前环境变量符合目标 Preview 模式。
 3. 已执行 `npm run deploy:channel:check`，确认 Vercel 上传已被明确批准，`.vercelignore` 上传排除清单完整，且部署方式、目标环境和批准引用已归档。
-4. 部署后已通过 `npm run smoke:preview` 检查 Preview URL 的健康接口、登录页、客户大屏入口和结算页。
+4. 部署后已通过 `npm run smoke:preview` 检查 Preview URL 的健康接口、登录页、客户确认页入口和结算页。
 5. 如果使用真实 Supabase 模式，迁移已经应用到目标 Supabase 项目。
 6. 如果使用真实 Supabase 模式，默认管理员已经创建，并完成首次改密。
 7. 如果需要给外部人员演示真实闭环，先跑一次 `npm run smoke:real`，确认任务、客户确认和结算流程正常。
@@ -233,10 +233,10 @@ npm run smoke:preview
 
 - `/api/health` 返回 `ok=true`，并且运行模式符合 `LEXOS_PREVIEW_EXPECT_MODE`。
 - 登录页、默认管理员首次改密、总览页可访问。
-- 客户大屏 demo 可用 `LEXOS-DEMO-004 / 13800000000 / 111111` 校验。
+- 客户确认页 可用 `LEXOS-DEMO-004 / 13800000000 / 111111` 校验。
 - 结算管理页面可访问。
 
-该流程只校验客户大屏访问，不点击“确认接收并评分”，不会改变标准演示数据。
+该流程只校验客户确认页访问，不点击“确认接收并评分”，不会改变标准演示数据。
 
 ## 本地环境变量
 
@@ -285,11 +285,11 @@ supabase/migrations/20260609165248_add_fund_transactions.sql
 - `20260606105523_lexos_online_compatibility_bootstrap.sql` 适合当前线上 LexOS 项目这类已有空表的兼容场景，采用只增不删策略。
 - `20260606133522_lock_down_direct_table_access.sql` 用于收紧 Data API 直接表访问边界，业务访问统一走 Next.js API。
 - `20260608132423_add_deliverable_files.sql` 创建私有交付附件 bucket 和附件元数据字段。
-- `20260609042303_add_task_source_review_scores.sql` 和 `20260609042505_add_task_source_review_scores.sql` 属于案源律师评分相关兼容迁移，正式环境按迁移目录顺序核对应用状态。
+- `20260609042303_add_task_source_review_scores.sql` 和 `20260609042505_add_task_source_review_scores.sql` 属于发起人评分相关兼容迁移，正式环境按迁移目录顺序核对应用状态。
 - `20260609061000_add_task_review_flow.sql` 为任务主任复核和案件结果评分增加字段。
 - `20260609091825_add_risk_cases.sql` 创建风控工单表，启用 RLS，并保持仅服务端 API 访问。
 - `20260609110310_add_risk_case_resolution_note.sql` 为风控工单增加处理意见字段和处理人状态索引。
-- `20260609135059_add_risk_case_defense.sql` 为风控工单增加办案律师答辩字段。
+- `20260609135059_add_risk_case_defense.sql` 为风控工单增加承办律师答辩字段。
 - `20260609144119_add_risk_case_committee_decision.sql` 为风控工单增加委员会裁决字段。
 - `20260609153142_add_settlement_risk_deduction_lock.sql` 为结算记录增加律师实付金额、扣罚金额、扣罚去向和资金流向锁定字段。
 - `20260609165248_add_fund_transactions.sql` 创建资金流水表，并在扣罚资金流向锁定后自动生成扣罚入账流水。
@@ -339,9 +339,9 @@ npm run smoke:real
 脚本会通过 `/api/*` 完成以下流程：
 
 - 管理员创建或复用 `source01`、`lawyer01`、`finance01`。
-- 案源律师创建客户和任务。
-- 办案律师抢单并提交成果。
-- 案源律师验收。
+- 发起人创建客户和任务。
+- 承办律师承接并提交成果。
+- 发起人验收。
 - 客户用 token、手机号和固定验证码 `111111` 确认并评分。
 - 财务确认结算。
 
@@ -409,7 +409,7 @@ npm run verify:rls
 - 真实闭环 smoke：已通过，最终结算状态为 `confirmed`
 - 基础审计日志：已接入关键写操作和 `/api/audit-logs`
 - RLS / Data API 边界：已执行 `lock_down_direct_table_access` 迁移，anon 和 authenticated 不能直接访问内部表
-- 注意：风控工单迁移 `20260609091825_add_risk_cases.sql`、处理意见迁移 `20260609110310_add_risk_case_resolution_note.sql`、办案律师答辩迁移 `20260609135059_add_risk_case_defense.sql`、委员会裁决迁移 `20260609144119_add_risk_case_committee_decision.sql`、结算扣罚锁定迁移 `20260609153142_add_settlement_risk_deduction_lock.sql` 和资金流水迁移 `20260609165248_add_fund_transactions.sql` 已在仓库生成，线上 Supabase 尚未自动应用；切换真实 API 验证风控、任务金额冻结、办案律师答辩、委员会裁决、扣罚资金流向锁定和资金台账前需先应用。
+- 注意：风控工单迁移 `20260609091825_add_risk_cases.sql`、处理意见迁移 `20260609110310_add_risk_case_resolution_note.sql`、承办律师答辩迁移 `20260609135059_add_risk_case_defense.sql`、委员会裁决迁移 `20260609144119_add_risk_case_committee_decision.sql`、结算扣罚锁定迁移 `20260609153142_add_settlement_risk_deduction_lock.sql` 和资金流水迁移 `20260609165248_add_fund_transactions.sql` 已在仓库生成，线上 Supabase 尚未自动应用；切换真实 API 验证风控、任务金额冻结、承办律师答辩、委员会裁决、扣罚资金流向锁定和资金台账前需先应用。
 - 任务金额冻结第一版不新增迁移，结算确认接口会读取 `risk_cases` 中未办结工单并阻断对应任务结算。
 - 扣减比例配置第一版不新增迁移，继续复用 `system_settings`；未保存参数时会使用系统默认扣减比例生成建议扣减字段。
 - 公共风险储备金账户 / 财务流水第一版新增 `GET /api/funds` 和资金流水迁移；当前只做扣罚入账台账，不做真实付款、银行流水、客户退款打款或基金审批。
@@ -421,7 +421,7 @@ Vercel Preview 只用于测试 demo 和对外演示，不等同于律所正式�
 1. 部署形态：完全离线、律所内网、私有云，还是 Vercel + Supabase 云端托管。
 2. 数据库形态：新建干净 Supabase/Postgres 项目，还是兼容已有库和已有表。
 3. 密钥管理：service role key、数据库连接串、短信服务商 key 和未来 AI key 的存放、轮换和审计方式。
-4. 域名与 HTTPS：客户大屏访问链接必须使用可信域名和 HTTPS，避免 token 在不安全链路中传播。
+4. 域名与 HTTPS：客户确认页访问链接必须使用可信域名和 HTTPS，避免 token 在不安全链路中传播。
 5. 备份与恢复：正式库需要备份频率、恢复演练、迁移回滚和演示数据清理策略。
 6. 运维观测：生产错误日志、访问日志、审计日志导出和告警渠道需要单独设计。
 7. 租户边界：正式多律所部署前，需要确认一库多租户、单律所单库或单独 schema 策略。

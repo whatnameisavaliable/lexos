@@ -32,7 +32,7 @@ LEXOS_POST_DEPLOYMENT_OBSERVATION_OWNER=运维负责人
 - `npm.cmd run private:check` 私有化交付自检复跑。
 - `npm.cmd run smoke:real` 真实闭环 smoke 证据归档。
 - `npm.cmd run verify:rls` RLS / Data API 负向验证。
-- 客户交付附件授权下载复核，仍使用演示验证码链路，不接入真实短信。
+- 客户交付附件授权下载复核，仍使用临时验证码链路，不接入真实短信。
 - 审计报表、结算导出和批量确认留痕复核。
 - `npm.cmd run backup:task:check`、`npm.cmd run backup:run:check` 与 `npm.cmd run backup:rehearsal` 证据复核。
 - 运维日志、错误日志、性能阈值和观察期联系人。
@@ -45,7 +45,7 @@ LEXOS_POST_DEPLOYMENT_OBSERVATION_OWNER=运维负责人
 - 不连接线上 Supabase，不执行 `supabase db push`。
 - 不执行真实闭环 smoke，不写入客户、任务、反馈、结算、审计或 Storage 数据。
 - `smoke:real` 仍是清单中的人工验收项，只能在允许写入的目标环境由负责人单独执行。
-- 客户侧继续沿用 token + 手机号 + 演示验证码链路，不接入真实短信。
+- 客户侧继续沿用 token + 手机号 + 临时验证码链路，不接入真实短信。
 - 真实短信、新手保护期、新兵引流池、证据矩阵和 AI 辅助功能仍不在本期交付范围。
 
 ## 归档建议

@@ -59,7 +59,7 @@ describe("任务输入", () => {
   });
 });
 
-describe("客户大屏 token", () => {
+describe("客户确认页 token", () => {
   it("使用 SHA-256 保存 token hash，避免明文入库", () => {
     const hash = buildPortalTokenHash("LEXOS-DEMO-001");
 
@@ -120,7 +120,7 @@ describe("结算导出", () => {
 });
 
 describe("标准演示数据", () => {
-  it("覆盖任务抢单、客户确认和结算演示所需状态", () => {
+  it("覆盖任务承接、客户确认和结算演示所需状态", () => {
     const statuses = new Set(demoTasks.map((task) => task.status));
 
     assert.equal(statuses.has("open"), true);

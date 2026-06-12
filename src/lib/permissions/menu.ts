@@ -116,7 +116,7 @@ export const menuPermissionItems: MenuPermissionItem[] = [
     roles: ["system_admin", "firm_admin", "director"],
   },
   {
-    description: "维护客户大屏验证码、分页、结算锁定期等系统参数。",
+    description: "维护客户访问验证码、分页、结算锁定期等系统参数。",
     key: "settings",
     label: "参数",
     roles: configRoles,

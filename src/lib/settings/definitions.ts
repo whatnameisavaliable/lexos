@@ -19,9 +19,9 @@ export type SystemSettingItem = SystemSettingDefinition & {
 export const SYSTEM_SETTING_DEFINITIONS: SystemSettingDefinition[] = [
   {
     defaultValue: "111111",
-    description: "客户通过安全链接访问大屏时使用的演示验证码。正式接入短信服务后应改为动态验证码策略。",
+    description: "客户通过安全链接访问确认页时使用的临时验证码。接入短信服务后应切换为动态验证码策略。",
     key: "customer_portal_demo_code",
-    label: "客户大屏演示验证码",
+    label: "客户访问验证码",
     type: "string",
   },
   {
@@ -89,9 +89,9 @@ export const SYSTEM_SETTING_DEFINITIONS: SystemSettingDefinition[] = [
   },
   {
     defaultValue: true,
-    description: "控制后台是否显示演示模式提示，便于区分本地 demo 与真实 API。",
+    description: "控制后台是否显示运行模式提示，便于区分本地工作区与真实 API。",
     key: "demo_mode_hint_enabled",
-    label: "显示演示模式提示",
+    label: "显示运行模式提示",
     type: "boolean",
   },
 ];

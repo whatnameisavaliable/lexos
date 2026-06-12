@@ -57,7 +57,7 @@ LEXOS_BACKUP_ALERT_ESCALATION_HOURS=4
 - 数据库连接串。
 - service role key。
 - 恢复确认口令。
-- 客户大屏 token。
+- 客户确认页 token。
 - 客户案件材料或附件正文。
 - 真实短信服务商密钥或通知 token。
 

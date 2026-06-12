@@ -138,7 +138,7 @@ npm run smoke:real
 
 - 后台任务详情能看到交付附件元数据。
 - 内部附件下载能生成短期 signed URL。
-- 客户大屏在验证码校验后，已验收任务的附件下载入口可用。
+- 客户确认页在验证码校验后，已验收任务的附件下载入口可用。
 - `task_deliverables.storage_bucket` 与 `storage_path` 对应的对象文件存在。
 - 备份目录未被提交到 Git。
 

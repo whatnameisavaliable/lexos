@@ -493,7 +493,7 @@ const auditActionOptions: Array<[string, string]> = [
   ["users.create", "创建用户"],
   ["customers.create", "创建客户"],
   ["tasks.create", "发布任务"],
-  ["tasks.claim", "抢单"],
+  ["tasks.claim", "承接"],
   ["tasks.submit", "提交成果"],
   ["tasks.approve", "验收任务"],
   ["tasks.auto_confirm_overdue", "逾期视为交付"],
@@ -1367,9 +1367,9 @@ export function LexosDemoApp() {
       try {
         await apiClaimTask(taskId);
         await reloadApiWorkspace(currentUser);
-        showNotice("抢单成功，任务已进入我的任务。");
+        showNotice("承接成功，任务已进入我的任务。");
       } catch (error) {
-        showError(error instanceof Error ? error.message : "抢单失败");
+        showError(error instanceof Error ? error.message : "承接失败");
       }
       return;
     }
@@ -1391,7 +1391,7 @@ export function LexosDemoApp() {
     });
 
     if (!claimPermission.allowed) {
-      showError(claimPermission.reason ?? "当前任务不可抢单");
+      showError(claimPermission.reason ?? "当前任务不可承接");
       return;
     }
 
@@ -1406,8 +1406,8 @@ export function LexosDemoApp() {
           : item,
       ),
     );
-    log(currentUser.displayName, `抢单 ${task.title}`, "tasks");
-    showNotice(`已抢单：${task.title}`);
+    log(currentUser.displayName, `承接 ${task.title}`, "tasks");
+    showNotice(`已承接：${task.title}`);
   }
 
   async function submitTask(taskId: string, input: SubmitTaskInput) {
@@ -2617,7 +2617,7 @@ function Dashboard({
         <div className="flex flex-col gap-3 rounded-md border border-teal/20 bg-teal/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-[13px] font-semibold text-teal">标准本地数据已加载</div>
-            <div className="mt-1 text-[12px] text-steel">覆盖任务大厅、我的任务、客户大屏、结算和审计日志。</div>
+            <div className="mt-1 text-[12px] text-steel">覆盖任务大厅、我的任务、客户确认页、结算和审计日志。</div>
           </div>
           <button
             className={actionButtonClass("tealSoft", "sm")}
@@ -3627,7 +3627,7 @@ function MarketPage({
                     reason: "当前用户缺少职级信息",
                   };
             const canClaim = claimPermission.allowed;
-            const claimButtonText = claimRestriction.blocked ? "风控暂停" : "抢单";
+            const claimButtonText = claimRestriction.blocked ? "风控暂停" : "承接";
 
             return (
               <div className="grid gap-3 rounded-md border border-line bg-white px-3 py-3 md:grid-cols-[1fr_120px]" key={task.id}>
@@ -4604,7 +4604,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
     <section className="mt-8 rounded-md border border-line bg-paper p-5 shadow-soft">
       <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
         <div>
-          <div className="text-sm font-semibold text-teal">客户大屏 API</div>
+          <div className="text-sm font-semibold text-teal">客户确认页 API</div>
           <h2 className="mt-1 text-xl font-semibold">带验证码的安全访问链接</h2>
           <p className="mt-1 text-sm text-slate">
             真实模式下，访问 token 只在创建任务时显示一次；数据库仅保存 token hash。
@@ -5055,7 +5055,7 @@ function SettlementsPage({
           <ToolbarSelect ariaLabel="结算排序" onChange={setSort} options={settlementSortOptions} value={sort} />
           <a
             className={actionButtonClass("primary", "sm")}
-            download={apiMode ? undefined : "lexos-settlements-demo.csv"}
+            download={apiMode ? undefined : "lexos-settlements-local.csv"}
             href={apiMode ? exportPath : demoExportHref}
           >
             <Download className="h-3.5 w-3.5" />

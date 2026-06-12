@@ -8,7 +8,7 @@
 - 金额使用 amount_cents 这类整数字段保存，避免浮点误差。
 - 比例使用 basis_points 保存，例如 60% 保存为 6000。
 - 所有关键表保留 created_at、updated_at，关键业务表保留 created_by。
-- 客户大屏采用服务端校验 token 和验证码，不直接让客户访问 Supabase 表。
+- 客户确认页采用服务端校验 token 和验证码，不直接让客户访问 Supabase 表。
 
 ## 枚举与受控值
 
@@ -32,8 +32,8 @@
 
 ### 任务状态
 
-- open：待抢单
-- claimed：已抢单
+- open：待承接
+- claimed：已承接
 - submitted：已提交
 - approved：已验收
 - customer_confirmed：客户已确认
@@ -185,7 +185,7 @@
 
 ### task_claims
 
-抢单记录。第一版一个任务最终只接受一名办案律师，但保留抢单历史。
+承接记录。第一版一个任务最终只接受一名承办律师，但保留承接历史。
 
 - id uuid primary key
 - organization_id uuid not null references organizations(id)
@@ -196,7 +196,7 @@
 
 ### task_milestones
 
-任务里程碑。第一版可以只用一个默认里程碑，也可用于客户大屏展示。
+任务里程碑。第一版可以只用一个默认里程碑，也可用于客户确认页展示。
 
 - id uuid primary key
 - organization_id uuid not null references organizations(id)
@@ -233,7 +233,7 @@
 
 ### customer_portal_links
 
-客户大屏安全链接。
+客户确认页安全链接。
 
 - id uuid primary key
 - organization_id uuid not null references organizations(id)
@@ -372,7 +372,7 @@
 - source 范围为 `customer_complaint`、`low_score`、`manual`。
 - severity 范围为 `low`、`medium`、`high`、`critical`。
 - status 范围为 `open`、`in_review`、`resolved`。
-- 办案律师答辩期限由 `created_at + 48 小时` 计算；第一版不单独持久化 deadline。
+- 承办律师答辩期限由 `created_at + 48 小时` 计算；第一版不单独持久化 deadline。
 - committee_decision 范围为 `no_fault`、`warning`、`deduction`、`escalation`。
 - committee_deduction_basis_points 范围为 0 到 10000；扣减裁决要求大于 0。
 
@@ -409,8 +409,8 @@
 ### 默认角色
 
 - system_admin：系统管理员
-- source_lawyer：案源律师
-- handling_lawyer：办案律师
+- source_lawyer：发起人
+- handling_lawyer：承办律师
 - finance：财务
 
 ### 默认职级
@@ -439,7 +439,7 @@
 - 当前 MVP 的浏览器端不直接访问 Supabase 表，统一通过 Next.js API 访问业务数据。
 - 服务端 API 使用 service role 访问数据库，并在 API 层执行角色和组织权限校验。
 - `anon` 和 `authenticated` 已撤销 public schema 和内部业务表的直接 Data API 权限，避免绕过后端读取内部数据。
-- 客户大屏由服务端接口读取数据，不给客户发 Supabase 登录态。
+- 客户确认页由服务端接口读取数据，不给客户发 Supabase 登录态。
 - 现有 RLS policy 保留为防御层，后续若开放某些表给 authenticated 直连，需要重新逐表授予权限并补充权限测试。
 
 ### 当前线上验证
@@ -471,21 +471,21 @@
 
 ### customers
 
-- 案源律师可以创建客户。
-- 案源律师可以查看自己创建的客户。
+- 发起人可以创建客户。
+- 发起人可以查看自己创建的客户。
 - 管理员可以查看本组织所有客户。
 
 ### tasks
 
-- 案源律师可以创建任务。
-- 案源律师可以查看和更新自己发布的任务。
-- 办案律师可以查看 open 状态且满足条件的任务。
-- 办案律师可以查看和更新分配给自己的任务提交信息。
+- 发起人可以创建任务。
+- 发起人可以查看和更新自己发布的任务。
+- 承办律师可以查看 open 状态且满足条件的任务。
+- 承办律师可以查看和更新分配给自己的任务提交信息。
 - 财务可以读取与结算相关的任务摘要。
 
 ### settlements
 
-- 办案律师可以查看自己的结算。
+- 承办律师可以查看自己的结算。
 - 财务可以查看和确认本组织结算。
 - 管理员可以查看本组织结算。
 
@@ -493,7 +493,7 @@
 
 - 当前通过 `/api/funds` 查询资金台账。
 - 系统管理员、律所管理员和财务可以查看本组织资金账户摘要和流水。
-- 普通用户、办案律师、客户和浏览器直连不读取资金流水表。
+- 普通用户、承办律师、客户和浏览器直连不读取资金流水表。
 
 ### audit_logs
 

@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { canCustomerDownloadDeliverable, verifyDemoPortalCode } from "../src/lib/domain/portal.ts";
 
-describe("客户大屏验证码", () => {
+describe("客户访问验证码", () => {
   it("demo 阶段使用固定验证码 111111 通过手机号校验", () => {
     assert.equal(
       verifyDemoPortalCode({
@@ -16,7 +16,7 @@ describe("客户大屏验证码", () => {
     );
   });
 
-  it("支持使用系统参数覆盖客户大屏验证码", () => {
+  it("支持使用系统参数覆盖客户访问验证码", () => {
     assert.equal(
       verifyDemoPortalCode({
         expectedCode: "654321",

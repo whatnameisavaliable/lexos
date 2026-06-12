@@ -421,7 +421,7 @@ function buildFinalAcceptanceSections(): FinalAcceptanceSection[] {
           id: "manual-pages",
           title: "核心页面人工验收",
           required: true,
-          evidence: "管理员登录、用户、客户、任务、客户大屏、结算、资金、审计、风控、权限、参数页面均可访问。",
+          evidence: "管理员登录、用户、客户、任务、客户确认页、结算、资金、审计、风控、权限、参数页面均可访问。",
           notes: ["本轮不开发真实短信、证据矩阵、AI 辅助、新手保护期或新兵引流池。"],
         },
       ],

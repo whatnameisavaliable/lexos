@@ -244,7 +244,7 @@ function buildPostDeploymentCheckItems(): PostDeploymentCheckItem[] {
     ], false, false, ["跨组织负向测试仍需人工在验收库执行。"]),
     item("storage-deliverables", "customer-download", "客户交付附件下载复核", true, "交付负责人", undefined, [
       "客户侧可通过授权链路下载交付附件，未授权或验证码错误时拒绝访问。",
-    ], true, false, ["当前只使用演示验证码链路，不接入真实短信。"]),
+    ], true, false, ["当前只使用临时验证码链路，不接入真实短信。"]),
     item("exports-audit", "audit-settlement-export", "审计与结算导出复核", true, "财务/审计负责人", undefined, [
       "审计报表、结算导出和批量确认留痕可用，导出文件不包含不应交付的密钥或连接串。",
     ], true, false, ["导出样本应存放在受控证据目录，不进入源码交付包。"]),

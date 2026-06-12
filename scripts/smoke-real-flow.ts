@@ -121,12 +121,12 @@ const l2a = findRank(ranks, "L2A");
 
 await ensureUser(admin, {
   username: "source01",
-  displayName: "周案源律师",
+  displayName: "周律师",
   roleCode: "source_lawyer",
 });
 await ensureUser(admin, {
   username: "lawyer01",
-  displayName: "林办案律师",
+  displayName: "林律师",
   roleCode: "handling_lawyer",
   rankId: l2b.id,
 });

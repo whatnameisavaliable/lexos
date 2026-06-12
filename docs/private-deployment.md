@@ -38,7 +38,7 @@ LEXOS_AUTH_EMAIL_DOMAIN=lexos.local
 - `SUPABASE_SERVICE_ROLE_KEY` 只能存在于服务端环境变量，不能带 `NEXT_PUBLIC_` 前缀。
 - `NEXT_PUBLIC_SUPABASE_URL` 使用项目根 URL，不填写 `/rest/v1`。
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` 和 `SUPABASE_SERVICE_ROLE_KEY` 不能相同。
-- 客户大屏链接必须部署在 HTTPS 域名下，避免 token 在明文链路中传播。
+- 客户确认页链接必须部署在 HTTPS 域名下，避免 token 在明文链路中传播。
 
 ## 交付前自检
 
@@ -209,7 +209,7 @@ npm run release:sensitive:check
 3. 在预生产环境应用新迁移并运行 `npm run verify`、`npm run verify:rls` 和必要的 smoke。
 4. 正式环境停写或进入维护窗口。
 5. 应用迁移、发布新构建、启动服务。
-6. 复核登录、用户、任务、客户大屏、结算、资金和审计页面。
+6. 复核登录、用户、任务、客户确认页、结算、资金和审计页面。
 
 如果升级失败，优先回滚应用版本；如果迁移已经改变数据结构，需要按本次升级前备份执行数据库恢复或手工修正。涉及客户确认、结算、扣罚资金流水的数据问题不得直接删除，应先导出审计记录并由律所确认处理口径。
 

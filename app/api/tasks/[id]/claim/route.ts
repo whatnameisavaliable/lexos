@@ -63,7 +63,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     });
 
     if (!basePermission.allowed) {
-      throw new ApiError(409, "CONFLICT", basePermission.reason ?? "当前任务不可抢单或职级不满足要求");
+      throw new ApiError(409, "CONFLICT", basePermission.reason ?? "当前任务不可承接或职级不满足要求");
     }
 
     const riskRestriction = await getClaimRiskRestriction(admin, session.organizationId, session.userId);

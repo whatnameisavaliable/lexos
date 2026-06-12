@@ -36,15 +36,15 @@ export const performanceMetricRequirements: PerformanceMetricRequirement[] = [
   {
     category: "web-vitals",
     title: "前端核心体验",
-    target: "登录页、总览页、任务页和客户大屏首屏可交互时间保持在可接受范围内",
-    warning: "同一页面连续两次人工验收明显变慢，或客户大屏移动端加载超过 5 秒",
-    critical: "客户大屏、登录页或结算页在验收环境不可用",
+    target: "登录页、总览页、任务页和客户确认页首屏可交互时间保持在可接受范围内",
+    warning: "同一页面连续两次人工验收明显变慢，或客户确认页移动端加载超过 5 秒",
+    critical: "客户确认页、登录页或结算页在验收环境不可用",
     evidence: ["浏览器人工验收记录", "Preview smoke 结果", "构建产物大小变化记录"],
   },
   {
     category: "api-latency",
     title: "核心 API 延迟",
-    target: "登录、任务列表、结算列表、客户大屏和附件签名下载接口响应稳定",
+    target: "登录、任务列表、结算列表、客户确认页和附件签名下载接口响应稳定",
     warning: "核心 API 多次超过 2 秒，或分页查询明显退化",
     critical: "核心 API 多次超过 5 秒或返回 5xx",
     evidence: ["server runtime log 摘要", "/api/health 结果", "真实 smoke 输出"],
@@ -107,7 +107,7 @@ export function buildPerformanceMonitoringReadiness(options: {
   }
 
   warnings.push("本检查只生成性能指标和证据清单，不采集真实用户数据、不写入数据库、不接入外部 APM。");
-  warnings.push("性能样本不得包含客户案件材料、附件正文、客户大屏 token 明文、手机号完整明文或密钥值。");
+  warnings.push("性能样本不得包含客户案件材料、附件正文、客户确认页 token 明文、手机号完整明文或密钥值。");
 
   return {
     app: "lexos",

@@ -598,7 +598,7 @@ export const demoAuditLogs: AuditLog[] = [
   {
     id: "a-003",
     actor: "吴青年律师",
-    action: "抢单 劳动争议证据梳理",
+    action: "承接 劳动争议证据梳理",
     actionCode: "tasks.claim",
     entity: "tasks/t-002",
     entityType: "tasks",
@@ -618,7 +618,7 @@ export const demoAuditLogs: AuditLog[] = [
   {
     id: "a-001",
     actor: "系统",
-    action: "初始化 demo 数据",
+    action: "初始化本地工作区数据",
     actionCode: "system.demo_seed",
     entity: "workspace",
     entityType: "workspace",

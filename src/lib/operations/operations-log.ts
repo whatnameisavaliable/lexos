@@ -69,14 +69,14 @@ export const operationsLogRequirements: OperationsLogRequirement[] = [
     title: "安全边界核对",
     requiredFields: ["时间", "核对范围", "执行人", "结果", "遗留风险"],
     evidence: ["private:check 输出", "launch:check 输出", "verify:rls 输出"],
-    forbiddenFields: ["真实 key", "用户密码", "客户大屏 token 明文"],
+    forbiddenFields: ["真实 key", "用户密码", "客户确认页 token 明文"],
   },
   {
     eventType: "smoke",
     title: "真实闭环 smoke",
     requiredFields: ["时间", "环境", "执行人", "最终状态", "测试数据处理口径"],
     evidence: ["smoke:real 输出摘要", "验收库记录 ID", "测试数据清理/保留说明"],
-    forbiddenFields: ["客户手机号完整明文", "客户大屏 token 明文", "用户密码"],
+    forbiddenFields: ["客户手机号完整明文", "客户确认页 token 明文", "用户密码"],
   },
   {
     eventType: "incident",
@@ -123,7 +123,7 @@ export function buildOperationsLogReadiness(options: {
   }
 
   warnings.push("本检查只生成运维日志制度和证据清单，不会创建目录、写入日志或上传到外部日志平台。");
-  warnings.push("运维日志不得记录密钥值、数据库连接串、用户密码、客户大屏 token 明文或客户案件材料原文。");
+  warnings.push("运维日志不得记录密钥值、数据库连接串、用户密码、客户确认页 token 明文或客户案件材料原文。");
 
   return {
     app: "lexos",

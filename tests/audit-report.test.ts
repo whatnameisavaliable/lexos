@@ -23,7 +23,7 @@ const logs: AuditReportLog[] = [
   },
   {
     actor: "林律师",
-    action: "抢单",
+    action: "承接",
     actionCode: "tasks.claim",
     entityType: "tasks",
     createdAt: "2026-06-11 10:00",

@@ -147,7 +147,7 @@ Vercel deployments 最近 production：
 - commit：`de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`
 - domain 包含：`lexos-lemon.vercel.app`
 
-未发现 `4f9844f5264b24906ec4348b7a3144f40d7a643c` 或 `75a099c542ce4be75e0a67066f34ce11b0d27c88` 的 Vercel deployment 记录。
+未发现黑盒验证提交 `4f9844f5264b24906ec4348b7a3144f40d7a643c` 及后续证据归档 main HEAD 的 Vercel deployment 记录；当前 production 仍指向 `de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`。
 
 最近 30 分钟 production runtime logs：未发现 `error` / `fatal`。
 
@@ -186,7 +186,7 @@ npm.cmd run verify:rls
 
 ## 最小剩余动作
 
-1. 在 Vercel Dashboard 对 `main` 最新提交 `75a099c` 执行 Production Redeploy，或配置 Vercel CLI/token 并限定部署到现有 `lexos` project。
+1. 在 Vercel Dashboard 对 `main` 分支最新 HEAD 执行 Production Redeploy，或配置 Vercel CLI/token 并限定部署到现有 `lexos` project；本轮已验证的代码基线是 `4f9844f5264b24906ec4348b7a3144f40d7a643c`，后续文档提交只用于归档证据。
 2. 提供 `LEXOS_SMOKE_BASE_URL`、`LEXOS_SMOKE_ADMIN_PASSWORD`、`LEXOS_SMOKE_TEST_PASSWORD`，并确认目标是允许写入的验收库。
 3. 部署后执行：
 

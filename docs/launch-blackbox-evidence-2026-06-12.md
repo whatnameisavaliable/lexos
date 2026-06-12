@@ -7,6 +7,8 @@
 - 远端 `origin/main` 在验证时已包含该提交。
 - 证据归档提交：`75a099c542ce4be75e0a67066f34ce11b0d27c88`
 - 远端 `origin/main` 在追加复跑时已对齐到证据归档提交。
+- 生产部署触发提交：`a2e3e8f0432ca3ad235f752d09cca38b2524bd51`
+- 生产 deployment：`dpl_5J4smDbxLTyzq3NkqvFq2nA2vX8B`
 - Vercel 项目：`prj_Rs9stBhpa6tOE6R1FGqrO6Y8oBp3`
 - Vercel team：`team_J5yWYtoyHhhDUvErX4yrduFy`
 - Production domain：`https://lexos-lemon.vercel.app`
@@ -119,14 +121,14 @@ health 返回：
   "ok": true,
   "supabaseConfigured": true,
   "missingSupabaseEnvKeys": [],
-  "commit": "de4ee22",
+  "commit": "a2e3e8f",
   "vercelEnv": "production"
 }
 ```
 
-结论：production 服务健康，但仍运行旧提交 `de4ee22`，没有部署最新交付提交 `4f9844f` 或证据归档提交 `75a099c`。
+结论：production 服务健康，`https://lexos-lemon.vercel.app` 已切换到生产部署触发提交 `a2e3e8f`。该提交包含黑盒验证基线 `4f9844f` 之后的证据归档提交。
 
-追加只读远端 smoke：
+生产部署后追加只读远端 smoke：
 
 ```powershell
 $env:LEXOS_PREVIEW_BASE_URL="https://lexos-lemon.vercel.app"
@@ -137,26 +139,42 @@ npx.cmd playwright test --config=playwright.preview.config.ts --project=chromium
 结果：`1 passed`，`1 skipped`。
 说明：真实 Supabase 模式下远端 smoke 只检查 `/api/health`；登录、客户确认和结算闭环用例按配置跳过，避免对生产环境写入数据。
 
+部署后回归清单：
+
+```powershell
+$env:LEXOS_POST_DEPLOYMENT_OWNER="Codex"
+$env:LEXOS_POST_DEPLOYMENT_ENVIRONMENT="production"
+$env:LEXOS_POST_DEPLOYMENT_RELEASE_VERSION="a2e3e8f"
+$env:LEXOS_POST_DEPLOYMENT_BASE_URL="https://lexos-lemon.vercel.app"
+$env:LEXOS_POST_DEPLOYMENT_ROLLBACK_REF="dpl_7eiuBhUsHytni8FGYH3SwsUKY4Lx"
+npm.cmd run postdeploy:check
+```
+
+结果：通过，可进入上线后观察期。
+说明：该脚本只生成部署后核对清单，不连接线上 Supabase、不执行真实 smoke、不写入业务数据。
+
 ## Vercel 部署状态
 
 Vercel deployments 最近 production：
 
-- deployment id：`dpl_7eiuBhUsHytni8FGYH3SwsUKY4Lx`
+- deployment id：`dpl_5J4smDbxLTyzq3NkqvFq2nA2vX8B`
 - state：`READY`
 - target：`production`
-- commit：`de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`
+- commit：`a2e3e8f0432ca3ad235f752d09cca38b2524bd51`
+- source：`cli`
 - domain 包含：`lexos-lemon.vercel.app`
+- rollback candidate：上一 production deployment `dpl_7eiuBhUsHytni8FGYH3SwsUKY4Lx`，commit `de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`
 
-未发现黑盒验证提交 `4f9844f5264b24906ec4348b7a3144f40d7a643c` 及后续证据归档 main HEAD 的 Vercel deployment 记录；当前 production 仍指向 `de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`。
+`vercel inspect` 输出显示该 deployment `status: Ready`，aliases 包含 `https://lexos-lemon.vercel.app`。
 
-最近 30 分钟 production runtime logs：未发现 `error` / `fatal`。
+生产部署后 15 分钟 production runtime logs：未发现 `error` / `fatal`。
 
 本机部署能力：
 
 - `.vercel/project.json` 已 link 到正确 project/team。
-- 本机未安装 Vercel CLI。
-- 本机未配置 `VERCEL_TOKEN`、`VERCEL_ORG_ID`、`VERCEL_PROJECT_ID`。
-- Vercel MCP `_deploy_to_vercel` 因私有项目不确定上传路径被安全策略拒绝，不能作为正式 production 部署方式。
+- Vercel CLI `54.11.1` 已完成本地授权。
+- 已通过 `vercel deploy --prod --yes --no-wait --scope whatnameisavaliables-projects` 部署到现有 `lexos` production 项目。
+- 未使用 no-auth fallback，未创建独立临时 claim deployment。
 
 ## 未执行项与原因
 
@@ -186,9 +204,9 @@ npm.cmd run verify:rls
 
 ## 最小剩余动作
 
-1. 在 Vercel Dashboard 对 `main` 分支最新 HEAD 执行 Production Redeploy，或配置 Vercel CLI/token 并限定部署到现有 `lexos` project；本轮已验证的代码基线是 `4f9844f5264b24906ec4348b7a3144f40d7a643c`，后续文档提交只用于归档证据。
-2. 提供 `LEXOS_SMOKE_BASE_URL`、`LEXOS_SMOKE_ADMIN_PASSWORD`、`LEXOS_SMOKE_TEST_PASSWORD`，并确认目标是允许写入的验收库。
-3. 部署后执行：
+1. 提供 `LEXOS_SMOKE_BASE_URL`、`LEXOS_SMOKE_ADMIN_PASSWORD`、`LEXOS_SMOKE_TEST_PASSWORD`，并确认目标是允许写入的验收库。
+2. 提供 `LEXOS_RLS_TEST_PASSWORD` 或复用 `LEXOS_SMOKE_TEST_PASSWORD`，用于 RLS / Data API 负向验证。
+3. 凭据就绪后执行：
 
 ```powershell
 npm.cmd run verify:rls

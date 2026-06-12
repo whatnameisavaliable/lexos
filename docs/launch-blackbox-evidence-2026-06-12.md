@@ -5,6 +5,8 @@
 - 黑盒验证提交：`4f9844f5264b24906ec4348b7a3144f40d7a643c`
 - 黑盒验证提交信息：`test: add launch black-box e2e coverage`
 - 远端 `origin/main` 在验证时已包含该提交。
+- 证据归档提交：`75a099c542ce4be75e0a67066f34ce11b0d27c88`
+- 远端 `origin/main` 在追加复跑时已对齐到证据归档提交。
 - Vercel 项目：`prj_Rs9stBhpa6tOE6R1FGqrO6Y8oBp3`
 - Vercel team：`team_J5yWYtoyHhhDUvErX4yrduFy`
 - Production domain：`https://lexos-lemon.vercel.app`
@@ -37,6 +39,16 @@ npx.cmd playwright test --config=playwright.config.ts --project=chromium-desktop
 ```
 
 结果：`6 passed`。
+
+追加复跑：
+
+```powershell
+npx.cmd playwright test --config=playwright.config.ts --project=chromium-desktop --workers=1 --reporter=line
+```
+
+结果：`6 passed (1.5m)`。
+
+说明：`npm.cmd run test:e2e` 在当前受限沙箱中因 Chromium `spawn EPERM` 无法启动浏览器；该失败发生在浏览器进程启动前，不是业务断言失败。随后已在允许启动浏览器的环境中使用单 worker 命令完成同一 Playwright 配置下的黑盒复跑。
 
 ```powershell
 npm.cmd run typecheck
@@ -112,7 +124,18 @@ health 返回：
 }
 ```
 
-结论：production 服务健康，但仍运行旧提交 `de4ee22`，没有部署最新交付提交 `4f9844f`。
+结论：production 服务健康，但仍运行旧提交 `de4ee22`，没有部署最新交付提交 `4f9844f` 或证据归档提交 `75a099c`。
+
+追加只读远端 smoke：
+
+```powershell
+$env:LEXOS_PREVIEW_BASE_URL="https://lexos-lemon.vercel.app"
+$env:LEXOS_PREVIEW_EXPECT_MODE="supabase"
+npx.cmd playwright test --config=playwright.preview.config.ts --project=chromium-preview --workers=1 --reporter=line
+```
+
+结果：`1 passed`，`1 skipped`。
+说明：真实 Supabase 模式下远端 smoke 只检查 `/api/health`；登录、客户确认和结算闭环用例按配置跳过，避免对生产环境写入数据。
 
 ## Vercel 部署状态
 
@@ -124,9 +147,9 @@ Vercel deployments 最近 production：
 - commit：`de4ee22799ffc7a0fd3111e02ebdfd74fee8c2a6`
 - domain 包含：`lexos-lemon.vercel.app`
 
-未发现 `4f9844f5264b24906ec4348b7a3144f40d7a643c` 的 Vercel deployment 记录。
+未发现 `4f9844f5264b24906ec4348b7a3144f40d7a643c` 或 `75a099c542ce4be75e0a67066f34ce11b0d27c88` 的 Vercel deployment 记录。
 
-最近 1 小时 production runtime logs：未发现 `error` / `fatal`。
+最近 30 分钟 production runtime logs：未发现 `error` / `fatal`。
 
 本机部署能力：
 
@@ -163,7 +186,7 @@ npm.cmd run verify:rls
 
 ## 最小剩余动作
 
-1. 在 Vercel Dashboard 对 `main` 最新提交 `4f9844f` 执行 Production Redeploy，或配置 Vercel CLI/token 并限定部署到现有 `lexos` project。
+1. 在 Vercel Dashboard 对 `main` 最新提交 `75a099c` 执行 Production Redeploy，或配置 Vercel CLI/token 并限定部署到现有 `lexos` project。
 2. 提供 `LEXOS_SMOKE_BASE_URL`、`LEXOS_SMOKE_ADMIN_PASSWORD`、`LEXOS_SMOKE_TEST_PASSWORD`，并确认目标是允许写入的验收库。
 3. 部署后执行：
 

@@ -198,11 +198,16 @@ type NavKey = MenuPermissionKey;
 type MaybePromise<T> = T | Promise<T>;
 type SubmitTaskInput = { title: string; content: string; externalUrl: string; file?: File | null };
 type SurfaceTone = "gold" | "ink" | "rose" | "teal";
+type WorkspaceFocusTarget = {
+  navKey: NavKey;
+  search?: string;
+};
 type DashboardFocusItem = {
   badge: string;
   detail: string;
   id: string;
   meta: string;
+  target?: WorkspaceFocusTarget;
   title: string;
   tone: SurfaceTone;
 };
@@ -647,6 +652,7 @@ export function LexosDemoApp() {
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [pendingPasswordUserId, setPendingPasswordUserId] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState<NavKey>("dashboard");
+  const [workspaceFocusTarget, setWorkspaceFocusTarget] = useState<WorkspaceFocusTarget | null>(null);
   const [appError, setAppError] = useState<string | null>(null);
   const [appNotice, setAppNotice] = useState<string | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
@@ -1997,6 +2003,11 @@ export function LexosDemoApp() {
     showNotice("系统参数已保存。");
   }
 
+  function openWorkspaceTarget(target: WorkspaceFocusTarget) {
+    setWorkspaceFocusTarget(target);
+    setActiveNav(target.navKey);
+  }
+
   if (isBootstrapping) {
     return <LoadingScreen apiMode={apiMode} />;
   }
@@ -2108,6 +2119,7 @@ export function LexosDemoApp() {
               onAutoConfirmOverdue={
                 isDirectorRole(currentUser.role) ? autoConfirmOverdueTasks : undefined
               }
+              onOpenTarget={openWorkspaceTarget}
               onResetDemo={apiMode ? undefined : resetDemoWorkspace}
               ranks={ranks}
               riskCases={riskCases}
@@ -2149,6 +2161,7 @@ export function LexosDemoApp() {
               apiMode={apiMode}
               currentUser={currentUser}
               customersById={customersById}
+              focusTarget={workspaceFocusTarget}
               onAddTask={addTask}
               onApproveTask={approveTask}
               onReviewTask={reviewTask}
@@ -2165,6 +2178,7 @@ export function LexosDemoApp() {
             <SettlementsPage
               apiMode={apiMode}
               currentUser={currentUser}
+              focusTarget={workspaceFocusTarget}
               onConfirmSettlements={confirmSettlementBatch}
               onConfirmSettlement={confirmSettlement}
               onLockSettlementRiskDeduction={lockSettlementRiskDeduction}
@@ -2186,6 +2200,7 @@ export function LexosDemoApp() {
               apiMode={apiMode}
               currentUser={currentUser}
               customersById={customersById}
+              focusTarget={workspaceFocusTarget}
               onCreateRiskCase={createRiskCase}
               onSubmitRiskCaseDecision={submitRiskCaseDecision}
               onSubmitRiskCaseDefense={submitRiskCaseDefense}
@@ -2558,6 +2573,7 @@ function Dashboard({
   customers,
   feedback,
   onAutoConfirmOverdue,
+  onOpenTarget,
   onResetDemo,
   ranks,
   riskCases,
@@ -2570,6 +2586,7 @@ function Dashboard({
   customers: Customer[];
   feedback: CustomerFeedback[];
   onAutoConfirmOverdue?: () => MaybePromise<void>;
+  onOpenTarget: (target: WorkspaceFocusTarget) => void;
   onResetDemo?: () => void;
   ranks: Rank[];
   riskCases: RiskCase[];
@@ -2697,6 +2714,7 @@ function Dashboard({
       <LawyerDashboard
         currentUser={currentUser}
         customerAutoConfirmDays={customerAutoConfirmDays}
+        onOpenTarget={onOpenTarget}
         personalWorkbench={personalWorkbench}
         riskCases={riskCases}
         settlements={settlements}
@@ -2706,7 +2724,7 @@ function Dashboard({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="dashboard-page">
       <PageHeader
         description="集中查看任务供给、交付验收、客户确认和结算资金状态。"
         title="律所协作总览"
@@ -2829,6 +2847,7 @@ function Dashboard({
 function LawyerDashboard({
   currentUser,
   customerAutoConfirmDays,
+  onOpenTarget,
   personalWorkbench,
   riskCases,
   settlements,
@@ -2836,6 +2855,7 @@ function LawyerDashboard({
 }: {
   currentUser: DemoUser;
   customerAutoConfirmDays: number;
+  onOpenTarget: (target: WorkspaceFocusTarget) => void;
   personalWorkbench: PersonalWorkbenchSummary;
   riskCases: RiskCase[];
   settlements: Settlement[];
@@ -2875,6 +2895,7 @@ function LawyerDashboard({
       detail: `${task.taskType} / ${task.customerName ?? "客户"} / ${formatMoney(task.amountCents)}`,
       id: `submit-${task.id}`,
       meta: task.dueAt,
+      target: { navKey: "my-tasks" as const, search: task.title },
       title: task.title,
       tone: "teal" as const,
     })),
@@ -2883,6 +2904,7 @@ function LawyerDashboard({
       detail: `${task.customerName ?? "客户"} / 承办成果待确认`,
       id: `review-${task.id}`,
       meta: formatMoney(task.amountCents),
+      target: { navKey: "my-tasks" as const, search: task.title },
       title: task.title,
       tone: "gold" as const,
     })),
@@ -2891,6 +2913,7 @@ function LawyerDashboard({
       detail: `${riskCaseStatusLabels[riskCase.status]} / ${riskCase.description ?? riskCase.taskTitle ?? "需要跟进"}`,
       id: `risk-${riskCase.id}`,
       meta: riskCase.taskTitle ?? riskCase.ownerName ?? "风控",
+      target: { navKey: "risk" as const, search: riskCase.title },
       title: riskCase.title,
       tone: "rose" as const,
     })),
@@ -2899,13 +2922,30 @@ function LawyerDashboard({
       detail: `${settlement.rankCode} / ${formatBasisPoints(settlement.settlementBasisPoints)}`,
       id: `settlement-${settlement.id}`,
       meta: formatMoney(effectiveSettlementAmountCents(settlement)),
+      target: { navKey: "settlements" as const, search: settlement.taskTitle ?? settlement.id },
       title: settlement.taskTitle ?? settlement.id,
       tone: "ink" as const,
     })),
   ].slice(0, 6);
 
+  function targetForWorkbenchAction(action: PersonalWorkbenchSummary["actions"][number]): WorkspaceFocusTarget {
+    const task = lawyerTasks.find((item) => item.id === action.id);
+
+    if (task) {
+      return { navKey: "my-tasks", search: task.title };
+    }
+
+    const settlement = pendingSettlements.find((item) => `settlement-${item.id}` === action.id);
+
+    if (settlement) {
+      return { navKey: "settlements", search: settlement.taskTitle ?? settlement.id };
+    }
+
+    return { navKey: "my-tasks", search: action.title };
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="lawyer-dashboard">
       <section className="rounded-md border border-line bg-paper px-3 py-3 shadow-soft sm:px-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
@@ -2934,15 +2974,28 @@ function LawyerDashboard({
         <Panel title="下一步动作">
           {personalWorkbench.actions.length ? (
             <div className="divide-y divide-line">
-              {personalWorkbench.actions.map((action) => (
-                <div className="grid gap-2 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={action.id}>
-                  <div className="min-w-0">
-                    <div className="truncate text-[13px] font-semibold text-ink">{action.title}</div>
-                    <div className="mt-0.5 truncate text-[12px] text-steel">{action.detail}</div>
+              {personalWorkbench.actions.map((action) => {
+                const target = targetForWorkbenchAction(action);
+
+                return (
+                  <div className="grid gap-2 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={action.id}>
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-semibold text-ink">{action.title}</div>
+                      <div className="mt-0.5 truncate text-[12px] text-steel">{action.detail}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                      {action.status ? <StatusBadge status={action.status} /> : <span className={lexosUi.metaPill}>待处理</span>}
+                      <button
+                        className={actionButtonClass("tealSoft", "sm")}
+                        onClick={() => onOpenTarget(target)}
+                        type="button"
+                      >
+                        处理
+                      </button>
+                    </div>
                   </div>
-                  {action.status ? <StatusBadge status={action.status} /> : <span className={lexosUi.metaPill}>待处理</span>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <EmptyState text="当前没有需要立即处理的个人事项。" />
@@ -2976,7 +3029,7 @@ function LawyerDashboard({
         </Panel>
 
         <Panel title="风险与结算队列">
-          <FocusQueue emptyText="当前没有待提交、待验收、待结算或未结风控。" items={focusItems} />
+          <FocusQueue emptyText="当前没有待提交、待验收、待结算或未结风控。" items={focusItems} onSelect={onOpenTarget} />
         </Panel>
       </div>
     </div>
@@ -3285,7 +3338,7 @@ function UsersPage({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="user-management-page">
       <PageHeader description="新增用户默认密码为 111111，首次登录后强制修改。" title="用户管理" />
       <Panel title="创建用户">
         <form className="grid gap-3 md:grid-cols-5" onSubmit={submit}>
@@ -3893,6 +3946,7 @@ function MyTasksPage({
   apiMode,
   currentUser,
   customersById,
+  focusTarget,
   onAddTask,
   onApproveTask,
   onReviewTask,
@@ -3907,6 +3961,7 @@ function MyTasksPage({
   apiMode: boolean;
   currentUser: DemoUser;
   customersById: Map<string, Customer>;
+  focusTarget?: WorkspaceFocusTarget | null;
   onAddTask: (input: {
     customerId: string;
     title: string;
@@ -3989,6 +4044,16 @@ function MyTasksPage({
   }, [query, sort, statusFilter]);
 
   useEffect(() => {
+    if (focusTarget?.navKey !== "my-tasks") {
+      return;
+    }
+
+    setQuery(focusTarget.search ?? "");
+    setStatusFilter("all");
+    setPage(1);
+  }, [focusTarget]);
+
+  useEffect(() => {
     if (!apiMode) {
       return;
     }
@@ -4034,7 +4099,7 @@ function MyTasksPage({
   }, [apiMode, currentUser.role, page, portalTokensByTaskId, query, ranks, refreshKey, sort, statusFilter]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="my-tasks-page">
       <PageHeader description="律师在这里发起任务、提交成果和验收本人发起的任务；主任查看全所任务流转。" title="任务工作台" />
       {isLawyerRole(currentUser.role) ? (
         <CreateTaskPanel customersById={customersById} onAddTask={onAddTask} ranks={ranks} />
@@ -4069,6 +4134,7 @@ function MyTasksPage({
               onReviewTask={onReviewTask}
               onSubmitTask={onSubmitTask}
               settlement={settlementByTaskId.get(task.id)}
+              sourceUser={usersById.get(task.sourceLawyerId)}
               task={task}
               user={task.assignedLawyerId ? usersById.get(task.assignedLawyerId) : undefined}
             />
@@ -4236,6 +4302,7 @@ function TaskRow({
   onReviewTask,
   onSubmitTask,
   settlement,
+  sourceUser,
   task,
   user,
 }: {
@@ -4245,6 +4312,7 @@ function TaskRow({
   onReviewTask: (taskId: string, input: ReviewTaskInput) => MaybePromise<void>;
   onSubmitTask: (taskId: string, input: SubmitTaskInput) => MaybePromise<void>;
   settlement?: Settlement;
+  sourceUser?: DemoUser;
   task: Task;
   user?: DemoUser;
 }) {
@@ -4281,6 +4349,7 @@ function TaskRow({
   const milestones = buildTaskMilestones(task, settlement);
   const milestoneSummary = summarizeTaskMilestones(milestones);
   const deliveryRecords = buildTaskDeliveryRecords(task);
+  const nextStep = buildTaskNextStep({ assignedLawyer: user, settlement, sourceLawyer: sourceUser, task });
 
   async function approve(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -4350,6 +4419,20 @@ function TaskRow({
             <span className="inline-flex min-h-7 items-center rounded-md border border-line bg-canvas px-2.5">
               客户链接 {task.portalToken || "创建任务时显示"}
             </span>
+          </div>
+          <div
+            className="mt-3 grid gap-2 rounded-md border border-teal/20 bg-teal/10 px-3 py-2 text-[12px] sm:grid-cols-[minmax(0,1fr)_minmax(160px,auto)]"
+            data-testid="task-next-step"
+          >
+            <div className="min-w-0">
+              <span className="font-semibold text-teal">下一步：</span>
+              <span className="font-semibold text-ink">{nextStep.label}</span>
+              {nextStep.blocker ? <span className="ml-2 text-steel">{nextStep.blocker}</span> : null}
+            </div>
+            <div className="text-slate sm:text-right">
+              <span className="font-semibold text-teal">责任人：</span>
+              <span className="font-semibold text-ink">{nextStep.owner}</span>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -4500,6 +4583,81 @@ function TaskRow({
       ) : null}
     </div>
   );
+}
+
+function buildTaskNextStep({
+  assignedLawyer,
+  settlement,
+  sourceLawyer,
+  task,
+}: {
+  assignedLawyer?: DemoUser;
+  settlement?: Settlement;
+  sourceLawyer?: DemoUser;
+  task: Task;
+}): { blocker?: string; label: string; owner: string } {
+  if (task.status === "cancelled") {
+    return { label: "流程已取消", owner: "系统" };
+  }
+
+  if (task.status === "settled") {
+    return { label: "流程已完成", owner: "财务" };
+  }
+
+  if (task.status === "open") {
+    return {
+      blocker: `最低职级 ${task.minRankCode}，等待符合条件的律师承接。`,
+      label: "等待律师承接",
+      owner: "任务大厅",
+    };
+  }
+
+  if (task.status === "claimed") {
+    return {
+      label: "提交阶段成果",
+      owner: assignedLawyer?.displayName ?? "承办律师",
+    };
+  }
+
+  if (task.status === "submitted") {
+    if (task.reviewRequired && task.reviewStatus !== "approved") {
+      return {
+        blocker: task.reviewStatus === "changes_requested" ? "复核已退回，承办律师需按意见修改。" : "主任复核通过后，发起人才可验收。",
+        label: task.reviewStatus === "changes_requested" ? "修改后重新提交" : "等待主任复核",
+        owner: task.reviewStatus === "changes_requested" ? assignedLawyer?.displayName ?? "承办律师" : "主任",
+      };
+    }
+
+    return {
+      label: "发起人验收评分",
+      owner: sourceLawyer?.displayName ?? "发起律师",
+    };
+  }
+
+  if (task.status === "approved") {
+    return {
+      blocker: "客户确认后会进入结算生成。",
+      label: "客户确认交付",
+      owner: "客户",
+    };
+  }
+
+  if (task.status === "customer_confirmed") {
+    return {
+      label: "生成结算记录",
+      owner: "系统 / 财务",
+    };
+  }
+
+  if (task.status === "settlement_pending") {
+    return {
+      blocker: settlement?.riskFrozen ? "存在未办结风控，结算暂时冻结。" : undefined,
+      label: "财务确认结算",
+      owner: "财务",
+    };
+  }
+
+  return { label: "继续处理", owner: "系统" };
 }
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {
@@ -4972,6 +5130,7 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
 function SettlementsPage({
   apiMode,
   currentUser,
+  focusTarget,
   onConfirmSettlements,
   onConfirmSettlement,
   onLockSettlementRiskDeduction,
@@ -4986,6 +5145,7 @@ function SettlementsPage({
 }: {
   apiMode: boolean;
   currentUser: DemoUser;
+  focusTarget?: WorkspaceFocusTarget | null;
   onConfirmSettlements: (settlementIds: string[]) => MaybePromise<void>;
   onConfirmSettlement: (settlementId: string) => MaybePromise<void>;
   onLockSettlementRiskDeduction: (settlementId: string, input: LockSettlementRiskDeductionInput) => MaybePromise<void>;
@@ -5133,6 +5293,18 @@ function SettlementsPage({
   }, [query, sort, statusFilter]);
 
   useEffect(() => {
+    if (focusTarget?.navKey !== "settlements") {
+      return;
+    }
+
+    setQuery(focusTarget.search ?? "");
+    setStatusFilter("all");
+    setPage(1);
+    setSelectedSettlementIds([]);
+    setConfirmingBulk(false);
+  }, [focusTarget]);
+
+  useEffect(() => {
     if (!apiMode) {
       return;
     }
@@ -5263,7 +5435,7 @@ function SettlementsPage({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="settlements-page">
       <PageHeader description="第一版按任务金额和职级比例生成待结算记录。" title="结算管理" />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <OperationsCue
@@ -6021,6 +6193,7 @@ function RiskCasesPage({
   apiMode,
   currentUser,
   customersById,
+  focusTarget,
   onCreateRiskCase,
   onSubmitRiskCaseDecision,
   onSubmitRiskCaseDefense,
@@ -6034,6 +6207,7 @@ function RiskCasesPage({
   apiMode: boolean;
   currentUser: DemoUser;
   customersById: Map<string, Customer>;
+  focusTarget?: WorkspaceFocusTarget | null;
   onCreateRiskCase: (input: CreateRiskCaseInput) => MaybePromise<void>;
   onSubmitRiskCaseDecision: (riskCaseId: string, input: SubmitRiskCaseDecisionInput) => MaybePromise<void>;
   onSubmitRiskCaseDefense: (riskCaseId: string, defenseStatement: string) => MaybePromise<void>;
@@ -6141,6 +6315,18 @@ function RiskCasesPage({
   useEffect(() => {
     setPage(1);
   }, [query, severityFilter, sort, sourceFilter, statusFilter]);
+
+  useEffect(() => {
+    if (focusTarget?.navKey !== "risk") {
+      return;
+    }
+
+    setQuery(focusTarget.search ?? "");
+    setStatusFilter("all");
+    setSeverityFilter("all");
+    setSourceFilter("all");
+    setPage(1);
+  }, [focusTarget]);
 
   useEffect(() => {
     if (!apiMode) {
@@ -6298,7 +6484,7 @@ function RiskCasesPage({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="risk-cases-page">
       <PageHeader description="登记客户投诉、低分触发和人工风控提醒，先形成可追踪工单，再进入后续冻结、答辩和裁决。" title="投诉与风控" />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         <Metric icon={AlertTriangle} label="待处理风控" value={`${openRiskCases.length}`} />
@@ -7611,7 +7797,15 @@ function tonePillClass(tone: SurfaceTone): string {
   return "border-navy/15 bg-navy/5 text-navy";
 }
 
-function FocusQueue({ emptyText, items }: { emptyText: string; items: DashboardFocusItem[] }) {
+function FocusQueue({
+  emptyText,
+  items,
+  onSelect,
+}: {
+  emptyText: string;
+  items: DashboardFocusItem[];
+  onSelect?: (target: WorkspaceFocusTarget) => void;
+}) {
   if (!items.length) {
     return <EmptyState text={emptyText} />;
   }
@@ -7630,7 +7824,18 @@ function FocusQueue({ emptyText, items }: { emptyText: string; items: DashboardF
             <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-steel">{item.detail}</p>
           </div>
           <div className="flex items-start sm:justify-end">
-            <span className={lexosUi.metaPill}>{item.meta}</span>
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <span className={lexosUi.metaPill}>{item.meta}</span>
+              {item.target && onSelect ? (
+                <button
+                  className={actionButtonClass("tealSoft", "sm")}
+                  onClick={() => onSelect(item.target!)}
+                  type="button"
+                >
+                  处理
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       ))}

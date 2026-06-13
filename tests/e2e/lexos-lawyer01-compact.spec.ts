@@ -76,6 +76,24 @@ test.describe("lawyer01 compact dashboard", () => {
     expect(desktop.visibleTables, "compact lawyer overview should not be table-led").toBe(0);
     expect(desktop.bodyHeight, "desktop lawyer overview should fit as a compact workbench").toBeLessThanOrEqual(1320);
 
+    await expect(page.getByTestId("lawyer-dashboard")).toBeVisible();
+    const firstActionButton = page.getByRole("button", { name: "处理" }).first();
+    await expect(firstActionButton, "lawyer dashboard actions should be directly actionable").toBeVisible();
+    await firstActionButton.click();
+    await expect(
+      page.locator('[data-testid="my-tasks-page"], [data-testid="risk-cases-page"], [data-testid="settlements-page"]').first(),
+      "处理 should open the matching work page",
+    ).toBeVisible();
+
+    await page.locator("aside nav button").nth(3).click();
+    await expect(page.getByTestId("my-tasks-page")).toBeVisible();
+    const nextStep = page.getByTestId("task-next-step").first();
+    await expect(nextStep, "task cards should explain the next procedural step").toBeVisible();
+    await expect(nextStep).toContainText(/下一步/);
+    await expect(nextStep).toContainText(/责任人/);
+
+    await page.locator("aside nav button").first().click();
+    await expect(page.getByTestId("lawyer-dashboard")).toBeVisible();
     await page.setViewportSize({ width: 390, height: 844 });
 
     const mobile = await dashboardMetrics(page);

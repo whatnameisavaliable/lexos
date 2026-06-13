@@ -1,4 +1,4 @@
-import { isLawyerRole, isSystemConfigRole, type UserRole } from "../domain/core.ts";
+import { isLawyerRole, isSystemConfigRole, normalizeUserRole, type UserRole } from "../domain/core.ts";
 
 export type MenuPermissionKey =
   | "dashboard"
@@ -127,15 +127,23 @@ export const menuPermissionItems: MenuPermissionItem[] = [
   },
 ];
 
-export function canAccessMenu(role: UserRole, key: MenuPermissionKey): boolean {
-  return menuPermissionItems.some((item) => item.key === key && item.roles.includes(role));
+export function canAccessMenu(role: string, key: MenuPermissionKey): boolean {
+  const normalizedRole = normalizeUserRole(role);
+
+  return Boolean(normalizedRole && menuPermissionItems.some((item) => item.key === key && item.roles.includes(normalizedRole)));
 }
 
-export function getAccessibleMenuItems(role: UserRole): MenuPermissionItem[] {
-  return menuPermissionItems.filter((item) => item.roles.includes(role));
+export function getAccessibleMenuItems(role: string): MenuPermissionItem[] {
+  const normalizedRole = normalizeUserRole(role);
+
+  if (!normalizedRole) {
+    return [];
+  }
+
+  return menuPermissionItems.filter((item) => item.roles.includes(normalizedRole));
 }
 
-export function getDefaultMenuKey(role: UserRole): MenuPermissionKey {
+export function getDefaultMenuKey(role: string): MenuPermissionKey {
   if (isSystemConfigRole(role)) {
     return "users";
   }
@@ -147,6 +155,8 @@ export function getDefaultMenuKey(role: UserRole): MenuPermissionKey {
   return getAccessibleMenuItems(role)[0]?.key ?? "dashboard";
 }
 
-export function isLawyerMenuRole(role: UserRole): boolean {
-  return lawyerMenuRoles.includes(role);
+export function isLawyerMenuRole(role: string): boolean {
+  const normalizedRole = normalizeUserRole(role);
+
+  return Boolean(normalizedRole && lawyerMenuRoles.includes(normalizedRole));
 }

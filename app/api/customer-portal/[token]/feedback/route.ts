@@ -1,6 +1,6 @@
 import { ApiError, handleApiError, ok, readJsonObject, routeParam, optionalStringField } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
-import { lawyerRoles, transitionTaskStatus } from "@/lib/domain/core";
+import { lawyerRoleCodes, transitionTaskStatus } from "@/lib/domain/core";
 import { createLowScoreRiskCase } from "@/lib/risk/low-score-service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildPortalTokenHash, validateSettlementDraft } from "@/lib/workflow/validation";
@@ -50,7 +50,7 @@ export async function POST(request: Request, context: { params: Promise<{ token:
       .select("rank_id, ranks:rank_id(settlement_basis_points)")
       .eq("organization_id", link.organization_id)
       .eq("user_id", task.assigned_lawyer_id)
-      .in("role_code", [...lawyerRoles])
+      .in("role_code", [...lawyerRoleCodes])
       .eq("status", "active")
       .maybeSingle();
 

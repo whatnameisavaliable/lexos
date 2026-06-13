@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/api/http";
 import { getSupabaseRuntimeEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { UserRole } from "@/lib/domain/core";
+import { normalizeUserRole, type UserRole } from "@/lib/domain/core";
 
 export type InternalSession = {
   userId: string;
@@ -46,7 +46,11 @@ export async function loadInternalSessionForUser(userId: string, allowedRoles?: 
 
   const membership =
     allowedRoles && allowedRoles.length
-      ? memberships.find((item) => allowedRoles.includes(item.role_code as UserRole))
+      ? memberships.find((item) => {
+          const roleCode = normalizeUserRole(String(item.role_code ?? ""));
+
+          return Boolean(roleCode && allowedRoles.includes(roleCode));
+        })
       : memberships[0];
 
   if (!membership) {
@@ -54,13 +58,18 @@ export async function loadInternalSessionForUser(userId: string, allowedRoles?: 
   }
 
   const rank = Array.isArray(membership.ranks) ? membership.ranks[0] : membership.ranks;
+  const roleCode = normalizeUserRole(String(membership.role_code ?? ""));
+
+  if (!roleCode) {
+    throw new ApiError(403, "FORBIDDEN", "褰撳墠瑙掕壊鏆備笉鏀寔");
+  }
 
   return {
     userId: profile.id,
     username: profile.username,
     displayName: profile.display_name,
     organizationId: membership.organization_id,
-    roleCode: membership.role_code as UserRole,
+    roleCode,
     rankId: membership.rank_id ?? undefined,
     rankCode: rank?.code,
     mustChangePassword: Boolean(profile.must_change_password),

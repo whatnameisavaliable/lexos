@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AuditLogInput } from "../audit/log.ts";
 import { writeAuditLog } from "../audit/log.ts";
 import type { InternalSession } from "../auth/session.ts";
-import { lawyerRoles, transitionTaskStatus } from "../domain/core.ts";
+import { lawyerRoleCodes, transitionTaskStatus } from "../domain/core.ts";
 import { loadSystemSettingNumber } from "../settings/runtime.ts";
 import { validateSettlementDraft } from "../workflow/validation.ts";
 import { buildCustomerAutoConfirmStatus } from "./customer-auto-confirm.ts";
@@ -114,7 +114,7 @@ export async function autoConfirmOverdueTasks(
     .from("organization_members")
     .select("user_id, rank_id, ranks:rank_id(settlement_basis_points)")
     .eq("organization_id", session.organizationId)
-    .in("role_code", [...lawyerRoles])
+    .in("role_code", [...lawyerRoleCodes])
     .eq("status", "active")
     .in("user_id", lawyerIds);
 

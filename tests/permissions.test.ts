@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { isLawyerRole, normalizeUserRole } from "../src/lib/domain/core.ts";
 import {
   canAccessMenu,
   getAccessibleMenuItems,
@@ -31,6 +32,23 @@ describe("角色菜单权限", () => {
     assert.equal(canAccessMenu("lawyer", "users"), false);
     assert.equal(canAccessMenu("lawyer", "audit"), false);
     assert.equal(canAccessMenu("lawyer", "funds"), false);
+  });
+
+  it("兼容旧案源/办案律师角色码，避免生产账号菜单为空", () => {
+    const lawyerMenus = ["dashboard", "customers", "market", "my-tasks", "risk", "settlements"];
+
+    assert.equal(normalizeUserRole("source_lawyer"), "lawyer");
+    assert.equal(normalizeUserRole("handling_lawyer"), "lawyer");
+    assert.equal(isLawyerRole("source_lawyer"), true);
+    assert.deepEqual(
+      getAccessibleMenuItems("source_lawyer").map((item) => item.key),
+      lawyerMenus,
+    );
+    assert.deepEqual(
+      getAccessibleMenuItems("handling_lawyer").map((item) => item.key),
+      lawyerMenus,
+    );
+    assert.equal(canAccessMenu("handling_lawyer", "users"), false);
   });
 
   it("配置管理员只进入系统配置、人员、职级、审计和权限入口", () => {

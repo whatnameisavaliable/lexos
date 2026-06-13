@@ -94,7 +94,7 @@ test.describe("Lexos launch black-box", () => {
     await expect(page.getByRole("heading", { name: "审计日志" })).toBeVisible();
     await logout(page);
 
-    await login(page, "lawyer02");
+    await login(page, "lawyer01");
     await expect(page.getByText("个人工作台")).toBeVisible();
     await expectMenu(page, ["总览", "客户", "任务大厅", "任务", "风控", "结算"], ["人员", "职级", "资金", "审计", "参数", "权限"]);
     await expect(page.getByText(/案源律师|办案律师|承办律师角色|案源角色/)).toHaveCount(0);

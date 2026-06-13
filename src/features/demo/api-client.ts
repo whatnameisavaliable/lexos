@@ -1,4 +1,4 @@
-import type { TaskStatus, UserRole } from "@/lib/domain/core";
+import { requireKnownUserRole, type TaskStatus, type UserRole } from "@/lib/domain/core";
 import type { RiskCaseAction } from "@/lib/risk/cases";
 import type { RiskCaseCommitteeDecision } from "@/lib/risk/committee-decision";
 import type { FundSummaryItem } from "@/lib/funds/ledger";
@@ -523,7 +523,7 @@ export function mapApiUser(row: unknown): DemoUser {
     id: text(profile.id),
     username: text(profile.username),
     displayName: text(profile.display_name),
-    role: text(item.role_code) as UserRole,
+    role: apiUserRole(item.role_code),
     rankId: optionalText(item.rank_id),
     rankCode: optionalText(rank.code),
     password: "",
@@ -539,12 +539,16 @@ function mapSessionUser(row: unknown): DemoUser {
     id: text(item.id),
     username: text(item.username),
     displayName: text(item.displayName),
-    role: text(item.role) as UserRole,
+    role: apiUserRole(item.role),
     rankCode: optionalText(item.rankCode),
     password: "",
     mustChangePassword: Boolean(item.mustChangePassword),
     status: item.status === "disabled" ? "disabled" : "active",
   };
+}
+
+function apiUserRole(value: unknown): UserRole {
+  return requireKnownUserRole(text(value));
 }
 
 function mapApiCustomer(row: unknown): Customer {

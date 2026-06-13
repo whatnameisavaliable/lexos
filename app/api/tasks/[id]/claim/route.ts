@@ -1,7 +1,7 @@
 import { ApiError, handleApiError, ok, routeParam } from "@/lib/api/http";
 import { getAuditRequestContext, writeAuditLog } from "@/lib/audit/log";
 import { requireInternalSession } from "@/lib/auth/session";
-import { lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
+import { lawyerRoleCodes, lawyerRoles, transitionTaskStatus, type UserRole } from "@/lib/domain/core";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   CLAIM_BLOCKING_RISK_SEVERITIES,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/tasks/claim-restrictions";
 
 const lawyerAccessRoles: UserRole[] = [...lawyerRoles];
+const lawyerAccessRoleCodes = [...lawyerRoleCodes];
 
 export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -38,7 +39,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       .select("rank_id")
       .eq("organization_id", session.organizationId)
       .eq("user_id", session.userId)
-      .in("role_code", lawyerAccessRoles)
+      .in("role_code", lawyerAccessRoleCodes)
       .eq("status", "active")
       .maybeSingle();
 

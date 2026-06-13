@@ -9,22 +9,58 @@ export type UserRole =
   | "customer"
   | "channel_partner";
 
+export const userRoles = [
+  "system_admin",
+  "firm_admin",
+  "director",
+  "lawyer",
+  "finance",
+  "customer",
+  "channel_partner",
+] as const satisfies readonly UserRole[];
+
 export const lawyerRoles = ["lawyer"] as const satisfies readonly UserRole[];
+export const legacyLawyerRoleCodes = ["source_lawyer", "handling_lawyer"] as const;
+export const lawyerRoleCodes = [...lawyerRoles, ...legacyLawyerRoleCodes] as const;
 export const systemConfigRoles = ["system_admin", "firm_admin"] as const satisfies readonly UserRole[];
 
-export function isLawyerRole(role: UserRole): boolean {
-  return lawyerRoles.includes(role as (typeof lawyerRoles)[number]);
+export function normalizeUserRole(role: string): UserRole | undefined {
+  if ((userRoles as readonly string[]).includes(role)) {
+    return role as UserRole;
+  }
+
+  if ((legacyLawyerRoleCodes as readonly string[]).includes(role)) {
+    return "lawyer";
+  }
+
+  return undefined;
 }
 
-export function isSystemConfigRole(role: UserRole): boolean {
-  return systemConfigRoles.includes(role as (typeof systemConfigRoles)[number]);
+export function requireKnownUserRole(role: string): UserRole {
+  const normalizedRole = normalizeUserRole(role);
+
+  if (!normalizedRole) {
+    throw new Error(`Unsupported user role: ${role}`);
+  }
+
+  return normalizedRole;
 }
 
-export function isDirectorRole(role: UserRole): boolean {
-  return role === "director";
+export function isLawyerRole(role: string): boolean {
+  return normalizeUserRole(role) === "lawyer";
 }
 
-export function canViewFirmWide(role: UserRole): boolean {
+export function isSystemConfigRole(role: string): boolean {
+  const normalizedRole = normalizeUserRole(role);
+
+  return Boolean(normalizedRole && systemConfigRoles.includes(normalizedRole as (typeof systemConfigRoles)[number]));
+}
+
+export function isDirectorRole(role: string): boolean {
+  return normalizeUserRole(role) === "director";
+}
+
+export function canViewFirmWide(role: string): boolean {
   return isDirectorRole(role);
 }
 

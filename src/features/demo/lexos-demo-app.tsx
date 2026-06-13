@@ -2692,6 +2692,19 @@ function Dashboard({
     }
   }
 
+  if (isLawyerRole(currentUser.role)) {
+    return (
+      <LawyerDashboard
+        currentUser={currentUser}
+        customerAutoConfirmDays={customerAutoConfirmDays}
+        personalWorkbench={personalWorkbench}
+        riskCases={riskCases}
+        settlements={settlements}
+        tasks={tasks}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -2809,6 +2822,163 @@ function Dashboard({
           ))}
         </div>
       </Panel>
+    </div>
+  );
+}
+
+function LawyerDashboard({
+  currentUser,
+  customerAutoConfirmDays,
+  personalWorkbench,
+  riskCases,
+  settlements,
+  tasks,
+}: {
+  currentUser: DemoUser;
+  customerAutoConfirmDays: number;
+  personalWorkbench: PersonalWorkbenchSummary;
+  riskCases: RiskCase[];
+  settlements: Settlement[];
+  tasks: Task[];
+}) {
+  const lawyerTasks = tasks.filter(
+    (task) => task.assignedLawyerId === currentUser.id || task.sourceLawyerId === currentUser.id,
+  );
+  const lawyerTaskIds = new Set(lawyerTasks.map((task) => task.id));
+  const assignedTasks = lawyerTasks.filter((task) => task.assignedLawyerId === currentUser.id);
+  const sourcedTasks = lawyerTasks.filter((task) => task.sourceLawyerId === currentUser.id);
+  const submitTasks = assignedTasks.filter((task) => task.status === "claimed");
+  const reviewTasks = sourcedTasks.filter((task) => task.status === "submitted");
+  const openSourcedTasks = sourcedTasks.filter((task) => task.status === "open");
+  const waitingClientTasks = lawyerTasks.filter((task) => task.status === "approved");
+  const lawyerSettlements = settlements.filter((settlement) => settlement.lawyerId === currentUser.id);
+  const pendingSettlements = lawyerSettlements.filter((settlement) => settlement.status === "pending");
+  const confirmedSettlementAmount = lawyerSettlements
+    .filter((settlement) => settlement.status === "confirmed")
+    .reduce((sum, settlement) => sum + effectiveSettlementAmountCents(settlement), 0);
+  const lawyerRiskCases = riskCases.filter(
+    (riskCase) =>
+      riskCase.reportedByUserId === currentUser.id ||
+      riskCase.ownerUserId === currentUser.id ||
+      riskCase.taskAssignedLawyerId === currentUser.id ||
+      Boolean(riskCase.taskId && lawyerTaskIds.has(riskCase.taskId)),
+  );
+  const openRiskCases = lawyerRiskCases.filter((riskCase) => riskCase.status !== "resolved");
+  const severeRiskCases = openRiskCases.filter((riskCase) => riskCase.severity === "critical" || riskCase.severity === "high");
+  const statusFlow = (["open", "claimed", "submitted", "approved", "settlement_pending", "settled"] as TaskStatus[]).map((status) => ({
+    status,
+    count: lawyerTasks.filter((task) => task.status === status).length,
+  }));
+  const focusItems: DashboardFocusItem[] = [
+    ...submitTasks.slice(0, 2).map((task) => ({
+      badge: "待提交",
+      detail: `${task.taskType} / ${task.customerName ?? "客户"} / ${formatMoney(task.amountCents)}`,
+      id: `submit-${task.id}`,
+      meta: task.dueAt,
+      title: task.title,
+      tone: "teal" as const,
+    })),
+    ...reviewTasks.slice(0, 2).map((task) => ({
+      badge: "待验收",
+      detail: `${task.customerName ?? "客户"} / 承办成果待确认`,
+      id: `review-${task.id}`,
+      meta: formatMoney(task.amountCents),
+      title: task.title,
+      tone: "gold" as const,
+    })),
+    ...openRiskCases.slice(0, 2).map((riskCase) => ({
+      badge: riskCaseSeverityLabels[riskCase.severity],
+      detail: `${riskCaseStatusLabels[riskCase.status]} / ${riskCase.description ?? riskCase.taskTitle ?? "需要跟进"}`,
+      id: `risk-${riskCase.id}`,
+      meta: riskCase.taskTitle ?? riskCase.ownerName ?? "风控",
+      title: riskCase.title,
+      tone: "rose" as const,
+    })),
+    ...pendingSettlements.slice(0, 2).map((settlement) => ({
+      badge: "待结算",
+      detail: `${settlement.rankCode} / ${formatBasisPoints(settlement.settlementBasisPoints)}`,
+      id: `settlement-${settlement.id}`,
+      meta: formatMoney(effectiveSettlementAmountCents(settlement)),
+      title: settlement.taskTitle ?? settlement.id,
+      tone: "ink" as const,
+    })),
+  ].slice(0, 6);
+
+  return (
+    <div className="space-y-3">
+      <section className="rounded-md border border-line bg-paper px-3 py-3 shadow-soft sm:px-4">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase text-teal">个人工作台</div>
+            <h1 className="mt-1 text-[18px] font-semibold leading-6 text-ink">{personalWorkbench.title}</h1>
+            <p className="mt-1 max-w-3xl text-[12px] leading-5 text-steel">{personalWorkbench.subtitle}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:min-w-[560px]">
+            <CompactMetric label="待提交" value={`${submitTasks.length}`} tone="teal" />
+            <CompactMetric label="待验收" value={`${reviewTasks.length}`} tone="gold" />
+            <CompactMetric label="待结算" value={`${pendingSettlements.length}`} tone="ink" />
+            <CompactMetric label="未结风控" value={`${openRiskCases.length}`} tone={severeRiskCases.length ? "rose" : "teal"} />
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {personalWorkbench.metrics.map((metric) => (
+            <div className="min-w-0 rounded-md border border-line bg-canvas/60 px-2.5 py-2" key={metric.label}>
+              <div className="truncate text-[11px] font-medium text-steel">{metric.label}</div>
+              <div className="mt-0.5 truncate text-[15px] font-semibold leading-5 tabular-nums text-ink">{metric.value}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <Panel title="下一步动作">
+          {personalWorkbench.actions.length ? (
+            <div className="divide-y divide-line">
+              {personalWorkbench.actions.map((action) => (
+                <div className="grid gap-2 py-2 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={action.id}>
+                  <div className="min-w-0">
+                    <div className="truncate text-[13px] font-semibold text-ink">{action.title}</div>
+                    <div className="mt-0.5 truncate text-[12px] text-steel">{action.detail}</div>
+                  </div>
+                  {action.status ? <StatusBadge status={action.status} /> : <span className={lexosUi.metaPill}>待处理</span>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState text="当前没有需要立即处理的个人事项。" />
+          )}
+        </Panel>
+
+        <Panel title="本人业务信号">
+          <div className="grid grid-cols-2 gap-2">
+            <CompactSignal label="发起任务" value={`${sourcedTasks.length}`} />
+            <CompactSignal label="承办任务" value={`${assignedTasks.length}`} />
+            <CompactSignal label="大厅待承接" value={`${openSourcedTasks.length}`} />
+            <CompactSignal label={`客户确认 ${customerAutoConfirmDays}天`} value={`${waitingClientTasks.length}`} />
+            <CompactSignal label="高/重大风控" value={`${severeRiskCases.length}`} />
+            <CompactSignal label="已确认结算" value={formatMoney(confirmedSettlementAmount)} />
+          </div>
+        </Panel>
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <Panel title="本人任务流转">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {statusFlow.map((item) => (
+              <div className="rounded-md border border-line bg-canvas/60 px-2.5 py-2" key={item.status}>
+                <div className="flex items-center justify-between gap-2">
+                  <StatusBadge status={item.status} />
+                  <span className="text-[16px] font-semibold tabular-nums text-ink">{item.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="风险与结算队列">
+          <FocusQueue emptyText="当前没有待提交、待验收、待结算或未结风控。" items={focusItems} />
+        </Panel>
+      </div>
     </div>
   );
 }
@@ -7380,6 +7550,24 @@ function OperationsCue({
       <div className="text-[12px] font-semibold">{label}</div>
       <div className="mt-0.5 text-[20px] font-semibold leading-6 tabular-nums">{value}</div>
       <div className="mt-0.5 text-[12px] leading-5 text-slate">{detail}</div>
+    </div>
+  );
+}
+
+function CompactMetric({ label, tone, value }: { label: string; tone: SurfaceTone; value: string }) {
+  return (
+    <div className={`rounded-md border px-2.5 py-2 ${tonePillClass(tone)}`}>
+      <div className="text-[11px] font-semibold">{label}</div>
+      <div className="mt-0.5 truncate text-[17px] font-semibold leading-5 tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+function CompactSignal({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-h-9 items-center justify-between gap-2 rounded-md border border-line bg-canvas/60 px-2.5 py-1.5">
+      <span className="truncate text-[12px] text-steel">{label}</span>
+      <span className="truncate text-right text-[13px] font-semibold tabular-nums text-ink">{value}</span>
     </div>
   );
 }

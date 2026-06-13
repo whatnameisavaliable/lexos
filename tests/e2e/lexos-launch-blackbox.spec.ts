@@ -69,6 +69,10 @@ async function expectVisualSmoke(page: Page) {
   expect(metrics.visibleTables, "关键运营页面不应被大表格主导").toBe(0);
 }
 
+async function pageBodyHeight(page: Page) {
+  return page.evaluate(() => document.body.scrollHeight);
+}
+
 function taskSurface(page: Page, title: string) {
   return page
     .getByText(title, { exact: true })
@@ -106,7 +110,7 @@ test.describe("Lexos launch black-box", () => {
     await logout(page);
 
     await login(page, "finance01");
-    await expect(page.getByText("个人工作台")).toBeVisible();
+    await expect(page.getByTestId("director-command-strip")).toBeVisible();
     await expectMenu(page, ["总览", "结算", "资金"], ["人员", "职级", "客户", "任务大厅", "任务", "风控", "审计", "参数", "权限"]);
   });
 
@@ -248,6 +252,18 @@ test.describe("Lexos launch black-box", () => {
   test("桌面关键页视觉 smoke 无横向滚动、失败资源和表格主导", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1024 });
     await login(page, "director01");
+
+    await expect(page.getByTestId("director-command-strip")).toBeVisible();
+    expect(await pageBodyHeight(page), "主任总览应保持紧凑信息密度").toBeLessThanOrEqual(2100);
+    const firstDashboardAction = page.getByTestId("dashboard-page").getByRole("button", { name: "处理" }).first();
+    await expect(firstDashboardAction, "主任总览焦点事项应可直接处理").toBeVisible();
+    await firstDashboardAction.click();
+    await expect(
+      page.locator('[data-testid="my-tasks-page"], [data-testid="risk-cases-page"], [data-testid="settlements-page"]').first(),
+      "主任处理按钮应跳转到对应工作页",
+    ).toBeVisible();
+    await openNav(page, "总览");
+    await expect(page.getByTestId("director-command-strip")).toBeVisible();
 
     for (const nav of ["总览", "结算", "风控"] as const) {
       await openNav(page, nav);

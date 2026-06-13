@@ -2624,12 +2624,15 @@ function Dashboard({
   );
   const openRiskCases = riskCases.filter((item) => item.status !== "resolved");
   const majorRiskCases = openRiskCases.filter((item) => item.severity === "critical" || item.severity === "high");
+  const targetIfAllowed = (target: WorkspaceFocusTarget): WorkspaceFocusTarget | undefined =>
+    canAccessMenu(currentUser.role, target.navKey) ? target : undefined;
   const focusItems: DashboardFocusItem[] = [
     ...majorRiskCases.slice(0, 3).map((riskCase) => ({
       badge: riskCaseSeverityLabels[riskCase.severity],
       detail: `${riskCaseStatusLabels[riskCase.status]} · ${riskCase.taskTitle ?? riskCase.description ?? "需要跟进风控处理"}`,
       id: `risk-${riskCase.id}`,
       meta: riskCase.ownerName ?? "待分派",
+      target: targetIfAllowed({ navKey: "risk", search: riskCase.title }),
       title: riskCase.title,
       tone: "rose" as const,
     })),
@@ -2638,6 +2641,7 @@ function Dashboard({
       detail: `${task.customerName ?? "客户"} · ${task.description}`,
       id: `submitted-${task.id}`,
       meta: formatMoney(task.amountCents),
+      target: targetIfAllowed({ navKey: "my-tasks", search: task.title }),
       title: task.title,
       tone: "gold" as const,
     })),
@@ -2646,6 +2650,7 @@ function Dashboard({
       detail: `已到自动确认窗口 · 截止 ${task.dueAt}`,
       id: `overdue-${task.id}`,
       meta: formatMoney(task.amountCents),
+      target: targetIfAllowed({ navKey: "my-tasks", search: task.title }),
       title: task.title,
       tone: "teal" as const,
     })),
@@ -2654,6 +2659,7 @@ function Dashboard({
       detail: `${settlement.lawyerName ?? "律师"} · ${formatBasisPoints(settlement.settlementBasisPoints)} · ${settlement.status === "pending" ? "等待财务确认" : "已确认"}`,
       id: `settlement-${settlement.id}`,
       meta: formatMoney(effectiveSettlementAmountCents(settlement)),
+      target: targetIfAllowed({ navKey: "settlements", search: settlement.taskTitle ?? settlement.id }),
       title: settlement.taskTitle ?? settlement.id,
       tone: "ink" as const,
     })),
@@ -2662,10 +2668,19 @@ function Dashboard({
       detail: `${task.minRankCode} 以上可承接 · 截止 ${task.dueAt}`,
       id: `open-${task.id}`,
       meta: formatMoney(task.amountCents),
+      target: targetIfAllowed({ navKey: "market", search: task.title }),
       title: task.title,
       tone: "gold" as const,
     })),
-  ].slice(0, 8);
+  ].slice(0, 4);
+  const commandMetrics = [
+    { label: "全所任务", value: `${tasks.length}`, tone: "ink" as const },
+    { label: "待抢/待验收", value: `${openTasks.length}/${submittedTasks.length}`, tone: "gold" as const },
+    { label: "客户", value: `${customers.length}`, tone: "teal" as const },
+    { label: "渠道", value: `${channelSummary.channelCount}`, tone: "teal" as const },
+    { label: "任务金额", value: formatMoney(totalAmount), tone: "ink" as const },
+    { label: "已结算", value: formatMoney(confirmedAmount), tone: "ink" as const },
+  ];
   const dashboardSignals = [
     { label: "待确认结算", value: `${pendingSettlements.length} 条` },
     { label: "客户待确认", value: `${approvedTasks.length} 条` },
@@ -2673,18 +2688,15 @@ function Dashboard({
     { label: "风控待处理", value: `${openRiskCases.length} 条` },
     { label: "重大/严重风险", value: `${majorRiskCases.length} 条` },
     { label: "累犯惩戒建议", value: `${repeatDisciplineSummary.actionableLawyerCount} 人` },
-    { label: "客户评分", value: feedback.length ? `${feedback[0].score}/10` : "待采集" },
-    { label: "启用职级", value: `${ranks.length} 档` },
-    { label: "内部用户", value: `${users.length} 人` },
   ];
-  const channelLeaderboard: RankedInsightItem[] = channelStats.slice(0, 5).map((stat) => ({
+  const channelLeaderboard: RankedInsightItem[] = channelStats.slice(0, 3).map((stat) => ({
     detail: `${stat.customerCount} 个客户 · ${stat.activeTaskCount} 个有效任务 · 确认率 ${stat.confirmedTaskRate}%`,
     id: `channel-${stat.source}`,
     meta: stat.averageScore === null ? "评分待采集" : `评分 ${stat.averageScore}/10`,
     title: stat.source,
     value: formatMoney(stat.taskAmountCents),
   }));
-  const lawyerLeaderboard: RankedInsightItem[] = lawyerStats.slice(0, 5).map((stat) => ({
+  const lawyerLeaderboard: RankedInsightItem[] = lawyerStats.slice(0, 3).map((stat) => ({
     detail: `${stat.rankCode} · 在办 ${stat.inProgressTaskCount} · 完成 ${stat.completedTaskCount}`,
     id: `lawyer-${stat.lawyerId}`,
     meta:
@@ -2694,6 +2706,23 @@ function Dashboard({
     title: stat.lawyerName,
     value: formatMoney(stat.settlementAmountCents),
   }));
+  const statusFlow = ["open", "claimed", "submitted", "approved", "settlement_pending", "settled"] as TaskStatus[];
+
+  function targetForDashboardAction(action: PersonalWorkbenchSummary["actions"][number]): WorkspaceFocusTarget | null {
+    const task = tasks.find((item) => item.id === action.id);
+
+    if (task) {
+      return targetIfAllowed({ navKey: "my-tasks", search: task.title }) ?? null;
+    }
+
+    const settlement = pendingSettlements.find((item) => `settlement-${item.id}` === action.id);
+
+    if (settlement) {
+      return targetIfAllowed({ navKey: "settlements", search: settlement.taskTitle ?? settlement.id }) ?? null;
+    }
+
+    return null;
+  }
 
   async function handleAutoConfirmOverdue() {
     if (!onAutoConfirmOverdue) {
@@ -2724,45 +2753,76 @@ function Dashboard({
   }
 
   return (
-    <div className="space-y-4" data-testid="dashboard-page">
+    <div className="space-y-3" data-testid="dashboard-page">
       <PageHeader
         description="集中查看任务供给、交付验收、客户确认和结算资金状态。"
         title="律所协作总览"
       />
-      {onResetDemo ? (
-        <div className="flex flex-col gap-3 rounded-md border border-teal/20 bg-teal/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-[13px] font-semibold text-teal">标准本地数据已加载</div>
-            <div className="mt-1 text-[12px] text-steel">覆盖任务大厅、我的任务、客户确认页、结算和审计日志。</div>
+      <section
+        className="rounded-md border border-line bg-paper p-3 shadow-soft sm:p-4"
+        data-testid="director-command-strip"
+      >
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <div className={lexosUi.sectionEyebrow}>全所经营工作台</div>
+            <h2 className="mt-1 text-[18px] font-semibold leading-6 text-ink">{personalWorkbench.title}</h2>
+            <p className="mt-1 max-w-3xl text-[13px] leading-5 text-steel">{personalWorkbench.subtitle}</p>
           </div>
-          <button
-            className={actionButtonClass("tealSoft", "sm")}
-            onClick={onResetDemo}
-            type="button"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            重置本地数据
-          </button>
+          {onResetDemo ? (
+            <button
+              className={actionButtonClass("tealSoft", "sm", "shrink-0")}
+              onClick={onResetDemo}
+              type="button"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              重置本地数据
+            </button>
+          ) : null}
         </div>
-      ) : null}
-      <div className="grid gap-3 lg:grid-cols-4">
-        <OperationsCue label="待财务结算" value={`${pendingSettlements.length} 条`} detail="进入资金确认队列" tone="ink" />
-        <OperationsCue label="客户待确认" value={`${approvedTasks.length} 条`} detail={`自动确认 ${overdueAutoConfirmTasks.length} 条`} tone="teal" />
-        <OperationsCue label="开放任务" value={`${openTasks.length} 条`} detail={`待验收 ${submittedTasks.length} 条`} tone="gold" />
-        <OperationsCue label="未结风控" value={`${openRiskCases.length} 条`} detail={`高/重大 ${majorRiskCases.length} 条`} tone="rose" />
-      </div>
-      <PersonalWorkbenchPanel summary={personalWorkbench} />
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-        <Metric icon={ClipboardList} label="任务总数" value={`${tasks.length}`} />
-        <Metric icon={Clock3} label="待抢 / 待验收" value={`${openTasks.length}/${submittedTasks.length}`} />
-        <Metric icon={BriefcaseBusiness} label="客户数量" value={`${customers.length}`} />
-        <Metric icon={BriefcaseBusiness} label="渠道来源" value={`${channelSummary.channelCount}`} />
-        <Metric icon={Banknote} label="任务总金额" value={formatMoney(totalAmount)} />
-        <Metric icon={Banknote} label="已确认结算" value={formatMoney(confirmedAmount)} />
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[1.55fr_0.95fr]">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-10">
+          <OperationsCue label="待财务结算" value={`${pendingSettlements.length} 条`} detail="进入资金确认队列" tone="ink" />
+          <OperationsCue label="客户待确认" value={`${approvedTasks.length} 条`} detail={`自动确认 ${overdueAutoConfirmTasks.length} 条`} tone="teal" />
+          <OperationsCue label="开放任务" value={`${openTasks.length} 条`} detail={`待验收 ${submittedTasks.length} 条`} tone="gold" />
+          <OperationsCue label="未结风控" value={`${openRiskCases.length} 条`} detail={`高/重大 ${majorRiskCases.length} 条`} tone="rose" />
+          {commandMetrics.map((metric) => (
+            <CompactMetric key={metric.label} label={metric.label} tone={metric.tone} value={metric.value} />
+          ))}
+        </div>
+        {personalWorkbench.actions.length ? (
+          <div className="mt-3 grid gap-2 xl:grid-cols-3">
+            {personalWorkbench.actions.slice(0, 3).map((action) => {
+              const target = targetForDashboardAction(action);
+
+              return (
+                <div
+                  className="grid gap-2 rounded-md border border-line bg-canvas/60 px-2.5 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  key={action.id}
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-[13px] font-semibold text-ink">{action.title}</div>
+                    <div className="mt-0.5 truncate text-[12px] text-steel">{action.detail}</div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    {action.status ? <StatusBadge status={action.status} /> : <span className={lexosUi.metaPill}>待处理</span>}
+                    {target ? (
+                      <button
+                        className={actionButtonClass("tealSoft", "sm")}
+                        onClick={() => onOpenTarget(target)}
+                        type="button"
+                      >
+                        处理
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+      </section>
+      <div className="grid gap-3 xl:grid-cols-[1.55fr_0.95fr]">
         <Panel title="今日经营焦点">
-          <FocusQueue emptyText="当前没有需要立即处理的经营焦点。" items={focusItems} />
+          <FocusQueue emptyText="当前没有需要立即处理的经营焦点。" items={focusItems} onSelect={onOpenTarget} />
         </Panel>
         <Panel title="运营信号">
           <InsightList items={dashboardSignals} />
@@ -2792,54 +2852,55 @@ function Dashboard({
           ) : null}
         </Panel>
       </div>
-      <Panel title="客户与渠道贡献">
-        <div className="grid gap-4 xl:grid-cols-[1.45fr_0.8fr]">
-          <RankedInsightList emptyText="暂无客户来源统计。" items={channelLeaderboard} />
-          <div>
-            <Signal label="最高任务金额来源" value={topChannel ? topChannel.source : "待采集"} />
-            <Signal label="来源数量" value={`${channelSummary.channelCount} 个`} />
-            <Signal label="有效任务" value={`${channelSummary.activeTaskCount} 个`} />
-            <Signal label="客户已确认任务" value={`${channelSummary.confirmedTaskCount} 个`} />
-            <Signal label="渠道任务金额" value={formatMoney(channelSummary.taskAmountCents)} />
-            <Signal label="渠道结算金额" value={formatMoney(channelSummary.settlementAmountCents)} />
-          </div>
-        </div>
-      </Panel>
-      <Panel title="律师绩效">
-        <div className="grid gap-4 xl:grid-cols-[1.45fr_0.8fr]">
-          <RankedInsightList emptyText="暂无律师绩效。" items={lawyerLeaderboard} />
-          <div>
-            <Signal label="绩效领先" value={topLawyer ? topLawyer.lawyerName : "待采集"} />
-            <Signal label="有效律师" value={`${lawyerSummary.activeLawyerCount}/${lawyerSummary.lawyerCount} 人`} />
-            <Signal label="客户平均评分" value={lawyerSummary.averageScore === null ? "待采集" : `${lawyerSummary.averageScore}/10`} />
-            <Signal label="近30单评分" value={lawyerSummary.rollingAverageScore === null ? "待采集" : `${lawyerSummary.rollingAverageScore}/10`} />
-            <Signal label="发起人平均评分" value={lawyerSummary.sourceReviewAverageScore === null ? "待采集" : `${lawyerSummary.sourceReviewAverageScore}/10`} />
-            <Signal label="结果平均评分" value={lawyerSummary.caseResultAverageScore === null ? "待采集" : `${lawyerSummary.caseResultAverageScore}/10`} />
-            <Signal label="在办任务" value={`${lawyerSummary.inProgressTaskCount} 个`} />
-            <Signal label="已完成任务" value={`${lawyerSummary.completedTaskCount} 个`} />
-            <Signal label="已确认结算" value={formatMoney(lawyerSummary.confirmedSettlementAmountCents)} />
-          </div>
-        </div>
-      </Panel>
-      <RepeatDisciplinePanel stats={visibleRepeatDisciplineStats} />
-      <Panel title="任务状态分布">
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-          {(["open", "claimed", "submitted", "approved", "settlement_pending", "settled"] as TaskStatus[]).map((status) => (
-            <div className="rounded-md border border-line bg-canvas/60 p-3" key={status}>
-              <div className="flex items-center justify-between">
-                <StatusBadge status={status} />
-                <span className="text-lg font-semibold">{tasks.filter((task) => task.status === status).length}</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
-                <div
-                  className="h-full rounded-full bg-teal"
-                  style={{ width: `${tasks.length ? Math.max(8, (tasks.filter((task) => task.status === status).length / tasks.length) * 100) : 0}%` }}
-                />
-              </div>
+      <div className="grid gap-3 xl:grid-cols-2">
+        <Panel title="客户与渠道贡献">
+          <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_220px]">
+            <RankedInsightList emptyText="暂无客户来源统计。" items={channelLeaderboard} />
+            <div className="grid gap-2 content-start">
+              <CompactSignal label="最高来源" value={topChannel ? topChannel.source : "待采集"} />
+              <CompactSignal label="有效任务" value={`${channelSummary.activeTaskCount} 个`} />
+              <CompactSignal label="客户确认" value={`${channelSummary.confirmedTaskCount} 个`} />
+              <CompactSignal label="渠道金额" value={formatMoney(channelSummary.taskAmountCents)} />
             </div>
-          ))}
-        </div>
-      </Panel>
+          </div>
+        </Panel>
+        <Panel title="律师绩效">
+          <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_220px]">
+            <RankedInsightList emptyText="暂无律师绩效。" items={lawyerLeaderboard} />
+            <div className="grid gap-2 content-start">
+              <CompactSignal label="绩效领先" value={topLawyer ? topLawyer.lawyerName : "待采集"} />
+              <CompactSignal label="有效律师" value={`${lawyerSummary.activeLawyerCount}/${lawyerSummary.lawyerCount} 人`} />
+              <CompactSignal label="客户评分" value={lawyerSummary.averageScore === null ? "待采集" : `${lawyerSummary.averageScore}/10`} />
+              <CompactSignal label="已确认结算" value={formatMoney(lawyerSummary.confirmedSettlementAmountCents)} />
+            </div>
+          </div>
+        </Panel>
+      </div>
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+        <RepeatDisciplineCompactPanel stats={visibleRepeatDisciplineStats} />
+        <Panel title="任务状态分布">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            {statusFlow.map((status) => {
+              const count = tasks.filter((task) => task.status === status).length;
+
+              return (
+                <div className="rounded-md border border-line bg-canvas/60 px-2.5 py-2" key={status}>
+                  <div className="flex items-center justify-between gap-2">
+                    <StatusBadge status={status} />
+                    <span className="text-[16px] font-semibold tabular-nums text-ink">{count}</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
+                    <div
+                      className="h-full rounded-full bg-teal"
+                      style={{ width: `${tasks.length ? Math.max(8, (count / tasks.length) * 100) : 0}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+      </div>
     </div>
   );
 }
@@ -3103,6 +3164,47 @@ function RepeatDisciplinePanel({ stats }: { stats: RepeatDisciplineStat[] }) {
       ) : (
         <div className="mt-3">
           <EmptyState text={`近 ${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天暂无触发累犯惩戒建议的律师。`} />
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function RepeatDisciplineCompactPanel({ stats }: { stats: RepeatDisciplineStat[] }) {
+  const summary = summarizeRepeatDisciplineStats(stats);
+  const actionableStats = stats.filter((stat) => stat.level !== "clear").slice(0, 3);
+
+  return (
+    <Panel title="累犯惩戒摘要">
+      <div className="grid grid-cols-2 gap-2">
+        <CompactSignal label="观察周期" value={`${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天`} />
+        <CompactSignal label="需处理" value={`${summary.actionableLawyerCount} 人`} />
+        <CompactSignal label="限制建议" value={`${summary.restrictionCount} 人`} />
+        <CompactSignal label="升级复盘" value={`${summary.escalationCount} 人`} />
+      </div>
+      {actionableStats.length ? (
+        <div className="mt-3 divide-y divide-line rounded-md border border-line bg-white">
+          {actionableStats.map((stat) => (
+            <div className="grid gap-2 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={stat.lawyerId}>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex min-h-6 items-center rounded-md border px-2 text-[11px] font-semibold ${tonePillClass(stat.level === "escalation" || stat.level === "restriction" ? "rose" : "gold")}`}>
+                    {repeatDisciplineLevelLabels[stat.level]}
+                  </span>
+                  <div className="truncate text-[13px] font-semibold text-ink">{stat.lawyerName}</div>
+                  <span className={lexosUi.metaPill}>{stat.rankCode}</span>
+                </div>
+                <div className="mt-1 line-clamp-1 text-[12px] text-steel">{repeatDisciplineRecentCasesText(stat)}</div>
+              </div>
+              <div className="text-[12px] font-semibold text-slate sm:text-right">
+                有效 {stat.effectiveCaseCount} · 未结 {stat.activeCaseCount}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-3">
+          <EmptyState text={`近 ${REPEAT_DISCIPLINE_LOOKBACK_DAYS} 天暂无触发惩戒建议的律师。`} />
         </div>
       )}
     </Panel>
@@ -4871,23 +4973,23 @@ function PortalPage({
   }
 
   return (
-    <section className="mt-8 rounded-md border border-line bg-paper p-5 shadow-soft">
-      <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+    <section className="mt-3 rounded-md border border-line bg-paper p-3 shadow-soft">
+      <div className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
         <div>
-          <div className="text-sm font-semibold text-teal">客户确认页</div>
-          <h2 className="mt-1 text-xl font-semibold">带验证码的安全访问链接</h2>
-          <p className="mt-1 text-sm text-slate">客户不创建完整账号，使用任务 token + 手机验证码访问交付页面。</p>
+          <div className="text-[11px] font-semibold uppercase text-teal">客户确认页</div>
+          <h2 className="mt-0.5 text-[16px] font-semibold leading-5">带验证码的安全访问链接</h2>
+          <p className="mt-0.5 text-[12px] text-slate">客户使用任务 token + 手机验证码访问交付页面。</p>
         </div>
-        <div className="flex min-h-10 items-center rounded-md border border-line bg-white px-3 text-xs font-medium text-slate">
+        <div className="flex min-h-8 items-center rounded-md border border-line bg-white px-2.5 text-[11px] font-medium text-slate">
           验证码固定为 111111
         </div>
       </div>
-      <form className="mt-5 grid gap-3 md:grid-cols-4" onSubmit={verify}>
+      <form className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_120px]" onSubmit={verify}>
         <TextInput label="访问 token" onChange={setToken} value={token} />
         <TextInput label="客户手机号" onChange={setPhone} value={phone} />
         <TextInput label="验证码" onChange={setCode} value={code} />
         <div className="flex items-end">
-          <button className={actionButtonClass("primary", "md", "w-full")} type="submit">
+          <button className={actionButtonClass("primary", "sm", "w-full")} type="submit">
             校验访问
           </button>
         </div>
@@ -5015,26 +5117,26 @@ function ApiPortalPage({ onAfterFeedback }: { onAfterFeedback: () => MaybePromis
   }
 
   return (
-    <section className="mt-8 rounded-md border border-line bg-paper p-5 shadow-soft">
-      <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+    <section className="mt-3 rounded-md border border-line bg-paper p-3 shadow-soft">
+      <div className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
         <div>
-          <div className="text-sm font-semibold text-teal">客户确认页 API</div>
-          <h2 className="mt-1 text-xl font-semibold">带验证码的安全访问链接</h2>
-          <p className="mt-1 text-sm text-slate">
+          <div className="text-[11px] font-semibold uppercase text-teal">客户确认页 API</div>
+          <h2 className="mt-0.5 text-[16px] font-semibold leading-5">带验证码的安全访问链接</h2>
+          <p className="mt-0.5 text-[12px] text-slate">
             真实模式下，访问 token 只在创建任务时显示一次；数据库仅保存 token hash。
           </p>
         </div>
-        <div className="flex min-h-10 items-center rounded-md border border-line bg-white px-3 text-xs font-medium text-slate">
+        <div className="flex min-h-8 items-center rounded-md border border-line bg-white px-2.5 text-[11px] font-medium text-slate">
           本地验证码固定为 111111
         </div>
       </div>
-      <form className="mt-5 grid gap-3 md:grid-cols-4" onSubmit={verify}>
+      <form className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_120px]" onSubmit={verify}>
         <TextInput label="访问 token" onChange={setToken} value={token} />
         <TextInput label="客户手机号" onChange={setPhone} value={phone} />
         <TextInput label="验证码" onChange={setCode} value={code} />
         <div className="flex items-end">
           <button
-            className={actionButtonClass("primary", "md", "w-full")}
+            className={actionButtonClass("primary", "sm", "w-full")}
             disabled={loading || !token.trim()}
             type="submit"
           >
@@ -7732,10 +7834,10 @@ function OperationsCue({
           : "border-navy/15 bg-navy/5 text-navy";
 
   return (
-    <div className={`rounded-md border px-3 py-2.5 ${toneClass}`}>
-      <div className="text-[12px] font-semibold">{label}</div>
-      <div className="mt-0.5 text-[20px] font-semibold leading-6 tabular-nums">{value}</div>
-      <div className="mt-0.5 text-[12px] leading-5 text-slate">{detail}</div>
+    <div className={`min-w-0 rounded-md border px-2.5 py-2 ${toneClass}`}>
+      <div className="truncate text-[11px] font-semibold">{label}</div>
+      <div className="mt-0.5 truncate text-[17px] font-semibold leading-5 tabular-nums">{value}</div>
+      <div className="mt-0.5 truncate text-[11px] leading-4 text-slate">{detail}</div>
     </div>
   );
 }
